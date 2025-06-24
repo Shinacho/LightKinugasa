@@ -1,0 +1,48 @@
+/*
+ * Copyright (C) 2023 Shinacho
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package kinugasa.game.field4;
+
+import kinugasa.game.system.NPCSprite;
+import java.awt.Point;
+import kinugasa.object.IDdCloneableObject;
+import kinugasa.object.ID;
+
+/**
+ *
+ * @vesion 1.0.0 - 2022/11/08_19:19:27<br>
+ * @author Shinacho<br>
+ */
+public abstract class NPCMoveModel extends IDdCloneableObject {
+
+	public NPCMoveModel(String id) {
+		super(id);
+	}
+
+	public abstract D2Idx getNextTargetIdx(NPCSprite n, FieldMap map);
+
+	public abstract int nextMoveFrameTime(NPCSprite n, FieldMap map);
+
+	public abstract D2Idx getMin(NPCSprite n);
+
+	public abstract D2Idx getMax(NPCSprite n);
+
+	@Override
+	public NPCMoveModel clone() {
+		return (NPCMoveModel) super.clone();
+	}
+
+}

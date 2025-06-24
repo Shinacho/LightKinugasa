@@ -1,0 +1,103 @@
+/*
+ * Copyright (C) 2023 Shinacho
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package kinugasa.game.field4;
+
+import kinugasa.game.GameOption;
+import kinugasa.game.GraphicsContext;
+import kinugasa.game.I18N;
+import kinugasa.game.ui.FontModel;
+import kinugasa.game.ui.SimpleTextLabelModel;
+import kinugasa.game.ui.TextLabelSprite;
+
+/**
+ *
+ * @vesion 1.0.0 - 2022/11/11_12:27:18<br>
+ * @author Shinacho<br>
+ */
+public class SimpleTooltipModel extends TooltipModel {
+
+	private TextLabelSprite label;
+
+	public SimpleTooltipModel() {
+		label = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT), 0, 0, 0, 0);
+		setVisible(true);
+	}
+
+	@Override
+	public void drawTooltip(FieldMap fm, GraphicsContext g) {
+		if (!visible) {
+			label.setVisible(false);
+			return;
+		}
+		String s = FieldMap.getEnterOperation();
+		FieldMapTile t = fm.getCurrentTile();
+		Mode newMode = Mode.NONE;
+		if (!FieldMap.getPlayerCharacter().isEmpty() && fm.canTalk()) {
+			newMode = Mode.TALK;
+		}
+		if (t.getNode() != null) {
+			if (t.getNode().getMode() == Node.Mode.INOUT) {
+				newMode = Mode.NODE;
+			}
+		}
+		if (fm.getMessageWindow() != null && fm.getMessageWindow().isVisible()) {
+			newMode = Mode.NONE;
+		}
+		if (mode != newMode) {
+			mode = newMode;
+			switch (newMode) {
+				case NODE -> {
+					if (t.getNode() != null) {
+						if (t.getNode().getMode() != Node.Mode.OUT) {
+							s += t.getNode().getTooltipI18Nd();
+							label.setText(s);
+							label.setVisible(true);
+						} else {
+							label.setVisible(false);
+						}
+					} else {
+						label.setVisible(false);
+					}
+				}
+				case NONE ->
+					label.setVisible(false);
+				case TALK -> {
+					if (fm.canTalk()) {
+						s += I18N.get("話す");//仮
+						label.setText(s);
+						label.setVisible(true);
+					} else {
+						label.setVisible(false);
+					}
+				}
+				case SEARCH -> {
+					s += I18N.get("調べる");//仮
+					label.setText(s);
+					label.setVisible(true);
+				}
+			}
+		}
+		if (label.isVisible()) {
+			FontModel f = label.getLabelModel().getFontConfig();
+			float x = GameOption.getInstance().getWindowSize().width / GameOption.getInstance().getDrawSize() / 2 - (f.getFont().getSize2D() * label.getText().length() / 2);
+			float y = GameOption.getInstance().getWindowSize().height / GameOption.getInstance().getDrawSize() / 2 - GameOption.getInstance().getWindowSize().height / GameOption.getInstance().getDrawSize() / 4;
+			label.setLocation(x, y);
+			g.draw(label);
+		}
+	}
+
+}
