@@ -100,8 +100,7 @@ GameManagerを継承したクラスの解説をしましょう。
 
 
 ## 入力系
-入力検知は[InputState]
-(https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/InputState.java)から行えます。
+入力検知は[InputState](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/InputState.java)から行えます。
 入力状態は、現在のフレームと前のフレームの状態があります。前のフレームでも押されていて、今のフレームでも押されている場合は、CONTINUEと呼ばれます。前のフレームで押されておらず、今のフレームで押されているのはSINGLEと呼ばれます。1回だけ検知したい場合はSINGLE入力を調べ、押し続けて何かを実行する場合はCONTINUEで検知します。いずれも、InputStateから調べることを推奨しますが、InputStateから取得した下記のような各クラスから直接調べることもできるでしょう。入力状態は毎フレーム新規に作成されるインスタンスであり、その各フレームでの状態はfinalな値です。
 
 ### キーボード
