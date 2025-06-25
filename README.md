@@ -23,6 +23,7 @@
 * テキスト、画像、メッセージウインドウなどを表示できます
 * サウンドの再生ができます
 * フィールドマップ（CSVから構築するスクロール可能なイメージ）を構築して表示できます。
+* I18N機能を実装しており、iniファイル等から翻訳テキストを取得できます。
 
 ## 基本構造
 衣笠の基本構造は、[GameManager](https://github.com/Shinacho/LightKinugasa/blob/04c037fafd924168e785ea0600ae1d168922b37e/src/kinugasa/game/GameManager.java)が中心にあります。
@@ -42,10 +43,10 @@ GameManagerを継承したクラスの解説をしましょう。
 
 常に、update→drawの順で実行されます。これはシングルスレッドで実行されています。そのため、同一のリストを参照して描画することができます。drawの中で更新を行ってもほとんどの場合問題はないですが、役割をわかりやすくするためにオブジェクトの更新処理と描画処理を分けて記述するべきでしょう。
 
-## その他の機能
-ここでは、あなたのゲーム制作に役立つその他の機能を紹介しましょう。
+## 描画系の機能
+ここでは、あなたのゲーム制作に役立つ機能を紹介しましょう。
 
-### スプライト
+### Sprite
 [Sprite](https://github.com/Shinacho/LightKinugasa/blob/7af343ba48f6433b12ad03b10942a761595ac897/src/kinugasa/object/Sprite.java)は画面に描画する物体の個体です。
 様々な派生クラスがあり、どれも描画が可能です。
 
@@ -54,6 +55,39 @@ GameManagerを継承したクラスの解説をしましょう。
 
 ### KImage
 [KImage](https://github.com/Shinacho/LightKinugasa/blob/7af343ba48f6433b12ad03b10942a761595ac897/src/kinugasa/graphics/KImage.java)は編集可能な画像の個体です。しかし編集は重いので、ゲーム中にあまり実施すべきではないでしょう。ロード時等に行うとよいと思います。KImageはGraphics2Dを使って何かを描画したり、ファイルから読み込むことができます。推奨のファイル形式はpngで、透過画像も使えます。
+
+### AnimationSprite
+[AnimationSprite](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/object/AnimationSprite.java)はImageSpriteの拡張で、複数の画像をアニメーション再生できるSpriteです。
+
+### TimeCounter
+[TimeCounter](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/util/TimeCounter.java)は一定周期で何かを発動したいときに使うカウンタです。例えばアニメーションの再生速度を定義するのに使います。一番よく使うのは[FrameTimeCounter](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/util/FrameTimeCounter.java)でしょう。これは単純に何フレームおきにそのイベントを起こすかを定義するものです。
+
+### TextLabelSprite
+[TextLabelSprite](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/game/ui/TextLabelSprite.java)は1行のテキストを表示するためのSpriteです。TextLabelModelやFontModelを使用してフォントなどを指定できます。その具体例はサンプル実装を見てください。
+
+### KVector
+[KVector](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/object/KVector.java)は角度と移動速度を持つクラスです。SpriteのサブクラスであるBasicSpriteが持っています。BasicSpriteのmoveを実行すると、このKVectorに基づいて移動します。simulateMove機能を使って、移動後の座標を計算して、移動範囲を制限することができます。その具体例はサンプル実装を見てください。
+
+### FadeEffect、FlashEffect
+[Effect](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/object/Effect.java)のサブクラスであるこれらは、画面全体に効果を及ぼすためのスプライトです。たとえば暗転処理や点滅処理にこれを使えます。
+
+### MessageWindow
+[MessageWindow](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/game/ui/MessageWindow.java)は複数行にわたるテキストを表示するためのスプライトです。さらに、1文字ずつ表示したり、その速度を制御したり、次のテキストがあることを示す記号を表示する機能もあります。メッセージウインドウの見た目はデフォルトではサンプル実装のような見た目ですが、MessageWindowModelを使って変更することができます。
+
+### Dialog
+[Dialog](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/game/ui/Dialog.java)はJOptionPaneを使って簡易なダイアログを出すものです。
+
+### Action
+[UIAction](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/game/ui/UIAction.java)を持つ、[ActionTextSprite](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/game/ui/ActionTextSprite.java)などのクラスは、そのテキストに紐づく何らかの動作を登録できます。これは例えばそのスプライトをクリックしたときに動かす処理などを登録できるものです。
+
+
+
+
+## データ系
+### Storage
+[Storage](https://github.com/Shinacho/LightKinugasa/blob/508158febcebfb02153e30f08b8370edc903f117/src/kinugasa/resource/Storage.java)はIDに対して何らかのオブジェクトをメモリ上に置くためのマップです。HashMapのようなものです。いろいろな場所で使います。
+
+
 
 
  
