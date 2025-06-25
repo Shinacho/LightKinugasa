@@ -41,10 +41,17 @@ import kinugasa.game.ui.SimpleMessageWindowModel;
 import kinugasa.game.ui.SimpleTextLabelModel;
 import kinugasa.game.ui.Text;
 import kinugasa.game.ui.TextLabelSprite;
+import kinugasa.graphics.ColorChanger;
+import kinugasa.graphics.ColorTransitionModel;
+import kinugasa.graphics.FadeCounter;
 import kinugasa.graphics.KImage;
+import kinugasa.object.BasicMoving;
 import kinugasa.object.FourDirection;
 import kinugasa.object.ImageSprite;
 import kinugasa.object.KVector;
+import kinugasa.object.movemodel.AngleChange;
+import kinugasa.object.movemodel.CompositeMove;
+import kinugasa.object.movemodel.SpeedChange;
 import kinugasa.resource.sound.FramePosition;
 import kinugasa.resource.sound.LoopPoint;
 import kinugasa.resource.sound.Sound;
@@ -71,6 +78,9 @@ public class SampleMain extends GameManager {
 	//------------------------------------------
 	private MessageWindow mw;
 	private TextLabelSprite fpsLabel;
+	private TextLabelSprite tamaShurui;
+	private int tamaMode = 0;
+	private ColorChanger tamaCC;
 	private ImageSprite jiki;
 	private static final float SPEED = 6f;
 	private List<ImageSprite> tama = new ArrayList<>();
@@ -82,10 +92,16 @@ public class SampleMain extends GameManager {
 	@Override
 	protected void startUp() {
 		mw = new MessageWindow(12, 12, 480, 120, new SimpleMessageWindowModel().setNextIcon(""));
-		mw.setText(Text.of("これはサンプルゲームです" + Text.getLineSep() + "矢印キーで動きます" + Text.getLineSep() + "スペースキーで弾を発射します"));
+		mw.setText(Text.of("これはサンプルゲームです" + Text.getLineSep()
+				+ "矢印キーで動きます" + Text.getLineSep()
+				+ "スペースキーで弾を発射します" + Text.getLineSep()
+				+ "Vキーで弾の種類を変えます"));
 		mw.showAllNow();
 
 		fpsLabel = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT.clone().setColor(Color.CYAN)), 640, 12, 30, 30);
+		tamaShurui = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT), 640, 32, 30, 30);
+		tamaShurui.setVisible(false);
+		tamaCC = new ColorChanger(ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), new FadeCounter(255, -4));
 
 		jiki = new ImageSprite(255, 255, 32, 32, new KImage(32, 32).fillBy(Color.YELLOW));
 
@@ -102,6 +118,7 @@ public class SampleMain extends GameManager {
 	@Override
 	protected void update(GameTimeManager gtm, InputState is) {
 		fpsLabel.setText("FPS:" + gtm.getFPSStr(3));
+
 		Point2D.Float dir = new Point2D.Float(0f, 0f);
 		if (is.isPressed(Keys.UP, InputType.CONTINUE)) {
 			dir.y -= 1f;
@@ -123,12 +140,70 @@ public class SampleMain extends GameManager {
 			jiki.move();
 		}
 
+		if (is.isPressed(Keys.V, InputType.SINGLE)) {
+			tamaMode++;
+			if (tamaMode >= 3) {
+				tamaMode = 0;
+			}
+			tamaShurui.setText("弾種類：" + tamaMode);
+			tamaShurui.setVisible(true);
+			tamaCC = new ColorChanger(ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), new FadeCounter(255, -4));
+		}
+		if (tamaShurui.isVisible()) {
+			tamaCC.update();
+			Color c = tamaCC.createColor();
+			if (c.getAlpha() <= 0) {
+				tamaShurui.setVisible(false);
+			} else {
+				tamaShurui.getLabelModel().getFontConfig().setColor(tamaCC.createColor());
+			}
+		}
+
 		//弾の処理
 		if (is.isPressed(Keys.SPACE, InputType.CONTINUE)) {
-			if (rensyaSokudo.update() == TimeCounterState.ACTIVE) {
-				ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.ORANGE));
-				t.setVector(new KVector(FourDirection.NORTH, 12f));
-				tama.add(t);
+			switch (tamaMode) {
+				case 0 -> {
+					if (rensyaSokudo.update() == TimeCounterState.ACTIVE) {
+						ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.ORANGE));
+						t.setVector(new KVector(FourDirection.NORTH, 12f));
+						tama.add(t);
+					}
+				}
+				case 1 -> {
+					if (rensyaSokudo.update() == TimeCounterState.ACTIVE) {
+						{
+							ImageSprite t = new ImageSprite(jiki.getCenterX() - 12, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.BLUE));
+							t.setVector(new KVector(FourDirection.NORTH.getAngle() - 12, 12f));
+							t.setMovingModel(new CompositeMove(BasicMoving.getInstance(), new AngleChange(-0.6f)));
+							tama.add(t);
+						}
+						{
+							ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.BLUE));
+							t.setVector(new KVector(FourDirection.NORTH, 12f));
+							tama.add(t);
+						}
+						{
+							ImageSprite t = new ImageSprite(jiki.getCenterX() + 6, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.BLUE));
+							t.setVector(new KVector(FourDirection.NORTH.getAngle() + 12, 12f));
+							t.setMovingModel(new CompositeMove(BasicMoving.getInstance(), new AngleChange(+0.6f)));
+							tama.add(t);
+						}
+					}
+				}
+				case 2 -> {
+					if (rensyaSokudo.update() == TimeCounterState.ACTIVE) {
+						for (int i = 0;; i++) {
+							float kakudo = i * 4f;
+							if (kakudo > 360f) {
+								break;
+							}
+							ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.GREEN));
+							t.setVector(new KVector(kakudo, 12f));
+							t.setMovingModel(new CompositeMove(BasicMoving.getInstance(), new SpeedChange(-0.13f, 2f, 999f)));
+							tama.add(t);
+						}
+					}
+				}
 			}
 		}
 
@@ -147,6 +222,7 @@ public class SampleMain extends GameManager {
 	protected void draw(GraphicsContext gc) {
 		mw.draw(gc);
 		fpsLabel.draw(gc);
+		tamaShurui.draw(gc);
 
 		tama.forEach(v -> v.draw(gc));
 		jiki.draw(gc);
