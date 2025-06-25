@@ -33,6 +33,7 @@ import kinugasa.graphics.KImage;
 import kinugasa.object.FourDirection;
 import kinugasa.object.ImageSprite;
 import kinugasa.object.KVector;
+import kinugasa.util.StringUtil;
 
 /**
  * SampleMain.<br>
@@ -48,10 +49,11 @@ public class SampleMain extends GameManager {
 	}
 
 	private SampleMain() {
-		super(GameOption.defaultOption().setDrawSize(2f));
+		super(GameOption.defaultOption().setTitle("Sample Game").setDrawSize(2f).setCenterOfScreen());
 	}
 	//------------------------------------------
 	private TextLabelSprite label1;
+	private TextLabelSprite fpsLabel;
 	private ImageSprite jiki;
 	private static final float SPEED = 6f;
 	//------------------------------------------
@@ -59,6 +61,9 @@ public class SampleMain extends GameManager {
 	@Override
 	protected void startUp() {
 		label1 = new TextLabelSprite("矢印キーで動きます", new SimpleTextLabelModel(FontModel.DEFAULT), 12, 12, 999, 24);
+
+		fpsLabel = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT.clone().setColor(Color.CYAN)), 600, 12, 30, 30);
+
 		KImage image = new KImage(32, 32);
 		image = image.fillBy(Color.YELLOW);
 		jiki = new ImageSprite(255, 255, 32, 32, image);
@@ -70,6 +75,7 @@ public class SampleMain extends GameManager {
 
 	@Override
 	protected void update(GameTimeManager gtm, InputState is) {
+		fpsLabel.setText("FPS:" + gtm.getFPSStr(3));
 		jiki.setSpeed(0f);
 		if (is.isPressed(Keys.UP, InputType.CONTINUE)) {
 			jiki.setVector(new KVector(FourDirection.NORTH.getAngle(), SPEED));
@@ -83,7 +89,6 @@ public class SampleMain extends GameManager {
 		}
 		if (getWindow().getVisibleBounds().contains(jiki.simulateMoveCenterLocation())) {
 			jiki.move();
-			System.out.println(jiki.getCenter());
 		}
 
 	}
@@ -91,6 +96,8 @@ public class SampleMain extends GameManager {
 	@Override
 	protected void draw(GraphicsContext gc) {
 		label1.draw(gc);
+		fpsLabel.draw(gc);
+
 		jiki.draw(gc);
 	}
 
