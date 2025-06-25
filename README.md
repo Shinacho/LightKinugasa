@@ -131,7 +131,7 @@ GameOptionでゲームパッドを使うと指示すると、GamePadConnection�
 
 ## I18N
 I18Nとは国際化のことで、簡単に言えばゲーム内のテキストを翻訳することです。
-[I18N](https://github.com/Shinacho/LightKinugasa/blob/9e323673c611bad8b5586aa6dfc2e21af75b150c/src/kinugasa/game/I18N.java)クラスから、キーに基づく翻訳結果を取得できます。これはデフォルトではiniファイルを使用するようになっており、GameOptionで言語を指定してiniを指示しますが、それ以外の方法で翻訳を得ることができます。具体的にはGameOptionでは翻訳を指定せず、I18Nのinitを明示的に呼び出し、その引数で翻訳データの入手方法を示したコールバック関数を送ります。これを使えば例えばDBから読むこともできるでしょう。テキスト中の!0～!nは引数として変換することができます。それにはi18N#get(String, Object...)を使います。たとえば「!0は!1を手に入れた！」に名前とアイテム名を送れば、それが反映されたテキストになります。
+[I18N](https://github.com/Shinacho/LightKinugasa/blob/9e323673c611bad8b5586aa6dfc2e21af75b150c/src/kinugasa/game/I18N.java)クラスから、キーに基づく翻訳結果を取得できます。これはデフォルトではiniファイルを使用するようになっており、GameOptionで言語を指定してiniを指示しますが、それ以外の方法で翻訳を得ることができます。具体的にはGameOptionでは翻訳を指定せず、I18Nのinitを明示的に呼び出し、その引数で翻訳データの入手方法を示したコールバック関数を送ります。これを使えば例えばDBから読むこともできるでしょう。テキスト中の!0～!nは引数として変換することができます。それにはi18N#get(String, Object...)を使います。たとえば「!0は!1を手に入れた！」に名前とアイテム名を送れば、それが反映された「卍丸はそば団子を手に入れた！」になります。
 
 I18Nのより簡単な利用方法は、[I18NText](https://github.com/Shinacho/LightKinugasa/blob/9e323673c611bad8b5586aa6dfc2e21af75b150c/src/kinugasa/game/I18NText.java)を使うことです。これは単純にキーを送れば、現在のI18Nの設定を用いて翻訳をtoString()で入手できるものです。
 
