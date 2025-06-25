@@ -82,6 +82,10 @@ public final class Sound
 	private int pauseLocation = -1;
 	//-------------------------------------
 
+	public Sound(Type t, String fileName) {
+		this(fileName, t, new File(fileName));
+	}
+
 	public Sound(String id, Type t, String fileName) {
 		this(id, t, new File(fileName));
 	}
