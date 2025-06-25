@@ -78,7 +78,7 @@ public class SampleMain extends GameManager {
 		mw.setText(Text.of("これはサンプルゲームです" + Text.getLineSep() + "矢印キーで動きます" + Text.getLineSep() + "スペースキーで弾を発射します"));
 		mw.showAllNow();
 
-		fpsLabel = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT.clone().setColor(Color.CYAN)), 600, 12, 30, 30);
+		fpsLabel = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT.clone().setColor(Color.CYAN)), 640, 12, 30, 30);
 
 		KImage image = new KImage(32, 32);
 		image = image.fillBy(Color.YELLOW);
@@ -99,14 +99,14 @@ public class SampleMain extends GameManager {
 		fpsLabel.setText("FPS:" + gtm.getFPSStr(3));
 		jiki.setSpeed(0f);
 		if (is.isPressed(Keys.UP, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.NORTH.getAngle(), SPEED));
+			jiki.setVector(new KVector(FourDirection.NORTH, SPEED));
 		} else if (is.isPressed(Keys.DOWN, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.SOUTH.getAngle(), SPEED));
+			jiki.setVector(new KVector(FourDirection.SOUTH, SPEED));
 		}
 		if (is.isPressed(Keys.RIGHT, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.EAST.getAngle(), SPEED));
+			jiki.setVector(new KVector(FourDirection.EAST, SPEED));
 		} else if (is.isPressed(Keys.LEFT, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.WEST.getAngle(), SPEED));
+			jiki.setVector(new KVector(FourDirection.WEST, SPEED));
 		}
 		if (getWindow().getVisibleBounds().contains(jiki.simulateMoveCenterLocation())) {
 			jiki.move();
@@ -118,7 +118,7 @@ public class SampleMain extends GameManager {
 				KImage image = new KImage(6, 6);
 				image = image.fillBy(Color.ORANGE);
 				ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, image);
-				t.setVector(new KVector(FourDirection.NORTH.getAngle(), 12f));
+				t.setVector(new KVector(FourDirection.NORTH, 12f));
 				tama.add(t);
 			}
 		}

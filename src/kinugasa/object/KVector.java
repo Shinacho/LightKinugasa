@@ -75,6 +75,11 @@ public class KVector extends CloneableObject {
 		this(0, 0);
 	}
 
+	public KVector(FourDirection angle, float speed) {
+		this.angle = angle.getAngle();
+		this.speed = speed;
+	}
+
 	public KVector(float angle, float speed) {
 		this.angle = angle;
 		this.speed = speed;
