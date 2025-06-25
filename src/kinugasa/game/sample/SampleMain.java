@@ -101,7 +101,6 @@ public class SampleMain extends GameManager {
 		fpsLabel = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT.clone().setColor(Color.CYAN)), 640, 12, 30, 30);
 		tamaShurui = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT), 640, 32, 30, 30);
 		tamaShurui.setVisible(false);
-		tamaCC = new ColorChanger(ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), new FadeCounter(255, -4));
 
 		jiki = new ImageSprite(255, 255, 32, 32, new KImage(32, 32).fillBy(Color.YELLOW));
 
@@ -147,7 +146,7 @@ public class SampleMain extends GameManager {
 			}
 			tamaShurui.setText("弾種類：" + tamaMode);
 			tamaShurui.setVisible(true);
-			tamaCC = new ColorChanger(ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), new FadeCounter(255, -4));
+			tamaCC = new ColorChanger(ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), ColorTransitionModel.valueOf(255), new FadeCounter(255, -2));
 		}
 		if (tamaShurui.isVisible()) {
 			tamaCC.update();
