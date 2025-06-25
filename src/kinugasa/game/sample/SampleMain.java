@@ -24,6 +24,7 @@
 package kinugasa.game.sample;
 
 import java.awt.Color;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 import kinugasa.game.GameManager;
@@ -103,17 +104,23 @@ public class SampleMain extends GameManager {
 	@Override
 	protected void update(GameTimeManager gtm, InputState is) {
 		fpsLabel.setText("FPS:" + gtm.getFPSStr(3));
-		jiki.setSpeed(0f);
+		Point2D.Float dir = new Point2D.Float(0f, 0f);
 		if (is.isPressed(Keys.UP, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.NORTH, SPEED));
-		} else if (is.isPressed(Keys.DOWN, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.SOUTH, SPEED));
+			dir.y -= 1f;
+		}
+		if (is.isPressed(Keys.DOWN, InputType.CONTINUE)) {
+			dir.y += 1f;
+		}
+		if (is.isPressed(Keys.LEFT, InputType.CONTINUE)) {
+			dir.x -= 1f;
 		}
 		if (is.isPressed(Keys.RIGHT, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.EAST, SPEED));
-		} else if (is.isPressed(Keys.LEFT, InputType.CONTINUE)) {
-			jiki.setVector(new KVector(FourDirection.WEST, SPEED));
+			dir.x += 1f;
 		}
+		dir.x *= SPEED;
+		dir.y *= SPEED;
+		KVector kv = new KVector(dir);
+		jiki.setVector(kv);
 		if (getWindow().getVisibleBounds().contains(jiki.simulateMoveCenterLocation())) {
 			jiki.move();
 		}
