@@ -87,9 +87,7 @@ public class SampleMain extends GameManager {
 
 		fpsLabel = new TextLabelSprite("", new SimpleTextLabelModel(FontModel.DEFAULT.clone().setColor(Color.CYAN)), 640, 12, 30, 30);
 
-		KImage image = new KImage(32, 32);
-		image = image.fillBy(Color.YELLOW);
-		jiki = new ImageSprite(255, 255, 32, 32, image);
+		jiki = new ImageSprite(255, 255, 32, 32, new KImage(32, 32).fillBy(Color.YELLOW));
 
 		bgm = new Sound(Sound.Type.BGM, "sampleResource/sampleMusic.wav").setLoopPoint(LoopPoint.from(FramePosition.eof()).to(FramePosition.start())).load().play();
 
@@ -128,9 +126,7 @@ public class SampleMain extends GameManager {
 		//弾の処理
 		if (is.isPressed(Keys.SPACE, InputType.CONTINUE)) {
 			if (rensyaSokudo.update() == TimeCounterState.ACTIVE) {
-				KImage image = new KImage(6, 6);
-				image = image.fillBy(Color.ORANGE);
-				ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, image);
+				ImageSprite t = new ImageSprite(jiki.getCenterX() - 3, jiki.getCenterY() - 3, 6, 6, new KImage(6, 6).fillBy(Color.ORANGE));
 				t.setVector(new KVector(FourDirection.NORTH, 12f));
 				tama.add(t);
 			}
