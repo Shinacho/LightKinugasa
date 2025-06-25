@@ -42,5 +42,18 @@ GameManagerを継承したクラスの解説をしましょう。
 
 常に、update→drawの順で実行されます。これはシングルスレッドで実行されています。そのため、同一のリストを参照して描画することができます。drawの中で更新を行ってもほとんどの場合問題はないですが、役割をわかりやすくするためにオブジェクトの更新処理と描画処理を分けて記述するべきでしょう。
 
+## その他の機能
+ここでは、あなたのゲーム制作に役立つその他の機能を紹介しましょう。
+
+### スプライト
+[Sprite](https://github.com/Shinacho/LightKinugasa/blob/7af343ba48f6433b12ad03b10942a761595ac897/src/kinugasa/object/Sprite.java)は画面に描画する物体の個体です。
+様々な派生クラスがあり、どれも描画が可能です。
+
+### ImageSprite
+[ImageSprite](https://github.com/Shinacho/LightKinugasa/blob/7af343ba48f6433b12ad03b10942a761595ac897/src/kinugasa/object/ImageSprite.java)は画像を表示するためのSpriteの実装です。画像はKImageを使います。
+
+### KImage
+[KImage](https://github.com/Shinacho/LightKinugasa/blob/7af343ba48f6433b12ad03b10942a761595ac897/src/kinugasa/graphics/KImage.java)は編集可能な画像の個体です。しかし編集は重いので、ゲーム中にあまり実施すべきではないでしょう。ロード時等に行うとよいと思います。KImageはGraphics2Dを使って何かを描画したり、ファイルから読み込むことができます。推奨のファイル形式はpngで、透過画像も使えます。
+
 
  
