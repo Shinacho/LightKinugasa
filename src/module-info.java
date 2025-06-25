@@ -27,7 +27,6 @@
 module kinugasa {
 	requires java.base;
 	requires transitive java.desktop;
-	requires transitive java.sql;
 	requires transitive java.logging;
 	exports kinugasa.game.field4;
 	exports kinugasa.game.input;
