@@ -44,7 +44,7 @@ GameManagerを継承したクラスの解説をしましょう。
 3. startUpの実装：このメソッドはgameStartが実行されると1回だけ実行されるものです。この時点ではウインドウが表示されていません。なので、例えばBGMのロード再生といった初期化処理を書きます。ウインドウが表示されていないので、ウインドウのサイズなどをとれない点に注意してください。
 4. disposeの実装：このメソッドは、gameExitが実行されると1回だけ実行されるものです。gameExitは明示的に実行してもいいですし、デフォルトではウインドウが閉じられると実行されます。したがって、ここにはファイルを解放したりセーブする処理を記述します。
 5. updateの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GameTimeManager](https://github.com/Shinacho/LightKinugasa/blob/04c037fafd924168e785ea0600ae1d168922b37e/src/kinugasa/game/GameTimeManager.java)通称gtmと、[InputState](https://github.com/Shinacho/LightKinugasa/blob/04c037fafd924168e785ea0600ae1d168922b37e/src/kinugasa/game/input/InputState.java)通称isがあります。gtmからはFPSや総経過時間を取得でき、isではキーやマウス、コントローラーの入力を検知できます。
-6. drawの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GraphicsContext](https://github.com/Shinacho/LightKinugasa/blob/04c037fafd924168e785ea0600ae1d168922b37e/src/kinugasa/game/GraphicsContext.java)で、ゲーム内オブジェクトを描画する処理を記述します。
+6. drawの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GraphicsContext](https://github.com/Shinacho/LightKinugasa/blob/04c037fafd924168e785ea0600ae1d168922b37e/src/kinugasa/game/GraphicsContext.java)で、ゲーム内オブジェクトを描画する処理を記述します。drawの順序に注意してください。あとに書いたものが上に表示されます。上書きされるということです。下に書いたものは見えなくなります。
 
 常に、update→drawの順で実行されます。これはシングルスレッドで実行されています。そのため、同一のリストを参照して描画することができます。drawの中で更新を行ってもほとんどの場合問題はないですが、役割をわかりやすくするためにオブジェクトの更新処理と描画処理を分けて記述するべきでしょう。一部のアニメーションの自動再生などは、drawの中で更新をしている場合があります。
 
@@ -116,6 +116,15 @@ USBコントローラの検知は、[GamePadState](https://github.com/Shinacho/L
 Gamepadについてもう少し解説しておきましょう。まず、コントローラのレイアウトはXBOXコントローラです。ボタンの数や名前はXBOXコントローラ準拠です。
 そして使用できるコントローラも、XBOX準拠です、具体的にはDirectXのXInputをJNIで接続して使っています。なので、例えばPS5のコントローラなどはそのままでは使えません。プレイヤーがSteamにあるDSXといったソフトを使えば、PS5コントローラも使えます。
 GameOptionでゲームパッドを使うと指示すると、GamePadConnectionクラスがdllをロードします。dllがWindows64bit用でしかコンパイルしていないので、それ以外の環境では失敗するでしょう。
+
+### サウンド
+[Sound](https://github.com/Shinacho/LightKinugasa/blob/a412780797c8025576970aaf9132870274aa5c4b/src/kinugasa/resource/sound/Sound.java)クラスを使ってサウンドを作ります。対応しているのは、wav形式とoggです。wavは実はいろいろな種類があるので、再生できない場合があるかもしれません。
+サウンドをインスタンス化したら、load()してください。このフレームワークでは、サウンドはロードするとそのすべてがメモリに置かれます。すなわちロードはかなり重い処理です。これはサウンドを完璧にループ再生するためにこうなっているものです。setLoopPointからループ位置を指定できます。サウンドのタイプはSEなのかBGMなのかを示すもので、検索などで使えそうなのでつけているものですが、適当に設定しても特に問題はないです。[SoundSotorage](https://github.com/Shinacho/LightKinugasa/blob/a412780797c8025576970aaf9132870274aa5c4b/src/kinugasa/resource/sound/SoundStorage.java)に登録しておくと、一括で停止したりでき、インスタンスも使いまわせます。サウンドのボリュームはsetMasterGainから行ってください。
+ポーズとは再生を一時停止することです、再生位置は保存され、再度再生を開始するとそこから開始します。
+停止とは、再生を完全に停止して再生位置をゼロに戻すことです、再度再生を開始すると、サウンドの最初から再生されます。
+サウンドの位置はフレームという単位です。これは44.1KHzのサウンドなら1秒に44100フレームあるということです。
+フェードアウトを設定することができます。フェードアウトを設定したサウンドは、updateを毎フレーム実行しなければそれが反映されません。GameManagerを継承したあなたのゲームのメインクラスで、updateを実行してください。再生されていないサウンドのupdateは何も実行しないので、サウンドはすべてSoundStorageに登録して、SoundStorageに登録されているすべてをupdateするとよいでしょう。
+
 
 
 
