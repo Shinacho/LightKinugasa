@@ -111,7 +111,7 @@ public class Test extends GameManager {
 	@Override
 	protected void update(GameTimeManager gtm, InputState is) {
 		SoundSystem.getInstance().update();
-		
+
 		fms.update();
 		ss.update();
 
@@ -181,40 +181,16 @@ public class Test extends GameManager {
 
 		Point2D.Float p = new Point2D.Float();
 		if (is.isPressed(GamePadButton.POV_UP, Keys.UP, InputType.CONTINUE)) {
-			p.y = -1f;
-			if (is.isPressed(GamePadButton.POV_RIGHT, Keys.RIGHT, InputType.CONTINUE)) {
-				p.x = 1f;
-			}
-			if (is.isPressed(GamePadButton.POV_LEFT, Keys.LEFT, InputType.CONTINUE)) {
-				p.x = -1f;
-			}
+			p.y -= 1f;
 		}
 		if (is.isPressed(GamePadButton.POV_DOWN, Keys.DOWN, InputType.CONTINUE)) {
-			p.y = 1f;
-			if (is.isPressed(GamePadButton.POV_RIGHT, Keys.RIGHT, InputType.CONTINUE)) {
-				p.x = 1f;
-			}
-			if (is.isPressed(GamePadButton.POV_LEFT, Keys.LEFT, InputType.CONTINUE)) {
-				p.x = -1f;
-			}
+			p.y += 1f;
 		}
 		if (is.isPressed(GamePadButton.POV_LEFT, Keys.LEFT, InputType.CONTINUE)) {
-			p.x = -1f;
-			if (is.isPressed(GamePadButton.POV_UP, Keys.UP, InputType.CONTINUE)) {
-				p.y = -1f;
-			}
-			if (is.isPressed(GamePadButton.POV_DOWN, Keys.DOWN, InputType.CONTINUE)) {
-				p.y = 1f;
-			}
+			p.x -= 1f;
 		}
 		if (is.isPressed(GamePadButton.POV_RIGHT, Keys.RIGHT, InputType.CONTINUE)) {
-			p.x = 1f;
-			if (is.isPressed(GamePadButton.POV_UP, Keys.UP, InputType.CONTINUE)) {
-				p.y = -1f;
-			}
-			if (is.isPressed(GamePadButton.POV_DOWN, Keys.DOWN, InputType.CONTINUE)) {
-				p.y = 1f;
-			}
+			p.x += 1f;
 		}
 		//斜め移動時のgame pad との速度差の補正処理
 		p = MathUtil.clipOnCircle(p);
