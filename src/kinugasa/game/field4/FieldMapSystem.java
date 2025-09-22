@@ -160,7 +160,8 @@ public final class FieldMapSystem implements Drawable {
 		return talking = false;
 	}
 
-	public boolean touch(NPC n) {
+	public void touch(NPC n) {
+		talking = false;
 		if (!n.asScript().getBlockOf(ScriptBlockType.TOUCH).getCmds().isEmpty()) {
 			talkingNPC = n;
 
@@ -171,9 +172,13 @@ public final class FieldMapSystem implements Drawable {
 
 			talkingNPC.asScript().load().getBlockOf(ScriptBlockType.TOUCH).resetIdx();
 			talkingNPC.asScript().getBlockOf(ScriptBlockType.TOUCH).exec();
-			return talking = true;
+			return;
 		}
-		return talking = false;
+		return;
+	}
+
+	public void setTalking(boolean talking) {
+		this.talking = talking;
 	}
 
 	public boolean isTalking() {
@@ -439,6 +444,9 @@ public final class FieldMapSystem implements Drawable {
 
 	@LoopCall
 	public void move(Point2D.Float p) {
+		if (p.x == 0 && p.y == 0) {
+			return;
+		}
 		D2Idx prevIdx = camera.getPcLocation();
 		Point2D.Float prevLayer0Location = fieldMap.getLayer0Location();
 		Point2D.Float prevPcLocation = camera.getPcLocationOnScreen();

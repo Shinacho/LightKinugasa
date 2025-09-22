@@ -343,6 +343,7 @@ public final class ScriptSystem {
 			Dimension s = new Dimension(w, h);
 			this.messageWindow = new MessageWindow(p.x, p.y, s.width, s.height);
 		}
+		FieldMapSystem.getInstance().setTalking(true);
 		this.messageWindow.setVisible(true);
 	}
 
