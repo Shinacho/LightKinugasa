@@ -422,7 +422,8 @@ ScriptAccessObject#lastSelectedChoiceIdxIsは直前に実行されたnextTextAsC
 フラグはFlagSystemを見てください。まだあまりテストしていませんが、大体使えるでしょう。
 
 
-### ACTOR定義ファイル
+### ACTOR
+作りかけのため後で書きます。
 
 
 
