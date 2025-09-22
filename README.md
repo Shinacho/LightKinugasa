@@ -385,7 +385,7 @@ TOUCHでは、以下のコードを実行しています。
 	openMessageWindow("T007").byMe();
 	closeMessageWindow();
 ```
-ScriptAccessObject#openMessageWindowは、会話を開始する指示で、引数で指定したIDのI18Nテキストを表示します。続くbyMeはこのNPCによる発言として名前と立ち絵をセットする任意の処理です。
+ScriptAccessObject#openMessageWindowは、会話を開始する指示で、引数で指定したIDのI18Nテキストを表示します。続くbyMeはこのNPCによる発言として名前と立ち絵をセットする任意の処理です。namedでないので、名前は出ませんが、立ち絵を指定しているので、それは表示されます。どちらもない場合や片方または両方ある場合はそのように出力されます。名前は最初のテキストの先頭に'名前「'を接続します。よって、メッセージウインドウに表示可能な文字数に注意する必要があります。
 ScriptAccessObject#closeMessageWindowは会話を終了してメッセージウインドウを閉じる処理です。
 openMessageWindowとcloseMsssageWindowは会話の開始と終了に必須です。これらが片方だけ定義されている場合、スクリプトのロード時にエラーとなります。
 つまり必ずセットで使用する必要があります。
