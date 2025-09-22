@@ -130,7 +130,7 @@ Soundがサウンドの1ファイルに対応します。再生できるのは�
 * フェードアウトを設定することができます。フェードアウトを設定したサウンドは、updateを毎フレーム実行しなければ、それが反映されません。GameManagerを継承したあなたのゲームのメインクラスで、updateを実行してください。再生されていないサウンドのupdateは何も実行しないので、サウンドはすべてSoundStorageに登録して、SoundStorageに登録されているすべてをupdateするとよいでしょう。
 * サウンドは、SoundSystem#initを実行すると、その中にあるwavが自動的にSoundSystemに追加されます。フォルダ内は、再帰的に探索されます。
 * サウンドのID3v2.3タグのTXXX領域にCSVを記述すると、Sound.Type、マスターゲイン、ループ設定を定義できます。
-* 
+
 <img width="807" height="547" alt="image" src="https://github.com/user-attachments/assets/025d4692-ddb1-4d2b-a845-25198212b535" />
 
 
@@ -169,7 +169,17 @@ field4とは、正方形のタイルを並べてフィールドマップを形�
 
 ### フィールドマップのデータ定義
 フィールドマップのデータは、すべてファイルに定義します。必要なファイルは以下の通りで、dataフォルダを見ればサンプルが書いてあるでしょう。
-* 
 
+#### データ構造
+・フィールドマップはマップごとにフォルダが必要です。それ以外のデータは、フィールドマップと混同しなければ、どこにあっても構いません。
+サンプル実装では、画像のような構成になっています。
 
- 
+<img width="466" height="444" alt="image" src="https://github.com/user-attachments/assets/cb12fd2c-6517-4763-89c2-875462e12778" />
+
+* chipSet
+　これはチップセットを定義するための情報で、画像本体とDataFile形式の定義ファイルを記述します。
+　定義ファイルには、画像と切り出しサイズ、そして切り出した1枚1枚のインデックスに対するMapChipAttributeを定義します。
+　インデックスは6桁で、YYYXXX形式です。これは、[platinumマップエディタ](http://www.hyperdevice.org)のType1CSVを、FieldMapResourceUtilクラスを使って変換できます。
+* フィールドマップフォルダ
+　・まず、フォルダ名はFieldMap自体のIDです。
+　・内部はDataFile形式のFieldMap定義ファイルと、npc/フォルダがあります。npcフォルダには、そのマップで使うNPCを入れます。
