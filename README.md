@@ -290,7 +290,7 @@ field4とは、正方形のタイルを並べてフィールドマップを形�
 ・フィールドマップはマップごとにフォルダが必要です。それ以外のデータは、フィールドマップと混同しなければ、どこにあっても構いません。
 サンプル実装では、画像のような構成になっています。
 
-<img width="466" height="444" alt="image" src="https://github.com/user-attachments/assets/cb12fd2c-6517-4763-89c2-875462e12778" />
+<img width="398" height="483" alt="image" src="https://github.com/user-attachments/assets/8f353b99-554a-48e4-be67-8f4098a0743b" />
 
 * chipSet<br>
 　これはチップセットを定義するための情報で、画像本体とDataFile形式の定義ファイルを記述します。<br>
