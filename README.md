@@ -74,7 +74,7 @@ TimeCounterは一定周期で何かを発動したいときに使うカウンタ
 KVectorは角度と移動速度を持つクラスです。Spriteが持っています。Spriteのmoveを実行すると、このKVectorに基づいて移動します。simulateMove機能を使って、移動後の座標を計算して、移動範囲を制限することができます。その具体例はサンプル実装を見てください。
 
 ### TextLabelSprite
-TextLabelSpriteは1行のテキストを表示するためのSpriteです。TextLabelModelやFontModelを使用してフォントなどを指定できます。その具体例はサンプル実装を見てください。
+TextLabelSpriteは1行のテキストを表示するためのSpriteです。TextLabelModelやFontModelを使用してフォントなどを指定できます。
 フォントのインスタンスに注意してください、1つのModelを更新すると、同じインスタンスを使う別のテキストもフォントが変わります。FontModelは常にcloneするとよいでしょう。
 
 ### MessageWindow
