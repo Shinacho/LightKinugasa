@@ -30,23 +30,24 @@ RPG用の機能は、順次搭載しています。
 * テキスト、画像、メッセージウインドウなどを表示できます
 * サウンドの再生ができます
 * フィールドマップ（CSVから構築するスクロール可能なイメージ）を構築して表示できます。
+* NPCと会話できます。
 * I18N機能を実装しており、iniファイル等から翻訳テキストを取得できます。
 
 ## 基本構造
-衣笠は、[GameManager](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/GameManager.java)を中心に動きます。
+衣笠は、[GameManager](src/kinugasa/game/GameManager.java)を中心に動きます。
 GameManagerを継承したクラスにMainを作って、そこをエントリポイントとして動きます。
 GameManagerには、初期化・終了処理と、自動的にループで呼び出される更新・描画処理の4つがあり、これを実装することであなたのゲームを動かします。
-具体例は[サンプル実装](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/sample/SampleMain.java)を見てください。
+具体例は[サンプル実装](src/kinugasa/game/sample/Test.java)を見てください。
 
 ## GameManagerの解説
 GameManagerを継承したクラスの解説をしましょう。
 この継承クラスに必要なのは、最低6つのメソッドです。
 1. main：通常のメインメソッドですが、そのクラスをインスタンス化してgameStart()をコールしてください。また、このフレームワークにはゲームの二重起動を防止する仕掛けが入っているので、それを無効化するために、開発中は最初にロックファイル削除を実行しておくとよいでしょう。具体例は上記のサンプルを見てください。
-2. コンストラクタ：コンストラクタではsuper(GameOption)を実行します。[GameOption](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/GameOption.java)はnewしてもいいですし、defaultOption()メソッドを使ってiniファイルから読むこともできます。そのiniファイルはこのプロジェクトのルートに入っているでしょう。また、GameOptionのインスタンスに対して上書きで設定を追加することもできます。ゲームパッドを使いたい場合はここでsetUseGamePad(true)を実行してください。
-3. startUpの実装：このメソッドはgameStartが実行されると1回だけ実行されるものです。この時点ではウインドウが表示されていません。なので、例えばBGMのロード再生といった初期化処理を書きます。ウインドウが表示されていないので、ウインドウのサイズなどをとれない点に注意してください。
+2. コンストラクタ：コンストラクタではsuper(GameOption)を実行します。[GameOption](src/kinugasa/game/GameOption.java)は普通にインスタンスを作ってもよいですし、INIFileなどを使ってGameOptionValueのインスタンスを生成すれば、ファイルからも読めるでしょう。ゲームパッドを使いたい場合はここでsetUseGamePad(true)を実行してください。
+3. startUpの実装：このメソッドはgameStartが実行されると1回だけ実行されるものです。この時点ではウインドウが表示されていません。なので、例えばBGMのロード再生といった初期化処理を書きます。ウインドウが表示されていないので、ウインドウのサイズなどをとれない点に注意してください。サイズはstartUpの処理が終わると、getWindow().getInsets()で取れます。
 4. disposeの実装：このメソッドは、gameExitが実行されると1回だけ実行されるものです。gameExitは明示的に実行してもいいですし、デフォルトではウインドウが閉じられると実行されます。したがって、ここにはファイルを解放したりセーブする処理を記述します。
-5. updateの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GameTimeManager](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/GameTimeManager.java)通称gtmと、[InputState](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/InputState.java)通称isがあります。gtmからはFPSや総経過時間を取得でき、isではキーやマウス、コントローラーの入力を検知できます。
-6. drawの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GraphicsContext](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/GraphicsContext.java)で、ゲーム内オブジェクトを描画する処理を記述します。drawの順序に注意してください。あとに書いたものが上に表示されます。上書きされるということです。下に書いたものは見えなくなります。
+5. updateの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GameTimeManager](src/kinugasa/game/GameTimeManager.java)通称gtmと、[InputState](src/kinugasa/game/input/InputState.java)通称isがあります。gtmからはFPSや総経過時間を取得でき、isではキーやマウス、コントローラーの入力を検知できます。
+6. drawの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GraphicsContext](src/kinugasa/graphics/GraphicsContext.java)で、ゲーム内オブジェクトを描画する処理を記述します。drawの順序に注意してください。あとに書いたものが上に表示されます。上書きされるということです。下に書いたものは見えなくなります。
 
 常に、update→drawの順で実行されます。これはシングルスレッドで実行されています。そのため、同一のリストを参照してどちらの処理も実行することができます。drawの中で更新を行ってもほとんどの場合問題はないですが、役割をわかりやすくするためにオブジェクトの更新処理と描画処理を分けて記述するべきでしょう。一部のアニメーションの自動再生などは、drawの中で更新をしている場合があります。
 
@@ -54,46 +55,46 @@ GameManagerを継承したクラスの解説をしましょう。
 ここでは、あなたのゲーム制作に役立つ機能を紹介しましょう。
 
 ### Sprite
-[Sprite](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/object/Sprite.java)は画面に描画する物体の個体です。
+[Sprite](src/kinugasa/object/Sprite.java)は画面に描画する物体の個体です。
 様々な派生クラスがあり、どれも共通して描画が可能です。
 
 ### ImageSprite
-[ImageSprite](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/object/ImageSprite.java)は画像を表示するためのSpriteの実装です。画像はKImageを使います。
+ImageSprite画像を表示するためのSpriteの実装です。画像はKImageを使います。
 
 ### KImage
-[KImage](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/graphics/KImage.java)は編集可能な画像の個体です。しかし編集は重いので、ゲーム中にあまり実施すべきではないでしょう。ロード時等に行うとよいと思います。KImageはGraphics2Dを使って何かを描画したり、ファイルから読み込むことができます。推奨のファイル形式はpngで、透過画像も使えます。
+KImageは編集可能な画像の個体です。しかし編集は重いので、ゲーム中にあまり実施すべきではないでしょう。ロード時等に行うとよいと思います。KImageはGraphics2Dを使って何かを描画したり、ファイルから読み込むことができます。推奨のファイル形式はpngで、透過画像も使えます。
 
 ### AnimationSprite
-[AnimationSprite](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/object/AnimationSprite.java)はImageSpriteの拡張で、複数の画像をアニメーション再生できるSpriteです。[SpriteSheet](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/graphics/SpriteSheet.java)を使って、1枚の画像から特定のサイズで切り出してアニメーションを作ることができます。もちろん、KImageの集合から作ってもよいです。
+AnimationSpriteはImageSpriteの拡張で、複数の画像をアニメーション再生できるSpriteです。SpriteSheetを使って、1枚の画像から特定のサイズで切り出してアニメーションを作ることができます。もちろん、KImageの集合から作ってもよいです。
+
+### WalkAnimation
+WalkAnimationは、4方向のアニメーションを持っている、いわゆる歩行グラフィックです。CharaSpriteで使います。
 
 ### TimeCounter
-[TimeCounter](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/util/TimeCounter.java)は一定周期で何かを発動したいときに使うカウンタです。例えばアニメーションの再生速度を定義するのに使います。一番よく使うのは[FrameTimeCounter](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/util/FrameTimeCounter.java)でしょう。これは単純に何フレームおきにそのイベントを起こすかを定義するものです。例えばアニメーション再生速度に12を指定したら、12フレームおきに次の画像に切り替わる、ということです。
+TimeCounterは一定周期で何かを発動したいときに使うカウンタです。例えばアニメーションの再生速度を定義するのに使います。一番よく使うのはFrameTimeCounterでしょう。これは単純に何フレームおきにそのイベントを起こすかを定義するものです。例えばアニメーション再生速度に12を指定したら、12フレームおきに次の画像に切り替わる、ということです。
 
 ### KVector
-[KVector](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/object/KVector.java)は角度と移動速度を持つクラスです。SpriteのサブクラスであるBasicSpriteが持っています。BasicSpriteのmoveを実行すると、このKVectorに基づいて移動します。simulateMove機能を使って、移動後の座標を計算して、移動範囲を制限することができます。その具体例はサンプル実装を見てください。
-
-### FadeEffect、FlashEffect
-[Effect](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/object/Effect.java)のサブクラスであるこれらは、画面全体に効果を及ぼすためのスプライトです。たとえば暗転処理や点滅処理にこれを使えます。
+KVectorは角度と移動速度を持つクラスです。Spriteが持っています。Spriteのmoveを実行すると、このKVectorに基づいて移動します。simulateMove機能を使って、移動後の座標を計算して、移動範囲を制限することができます。その具体例はサンプル実装を見てください。
 
 ### TextLabelSprite
-[TextLabelSprite](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/ui/TextLabelSprite.java)は1行のテキストを表示するためのSpriteです。TextLabelModelやFontModelを使用してフォントなどを指定できます。その具体例はサンプル実装を見てください。
+TextLabelSpriteは1行のテキストを表示するためのSpriteです。TextLabelModelやFontModelを使用してフォントなどを指定できます。その具体例はサンプル実装を見てください。
+フォントのインスタンスに注意してください、1つのModelを更新すると、同じインスタンスを使う別のテキストもフォントが変わります。FontModelは常にcloneするとよいでしょう。
 
 ### MessageWindow
-[MessageWindow](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/ui/MessageWindow.java)は複数行にわたるテキストを表示するためのスプライトです。さらに、1文字ずつ表示したり、その速度を制御したり、次のテキストがあることを示す記号を表示する機能もあります。メッセージウインドウの見た目はデフォルトではサンプル実装のような見た目ですが、MessageWindowModelを使って変更することができます。
+MessageWindow複数行にわたるテキストを表示するためのスプライトです。さらに、1文字ずつ表示したり、その速度を制御したり、次のテキストがあることを示す記号を表示する機能もあります。メッセージウインドウの見た目はデフォルトではサンプル実装のような見た目ですが、MessageWindowModelを使って変更することができます。
+MessageWindowに表示するテキストは、StringではなくTextというクラスを使い、これはI18Ntextから生成できます。つまり翻訳結果を表示できます。デフォルトでは、'<br>'という文字が改行になります。自動改行はありませんので、適切に指定する必要があります。
 
 ### Dialog
-[Dialog](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/ui/Dialog.java)はJOptionPaneを使って簡易なダイアログを出すものです。
-
-### Action
-[UIAction](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/ui/UIAction.java)を持つ、[ActionTextSprite](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/ui/ActionTextSprite.java)などのクラスは、そのテキストに紐づく何らかの動作を登録できます。これは例えばそのスプライトをクリックしたときに動かす処理などを登録できるものです。
+DialogはJOptionPaneを使って簡易なダイアログを出すものです。
 
 
 ## データ系
 ### Storage
-[Storage](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/resource/Storage.java)はIDに対して何らかのオブジェクトをメモリ上に置くためのマップです。HashMapのようなものです。いろいろな場所で使います。
+StorageはIDに対して何らかのオブジェクトをメモリ上に置くためのマップです。HashMapのようなものです。いろいろな場所で使います。
 
 ### File
-[ファイル系のクラス](https://github.com/Shinacho/LightKinugasa/tree/master/src/kinugasa/resource/text)は、テキスト、CSV、ini、XMLが使えます。これらはクラスが分かれており、共通して、ファイルパスを送れば開けます。開いた後は、load()をしてください。不要になったら、dispose()で解放できます。これらはメモリをたくさん使うゲームのために（Javaでは若干不利ではありますが）ロードタイミングと解放タイミングを指定できるようにしているものです。一部のファイルは保存もできます。作りかけで保存機能がまだできていないものがあります。
+File関連のクラスは、テキスト、CSV、ini、XMLが使えます。これらはクラスが分かれており、共通して、ファイルパスを送れば開けます。開いた後は、load()をしてください。不要になったら、dispose()で解放できます。これらはメモリをたくさん使うゲームのために（Javaでは若干不利ではありますが）ロードタイミングと解放タイミングを指定できるようにしているものです。一部のファイルは保存もできます。作りかけで保存機能がまだできていないものがあります。
+DataFileという独自の形式も使えます。これはfield4などの定義で多用されていて、中身は単純なテキストです。
 
 ### 例外について
 衣笠フレームワークでは、例外はほぼすべてRuntime例外です。これは、主にtry-catchを書くのが面倒という理由でそうなっています。
@@ -102,48 +103,73 @@ GameManagerを継承したクラスの解説をしましょう。
 
 
 ## 入力系
-入力検知は[InputState](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/InputState.java)から行えます。
-入力状態は、現在のフレームと前のフレームの状態があります。前のフレームでも押されていて、今のフレームでも押されている場合は、CONTINUEと呼ばれます。前のフレームで押されておらず、今のフレームで押されているのはSINGLEと呼ばれます。1回だけ検知したい場合はSINGLE入力を調べ、押し続けて何かを実行する場合はCONTINUEで検知します。いずれも、InputStateから調べることを推奨しますが、InputStateから取得した下記のような各クラスから直接調べることもできるでしょう。入力状態は毎フレーム新規に作成されるインスタンスであり、その各フレームでの状態はfinalな値です。
+InputStateから行えます。
+入力状態は、現在のフレームと前のフレームの状態があります。前のフレームでも押されていて、今のフレームでも押されている場合は、CONTINUEと呼ばれます。前のフレームで押されておらず、今のフレームで押されているのはSINGLEと呼ばれます。
+1回だけ検知したい場合はSINGLE入力を調べ、押し続けて何かを実行する場合はCONTINUEで検知します。いずれも、InputStateから調べることを推奨しますが、InputStateから取得した下記のような各クラスから直接調べることもできるでしょう。入力状態は毎フレーム新規に作成されるインスタンスであり、その各フレームでの状態はfinalな値です。
 
 ### キーボード
-キーボードの入力検知は[KeyState](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/KeyState.java)から行います。KyeStateにKeysでキーを指定すると、そのキーの状態を判定できます。
+キーボードの入力検知はKeyStateから行います。KyeStateにKeysでキーを指定すると、そのキーの状態を判定できます。
 
 ### マウス
-マウスの入力検知は、[MouseState](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/MouseState.java)から行います。ボタンの状態を持っていますので、そこから判定してください。
+マウスの入力検知は、MouseStateから行います。ボタンの状態を持っていますので、そこから判定してください。
 
 ### ゲームパッド（USBコントローラー）
-USBコントローラの検知は、[GamePadState](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/input/GamePadState.java)から行います。
+USBコントローラの検知は、GamePadStateから行います。
 これにはボタンの状態と、スティックやトリガーの位置が格納されています。スティックはPoint2D.Floatで、-1,0f～中心が0,0、～1.0fの座標で表されます。これはBasicSpriteが持っているControllableのmoveメソッドに渡すと、そのまま移動に使えます。
 Gamepadについてもう少し解説しておきましょう。まず、コントローラのレイアウトはXBOXコントローラです。ボタンの数や名前はXBOXコントローラ準拠です。
 そして使用できるコントローラも、XBOX準拠です、具体的には、DirectXのXInputをJNIで接続して使っています。なので、例えばPS5のコントローラなどはそのままでは使えません。プレイヤーがSteamにあるDSXといったソフトを使えば、PS5コントローラも使えるでしょう。
 GameOptionでゲームパッドを使うと指示すると、GamePadConnectionクラスがdllをロードします。dllがWindows64bit用でしかコンパイルしていないので、それ以外の環境では起動が失敗するでしょう。ゲームパッドを使用しない場合はGameOption#setUseGamePad(false)を実行すると、ほんの少しだけパフォーマンスが改善します。これはデフォルトの設定です。GamePadの入力を調べる時間が不要だからです。
 
 ## サウンド
-[Sound](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/resource/sound/Sound.java)クラスを使ってサウンドを作ります。対応しているのは、wav形式とoggです。wavは実はいろいろな種類があるので、再生できない場合があるかもしれません。
-* サウンドをインスタンス化したら、load()してください。このフレームワークでは、サウンドはロードするとそのすべてがメモリに置かれます。すなわちロードはかなり重い処理です。これはサウンドを完璧にループ再生するためにこうなっているものです。setLoopPointからループ位置を指定できます。サウンドのタイプはSEなのかBGMなのかを示すもので、検索などで使えそうなのでつけているものですが、適当に設定しても特に問題はないです。[SoundSotorage](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/resource/sound/SoundStorage.java)に登録しておくと、一括で停止したりでき、インスタンスも使いまわせます。
+Soundがサウンドの1ファイルに対応します。再生できるのは、wav形式とoggです。wavは実はいろいろな種類があるので、再生できない場合があるかもしれません。
+* サウンドをインスタンス化したら、load()してください。このフレームワークでは、サウンドはロードするとそのすべてがメモリに置かれます。すなわちロードはかなり重い処理です。これはサウンドを完璧にループ再生するためにこうなっているものです。setLoopPointからループ位置を指定できます。サウンドのタイプはSEなのかBGMなのかを示すもので、検索などで使えそうなのでつけているものですが、適当に設定しても特に問題はないです。
 * サウンドのボリュームの設定ははsetMasterGainから行ってください。0.0fがミュート、1fが通常の音量です。より高い値も指定できます。
 * ポーズとは再生を一時停止することです、再生位置は保存され、再度再生を開始するとそこから開始します。
 * 停止とは、再生を完全に停止して再生位置をゼロに戻すことです、再度再生を開始すると、サウンドの最初から再生されます。停止してもメモリから解放されません。メモリから解放するにはdispose()を実行してください。
 * サウンドの位置はフレームという単位です。これは44.1KHzのサウンドなら1秒に44100フレームあるということです。
 * フェードアウトを設定することができます。フェードアウトを設定したサウンドは、updateを毎フレーム実行しなければ、それが反映されません。GameManagerを継承したあなたのゲームのメインクラスで、updateを実行してください。再生されていないサウンドのupdateは何も実行しないので、サウンドはすべてSoundStorageに登録して、SoundStorageに登録されているすべてをupdateするとよいでしょう。
-* サンプル実装では、自作の「昔した約束」という楽曲を入れています。これはシンプルながらうまくできたと思っている一曲です。オリジナルのメロディは、たしか2012年くらいに神戸で新入社員研修を受けながら作成したもので、それを2025年にアレンジしたものです。同期の人々は、研修の後の飲み会を断ってホテルで一人酒を飲みながら作曲していた私を異常者だと思っていたことでしょう。
-この楽曲は当然再生できるので、もしあなたの楽曲が再生できないときはこの楽曲の属性を確認してみてください。
+* サウンドは、SoundSystem#initを実行すると、その中にあるwavが自動的にSoundSystemに追加されます。フォルダ内は、再帰的に探索されます。
+* サウンドのID3v2.3タグのTXXX領域にCSVを記述すると、Sound.Type、マスターゲイン、ループ設定を定義できます。
+* 
+<img width="807" height="547" alt="image" src="https://github.com/user-attachments/assets/025d4692-ddb1-4d2b-a845-25198212b535" />
 
 
 ## I18N
 I18Nとは国際化のことで、簡単に言えばゲーム内のテキストを翻訳することです。
-[I18N](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/I18N.java)クラスから、キーに基づく翻訳結果を取得できます。これはデフォルトではiniファイルを使用するようになっており、GameOptionで言語を指定してiniを指示しますが、それ以外の方法で翻訳を得ることができます。具体的にはGameOptionでは翻訳を指定せず、I18Nのinitを明示的に呼び出し、その引数で翻訳データの入手方法を示したコールバック関数を送ります。これを使えば例えばDBから読むこともできるでしょう。テキスト中の!0～!nは引数として変換することができます。それにはi18N#get(String, Object...)を使います。たとえば「!0は!1を手に入れた！」に名前とアイテム名を送れば、それが反映された「卍丸はそば団子を手に入れた！」になります。
+I18Nを使うには、あなたのゲームの起動時にGameOptionでI18Nを読み込む処理を渡す必要があります。それは通常IniI18NReaderというクラスを使い、データはINIファイルに書かれますが、別の手段（例えばDB）を作ることもできます。
+I18Nのより簡単な利用方法は、I18NTextを使うことです。これは単純にキーを送れば、現在のI18Nの設定を用いて翻訳をtoString()で入手できるものです。
 
-I18Nのより簡単な利用方法は、[I18NText](https://github.com/Shinacho/LightKinugasa/blob/master/src/kinugasa/game/I18NText.java)を使うことです。これは単純にキーを送れば、現在のI18Nの設定を用いて翻訳をtoString()で入手できるものです。
+### I18Nの構文
+I18Nテキストは、特殊文字があります。
+* &{n}：nは0以上の数値です。これはI18NText#setを使うと値をセットできる変数部分です。たとえば「${0}は${1}を手に入れた！」に名前とアイテム名を送れば、それが反映された「卍丸はそば団子を手に入れた！」になります。1つの文中の同じ数値箇所は、同じ値になります。すなわちsetに送った引数の順番です。
+* ${methodName("引数")}：これはスクリプトを起動する構文で、最終結果がStringである必要があります。起動できるメソッドは、ScriptAccessObjectにあるメソッド及びそこから呼びだすことができるメソッドです。複数行は定義できず、必ず1行で処理が完結している必要があります。メソッドチェーンが使えます。
+* 　例： サウンド${soundOf("test1").getFile().getId()}の名前は、${soundOf("test1").getFile().getName()}です
+* サンプル実装では、IniI18NReaderを使って、data/i18n.iniをロードしています。
+
 
 
 ## field4
 field4とは、正方形のタイルを並べてフィールドマップを形成するシステムのことです。
-このシステムはかなり大きく、複雑で、イマイチな動作をする部分もまだあります。
+このシステムはかなり大きく、複雑ですが頑張って解説しましょう。
 
-そのため、すぐには解説を書ききれないので、そのうち改めて書くことにします。
+### フィールドマップの基本構造
+フィールドマップは、CSVデータですが、その内容は3次元のレイヤーによって構成されています。
+各レイヤーがCSVで、重なって表示されているとイメージしてください。実際にはもう少し複雑です。
+* フィールドマップの実体は、FieldMapクラスですが、これはFieldMapSystemを介してアクセスします。
+* フィールドマップ内にはレイヤーがあります。
+　　・ベースレイヤー：海などを表示するための1レイヤーで、アニメーション可能な埋め立てられるレイヤーです。
+　　・ノーマルレイヤー：地形や建物を表示する複数のレイヤーです。
+　　・フロントレイヤー：雲や雨などを表示するための1レイヤーで、アニメーション可能な1枚絵のレイヤーです。これはCSVではなく1枚の大きな画像が表示されます。
+* 各レイヤーは、FieldMapCameraを介して動かされます。キャラクターはFieldMapSystem#setLocationで指定されたタイル状の場所で開始し、FieldMapSystem#moveでマップレイヤーまたはキャラが動きます。マップレイヤーのサイズが画面サイズより小さい場合、マップは中央に表示され、レイヤーは移動しません。マップレイヤーのサイズが画面サイズより大きい場合、レイヤー外が表示されないようにマップまたはキャラが移動します。
+* フィールドマップの関連データ定義
+　　・MapChip/MapChipSet：これはノーマルレイヤーで使うタイルの画像とChipAttributeを定義するためのクラスです。
+　　・MapChipAttribute：これはそのタイルの属性を示すもので、「山」「平地」「町」などがあります。これはエンカウントカウンタの処理や、歩行で乗れないが乗り物で乗れるといった判定をするためにあります。
+　　・Vehicle：これは現在の移動手段で、Vehicleに登録されたMapChipAttributeに限り、そのキャラはそのタイルに乗れます。
+　　・D2Idx（重要）：これはタイル状の位置を表す座標で、xとyを持ちます。32×32マスのフィールドマップでは、一番左上のタイルが0,0、一番右下のタイルが31,31です。これはPointクラスを使うとGUI上の座標と混同するために分けられました。
 
-
+### フィールドマップのデータ定義
+フィールドマップのデータは、すべてファイルに定義します。必要なファイルは以下の通りで、dataフォルダを見ればサンプルが書いてあるでしょう。
+* 
 
 
  
