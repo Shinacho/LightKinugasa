@@ -52,6 +52,7 @@ import kinugasa.resource.FileNotFoundException;
 import kinugasa.resource.Storage;
 import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
+import kinugasa.resource.text.IniFile;
 import kinugasa.util.FrameTimeCounter;
 import kinugasa.util.TimeCounter;
 import kinugasa.util.TimeCounterState;
@@ -116,6 +117,11 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		return new CompositeSprite(s);
 	}
 
+	public IniFile getNPCList() {
+		String path = getDir() + "npc/";
+		return new IniFile(path + "npcList.txt");
+	}
+
 	@Override
 	public FieldMap load() throws FileNotFoundException, FileFormatException, ContentsIOException {
 		if (!exists()) {
@@ -176,6 +182,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 			for (var v : f.getData().stream().filter(p -> p.getKey().value().equals("NOMAL_LAYER")).toList()) {
 				MapChipSet chipSet = v.get("chipSet").getValue().asMapChipSetFile();
 				chipSet.load();
+				boolean above = v.has("above") ? v.get("above").getValue().asBoolean() : false;
 				float drawSize = v.has("drawSize") ? v.get("drawSize").getValue().asFloat() : 1f;
 				MapChip[][] data = new MapChip[v.get("DATA").getElements().size()][];
 				for (int y = 0; y < data.length; y++) {
@@ -184,7 +191,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 						data[y][x] = chipSet.get(v.get("DATA").getElements().get(y).getElements().get(x).getValue().asId());
 					}
 				}
-				var l = new FMNomalLayerSprite(chipSet, drawSize, data);
+				var l = new FMNomalLayerSprite(chipSet, drawSize, above, data);
 				if (this.debugMode) {
 					l.setDebugMode(true);
 				}
@@ -237,9 +244,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 
 		//SCRIPT_MAP
 		this.eventScriptMap = new FieldEventScriptMap();
-		this.npcMap = new FieldNPCMap();
 		{
-			//固定イベントマス
 			if (f.has("EVENT") && f.get("EVENT").getElements() != null) {
 				for (var v : f.get("EVENT").getElements()) {
 					D2Idx idx = v.getKey().asD2IdxCSV();
@@ -247,17 +252,22 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 					this.eventScriptMap.add(idx, sc);
 				}
 			}
-			//NPC
-			if (f.has("NPC") && f.get("NPC").getElements() != null) {
-				for (var n : f.get("NPC")) {
-					D2Idx idx = n.getKey().asD2IdxCSV();
+		}
+		//NPC
+		this.npcMap = new FieldNPCMap();
+		{
+			IniFile npcList = getNPCList();
+			if (npcList.exists()) {
+				for (var v : npcList.load()) {
+					D2Idx idx = v.getKey().asUniversalValue().trim().asD2IdxCSV();
 					//ファイルパス
-					File file = new File(super.getFile().getParent() + "/" + "npc/" + n.getValue().value() + ".npc.txt");
+					File file = new File(getDir() + "npc/" + v.getValue().trim().value() + ".npc.txt");
 					NPC npc = new NPC(file, this, idx).load();
 					//初期座標はカメラで。
 
 					this.npcMap.add(idx, npc);
 				}
+				npcList.free();
 			}
 		}
 

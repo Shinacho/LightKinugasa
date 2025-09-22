@@ -84,6 +84,10 @@ public abstract class FileObject implements ID {
 		return file.exists();
 	}
 
+	public String getDir() {
+		return getFile().getParent() + "/";
+	}
+
 	@RequiresReturnTypeChange
 	public abstract FileObject load() throws FileNotFoundException, FileFormatException, ContentsIOException;
 

@@ -10,10 +10,7 @@ LOAD_SCRIPT={
 }
 
 
-NPC={
-	35,33 = NPC001
 
-}
 
 EVENT={
 	32, 30 = @std_ChangeMapNoSound("M002", "6", "17", "NORTH", "M002")

@@ -1,4 +1,4 @@
-# std_FieldMapChange
+# std_ChangeMapNoSound.ks
 # 指定されたパラメータに基づいて、フィールドマップ間の移動を行います。
 
 PARAM={

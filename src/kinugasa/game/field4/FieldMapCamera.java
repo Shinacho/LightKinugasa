@@ -387,13 +387,16 @@ public class FieldMapCamera {
 		if (fm.getBackLayerSprite() != null) {
 			fm.getBackLayerSprite().draw(g);
 		}
-		fm.getNomalLayerSprite().forEach(p -> p.draw(g));
+		fm.getNomalLayerSprite().stream().filter(p -> !p.isAbove()).forEach(p -> p.draw(g));
+		fm.getNPCMap().values().forEach(p -> p.getSprite().draw(g));
+		pcSprite.forEach(p -> p.draw(g));
+		fm.getNomalLayerSprite().stream().filter(p -> p.isAbove()).forEach(p -> p.draw(g));
+
+		fm.getAnimationLayerSprite().forEach(p -> p.draw(g));
+		fm.getFrontLayerSprite().draw(g);
 		if (fm.isDebugMode()) {
 			debugDraw(g);
 		}
-		fm.getNPCMap().values().forEach(p -> p.getSprite().draw(g));
-		pcSprite.forEach(p -> p.draw(g));
-		fm.getFrontLayerSprite().draw(g);
 	}
 
 	private void debugDraw(GraphicsContext g) {

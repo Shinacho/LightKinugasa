@@ -42,11 +42,13 @@ public class FMNomalLayerSprite extends ImageSprite {
 	private int chipDrawSize;
 	private MapChip[][] data;
 	private boolean debugMode = false;
+	private boolean above;
 
-	public FMNomalLayerSprite(MapChipSet chipSet, float drawSize, MapChip[][] data) throws FileFormatException {
+	public FMNomalLayerSprite(MapChipSet chipSet, float drawSize, boolean above, MapChip[][] data) throws FileFormatException {
 		this.chipSet = chipSet;
 		this.drawSize = drawSize;
 		this.data = data;
+		this.above = above;
 		build();
 	}
 
@@ -114,6 +116,10 @@ public class FMNomalLayerSprite extends ImageSprite {
 		drawSize = 0;
 		data = null;
 		setImage((KImage) null);
+	}
+
+	public boolean isAbove() {
+		return above;
 	}
 
 	public MapChip of(D2Idx i) throws IndexOutOfBoundsException {

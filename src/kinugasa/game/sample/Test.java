@@ -110,7 +110,8 @@ public class Test extends GameManager {
 
 	@Override
 	protected void update(GameTimeManager gtm, InputState is) {
-
+		SoundSystem.getInstance().update();
+		
 		fms.update();
 		ss.update();
 

@@ -38,6 +38,7 @@ import kinugasa.object.Drawable;
 import kinugasa.object.FourDirection;
 import kinugasa.object.KVector;
 import kinugasa.resource.sound.Sound;
+import kinugasa.resource.text.IniFile;
 
 /**
  * FieldMapSystem.<br>
@@ -343,6 +344,13 @@ public final class FieldMapSystem implements Drawable {
 			currentScript.getScriptFile().free();
 		}
 		currentScript = null;
+
+		//NPC listの更新
+		IniFile npcList = fieldMap.getNPCList();
+		for (var v : fieldMap.getNPCMap()) {
+			npcList.put(v.getSprite().getMoveModel().getInitialLocation().toString(), v.asUniversalValue());
+		}
+
 		if (fieldMap != null) {
 			fieldMap.free();
 		}
@@ -353,6 +361,7 @@ public final class FieldMapSystem implements Drawable {
 		setLocation(currentNode.getNextFieldMapIdx());
 		resetFollowerLocation();
 		followerLocation.clear();
+
 	}
 
 	private boolean changeMap;
