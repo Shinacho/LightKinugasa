@@ -28,15 +28,15 @@ package kinugasa.game.ui;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import kinugasa.game.GraphicsContext;
-import kinugasa.object.BasicSprite;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.object.Sprite;
 
 /**
  *
  * @vesion 1.0.0 - 2023/03/31_6:51:04<br>
  * @author Shinacho<br>
  */
-public class ScrollSelectableMessageWindow extends BasicSprite {
+public class ScrollSelectableMessageWindow extends Sprite {
 
 	private String selectIcon = ">";
 

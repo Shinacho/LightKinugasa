@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
 import java.io.BufferedWriter;
@@ -31,6 +29,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
 import kinugasa.resource.Storage;
+import kinugasa.util.StringUtil;
 
 /**
  * ログファイル（ロガーのグローバルログ）への出力を行います. ログファイルのフォーマットはSimpleFoomaterが使用されます。<br>
@@ -51,6 +50,7 @@ public final class GameLog {
 	private static boolean using = false;
 	private static String logFilePath;
 	private static BufferedWriter writer;
+	private static int indent = 0;
 
 	protected static void usingLog(String path) {
 		using = true;
@@ -74,6 +74,17 @@ public final class GameLog {
 		}
 	}
 
+	public static void addIndent() {
+		indent++;
+	}
+
+	public static void removeIndent() {
+		indent--;
+		if (indent < 0) {
+			indent = 0;
+		}
+	}
+
 	public static String getLogFilePath() {
 		return logFilePath;
 	}
@@ -87,12 +98,12 @@ public final class GameLog {
 	}
 
 	public static void print(Object string) {
-		if (string instanceof Collection<?>) {
-			for (Object t : (Collection<?>) string) {
+		if (string instanceof Collection<?> collection) {
+			for (Object t : collection) {
 				print(t);
 			}
-		} else if (string instanceof Storage<?>) {
-			for (Object t : (Storage<?>) string) {
+		} else if (string instanceof Storage<?> storage) {
+			for (Object t : storage) {
 				print(t);
 			}
 		} else {
@@ -102,11 +113,12 @@ public final class GameLog {
 
 	private static void out(String s) {
 		try {
-			System.out.println(s);
+			String i = indent == 0 ? "" : StringUtil.repeat("-", indent);
+			System.out.println(i + s);
 			if (writer == null) {
 				return;
 			}
-			writer.append(s);
+			writer.append(i + s);
 			writer.newLine();
 			writer.flush();
 		} catch (IOException ex) {

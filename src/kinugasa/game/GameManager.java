@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,11 +20,12 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.annotation.LoopCall;
+import kinugasa.game.annotation.OneceTime;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -50,7 +51,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import kinugasa.game.input.GamePadConnection;
 import kinugasa.game.input.InputState;
 import kinugasa.game.input.KeyConnection;
@@ -59,7 +59,7 @@ import kinugasa.game.system.GameSystem;
 import kinugasa.graphics.ImageUtil;
 import kinugasa.graphics.RenderingQuality;
 import kinugasa.resource.TempFileStorage;
-import kinugasa.resource.text.IniFile;
+import kinugasa.resource.sound.SoundSystem;
 import kinugasa.util.MathUtil;
 
 /**
@@ -79,7 +79,7 @@ public abstract class GameManager {
 	/**
 	 * 起動時設定.
 	 */
-	private GameOption option;
+	private GameOptionValue option;
 	/**
 	 * ウインドウ.
 	 */
@@ -96,12 +96,12 @@ public abstract class GameManager {
 	private float drawSize = 0;
 	private BufferedImage image;
 	private List<ScreenEffect> effects = new ArrayList<>();
+	private List<UpdateLogicInjector> updateLogicInjectors = new ArrayList<>();
 
-	protected GameManager(GameOption option) throws IllegalStateException {
+	protected GameManager(GameOptionValue option) throws IllegalStateException {
 		if (instance != null) {
 			throw new IllegalStateException("game instance is already exist");
 		}
-		GameManager.instance = this;//safe
 		try {
 			//LnF切替
 			UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -111,6 +111,7 @@ public abstract class GameManager {
 				| UnsupportedLookAndFeelException ex) {
 		}
 
+		GameManager.instance = this;//safe
 		this.option = option;
 		updateOption();
 	}
@@ -149,15 +150,18 @@ public abstract class GameManager {
 			GameLog.print("this is " + option.getLogPath() + option.getLogName());
 		}
 		CMDargs.init(option.getArgs());
-		if (option.getI18NFileName() != null) {
-			I18N.fromIni(new IniFile(option.getI18NFileName()));
+
+		if (I18N.getReader() == null && option.getI18nReader() != null) {
+			I18N.init(option.getI18nReader());
 		}
 
-		if (LockUtil.isExistsLockFile()) {
+		if (LockUtil.isExistsLockFile() && option.isUseLock()) {
 			throw new IllegalStateException(Arrays.toString(LockUtil.listLockFile()));
 		}
-		LockUtil.createLockFile();
-		window = new AWTGameWindow();
+		if (option.isUseLock()) {
+			LockUtil.createLockFile();
+		}
+		window = new AWTGameWindow(this);
 		if (option.getRenderingQuality() != null) {
 			renderingHints = option.getRenderingQuality().getRenderingHints();
 		}
@@ -185,7 +189,11 @@ public abstract class GameManager {
 		window.setIconImage(option.getIcon().getImage());
 		window.setBackground(option.getBackColor());
 		window.setLocation(option.getWindowLocation());
-		window.setSize(option.getWindowSize());
+		{
+			int w = (int) (option.getWindowSize().width * option.getDrawSize());
+			int h = (int) (option.getWindowSize().height * option.getDrawSize());
+			window.setSize(new Dimension(w, h));
+		}
 		window.setResizable(false);
 
 		this.fps = option.getFps();
@@ -220,6 +228,10 @@ public abstract class GameManager {
 		return effects;
 	}
 
+	public List<UpdateLogicInjector> getUpdateLogicInjectors() {
+		return updateLogicInjectors;
+	}
+
 	public void setEffects(List<ScreenEffect> effects) {
 		this.effects = effects;
 	}
@@ -241,19 +253,6 @@ public abstract class GameManager {
 		}
 		effects.removeAll(remove);
 	}
-//
-//	public void reloadInputListener() {
-//		if (PlayerConstants.getInstance().isUsingKeyboard()) {
-//			window.removeKeyListener(KeyConnection.getInstance());
-//			KeyConnection.setListener(window);
-//		}
-//		if (PlayerConstants.getInstance().isUsingMouse()) {
-//			window.removeMouseListener(MouseConnection.getInstance());
-//			window.removeMouseMotionListener(MouseConnection.getInstance());
-//			window.removeMouseWheelListener(MouseConnection.getInstance());
-//			MouseConnection.setListener(window);
-//		}
-//	}
 
 	public GameWindow getWindow() {
 		return window;
@@ -263,7 +262,7 @@ public abstract class GameManager {
 		return window;
 	}
 
-	public final GameOption getOption() {
+	public final GameOptionValue getOption() {
 		return option;
 	}
 
@@ -307,13 +306,16 @@ public abstract class GameManager {
 			GameLog.print("ERROR : " + ex);
 			System.exit(1);
 		}
-		if (PlayerConstants.getInstance().isUsingGamePad()) {
-			//現状処理なし
-			GamePadConnection.free();
-		}
+		//サウンド
+		SoundSystem.getInstance().free();
+		
 		if (GameSystem.isDebugMode()) {
 			GameLog.print("--not found i18n keys");
-			I18N.getNotFoundKeySet().forEach(GameLog::print);
+			if (I18N.getNotFoundKeySet().isEmpty()) {
+				GameLog.print("->NOTHING 👍");
+			} else {
+				I18N.getNotFoundKeySet().forEach(GameLog::print);
+			}
 		}
 		LockUtil.deleteLockFile();
 		GameLog.close();
@@ -348,7 +350,7 @@ public abstract class GameManager {
 	 * @param gc ウインドウの内部領域に対応するグラフィックスコンテキスト.
 	 */
 	@LoopCall
-	protected abstract void draw(GraphicsContext gc);
+	protected abstract void draw(GraphicsContext g2);
 
 	/**
 	 * 画面をリペイントします. このメソッドは内部用です。呼び出さないでください。
@@ -387,4 +389,5 @@ public abstract class GameManager {
 		}
 
 	}
+	
 }

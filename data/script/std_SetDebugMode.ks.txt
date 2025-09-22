@@ -1,0 +1,14 @@
+# std_SetDebugMode
+# デバッグモードのON/OFFを切り替えます
+
+PARAM={
+	value # boolean
+}
+
+
+#------------------------------------------------
+
+MAIN={
+	setDebugMode(value);
+}
+

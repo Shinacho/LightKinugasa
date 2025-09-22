@@ -25,7 +25,7 @@
 
 package kinugasa.game.ui;
 
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.object.CloneableObject;
 
 /**

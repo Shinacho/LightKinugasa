@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,18 +20,18 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.system;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import kinugasa.game.NotNewInstance;
-import kinugasa.game.Nullable;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.NotNewInstance;
+import kinugasa.game.annotation.Nullable;
 import kinugasa.game.field4.*;
-import kinugasa.resource.NameNotFoundException;
+import kinugasa.game.system.actor.Actor;
+import kinugasa.resource.IDNotFoundException;
 
 /**
  * ステータス管理系のマスターです。
@@ -45,7 +45,6 @@ public class GameSystem {
 
 	public static void setDebugMode(boolean debugMode) {
 		GameSystem.debugMode = debugMode;
-		FieldMap.setDebugMode(debugMode);
 	}
 
 	public static boolean isDebugMode() {
@@ -62,12 +61,53 @@ public class GameSystem {
 
 	//
 	//--------------------------------------------------------------------------
-	//
-	private List<PCSprite> party = new ArrayList();
+	private final List<Actor> pcList = new ArrayList<>();
 
 	@NotNewInstance
-	public List<PCSprite> getParty() {
-		return party;
+	public List<Actor> getPcList() {
+		return pcList;
+	}
+
+	@Nullable
+	public Actor getPc0() {
+		return pcList.isEmpty() ? null : pcList.get(0);
+	}
+
+	@Nullable
+	public Actor getPcById(PlayableChara id) {
+		for (var v : pcList) {
+			if (v.getId().equals(id.getId())) {
+				return v;
+			}
+		}
+		return null;
+	}
+
+	public boolean pcInParty(PlayableChara id) {
+		for (var v : pcList) {
+			if (v.getId().equals(id.getId())) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//
+	//--------------------------------------------------------------------------
+	//mode
+	public enum Mode {
+		BATTLE,
+		FIELD,
+		OTHER;
+	}
+	private Mode mode = Mode.OTHER;
+
+	public void setMode(Mode mode) {
+		this.mode = mode;
+	}
+
+	public Mode getMode() {
+		return mode;
 	}
 
 }

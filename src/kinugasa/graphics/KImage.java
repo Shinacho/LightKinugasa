@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.graphics;
 
 import java.awt.AWTException;
@@ -36,6 +34,7 @@ import java.awt.Shape;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.awt.image.RasterFormatException;
 import java.io.File;
 import java.io.IOException;
@@ -54,10 +53,10 @@ import java.util.stream.Stream;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import kinugasa.game.GameManager;
-import kinugasa.game.Immutable;
-import kinugasa.game.NewInstance;
-import kinugasa.game.NotNewInstance;
-import kinugasa.game.Nullable;
+import kinugasa.game.annotation.Immutable;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.NotNewInstance;
+import kinugasa.game.annotation.Nullable;
 import static kinugasa.graphics.ImageUtil.getPixel2D;
 import static kinugasa.graphics.ImageUtil.setPixel2D;
 import kinugasa.graphics.KImage.KRaster.KColor;
@@ -68,6 +67,7 @@ import kinugasa.resource.ContentsIOException;
 import kinugasa.util.StringUtil;
 
 /**
+ * これは編集可能な画像のインスタンスです。ファイルからロードすることもできますし、Graphics2Dを使って何かを描画することもできます。
  *
  * @vesion 1.0.0 - 2021/08/17_6:22:24<br>
  * @author Shinacho<br>
@@ -312,7 +312,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 				if (v < 0) {
 					v = 0;
 				}
-				this.value = ARGBColor.toARGB(getR(), getG(), getB(), v);
+				this.value = ARGBColor.toARGB(v, getR(), getG(), getB());
 				return this;
 			}
 
@@ -324,7 +324,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 				if (v < 0) {
 					v = 0;
 				}
-				this.value = ARGBColor.toARGB(v, getG(), getB(), getA());
+				this.value = ARGBColor.toARGB(getA(), v, getB(), getA());
 				return this;
 			}
 
@@ -336,7 +336,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 				if (v < 0) {
 					v = 0;
 				}
-				this.value = ARGBColor.toARGB(getR(), v, getB(), getA());
+				this.value = ARGBColor.toARGB(getA(), getR(), v, getB());
 				return this;
 			}
 
@@ -348,7 +348,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 				if (v < 0) {
 					v = 0;
 				}
-				this.value = ARGBColor.toARGB(getR(), getG(), v, getA());
+				this.value = ARGBColor.toARGB(getA(), getR(), getG(), v);
 				return this;
 			}
 
@@ -582,6 +582,18 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 		return sizeIs(i.getSize());
 	}
 
+	public void saveTo(String filePath) throws ContentsIOException {
+		saveTo(new File(filePath));
+	}
+
+	public void saveTo(File f) throws ContentsIOException {
+		try {
+			ImageIO.write(image, "PNG", f);
+		} catch (IOException ex) {
+			throw new ContentsIOException(ex);
+		}
+	}
+
 	public static void saveTo(String filePath, BufferedImage image) throws ContentsIOException {
 		saveTo(new File(filePath), image);
 	}
@@ -592,6 +604,10 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 		} catch (IOException ex) {
 			throw new ContentsIOException(ex);
 		}
+	}
+
+	public GraphicsContext createGraphicsContext() {
+		return new GraphicsContext(createGraphics2D());
 	}
 
 	public Graphics2D createGraphics2D() {
@@ -609,17 +625,22 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 
 	@NewInstance
 	public KImage fillBy(Color c) {
-		return asRaster().set(p -> p.to(c)).newImage();
+		KImage res = clone();
+		Graphics2D g = res.createGraphics2D();
+		g.setColor(c);
+		g.fillRect(0, 0, getWidth(), getHeight());
+		g.dispose();
+		return res;
 	}
 
 	@NewInstance
 	public KImage fillBy(int c) {
-		return asRaster().set(p -> p.to(c)).newImage();
+		return fillBy(ARGBColor.toAWTColor(c));
 	}
 
 	@NewInstance
 	public KImage fillBy(int r, int g, int b, int a) {
-		return asRaster().set(p -> p.to(r, g, b, a)).newImage();
+		return fillBy(ARGBColor.toARGB(a, r, g, b));
 	}
 
 	@NewInstance
@@ -629,7 +650,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 			for (int i = 0, x = 0; i < dst.length; i++, x += w) {
 				dst[i] = image.getSubimage(x, y, w, h);
 			}
-			return Arrays.asList(dst).stream().map(p -> new KImage(image)).toList();
+			return Arrays.asList(dst).stream().map(p -> new KImage(p)).toList();
 		} catch (RasterFormatException e) {
 			throw new GraphicsException(e);
 		}
@@ -642,7 +663,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 			for (int i = 0, y = 0; i < dst.length; i++, y += h) {
 				dst[i] = image.getSubimage(x, y, w, h);
 			}
-			return Arrays.asList(dst).stream().map(p -> new KImage(image)).toList();
+			return Arrays.asList(dst).stream().map(p -> new KImage(p)).toList();
 		} catch (RasterFormatException e) {
 			throw new GraphicsException(e);
 		}
@@ -673,6 +694,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 				res.put(nameMapper.apply(x, y), list.get(x));
 			}
 		}
+
 		return res;
 	}
 
@@ -682,8 +704,8 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	}
 
 	public static final BiFunction<Integer, Integer, String> DEFAULT_NAME_MAPPER = (x, y) -> {
-		String ys = StringUtil.zeroUme(x, 3);
-		String xs = StringUtil.zeroUme(y, 3);
+		String ys = StringUtil.zeroUme(y, 3);
+		String xs = StringUtil.zeroUme(x, 3);
 		if (ys.length() == 1) {
 			ys = "0" + y;
 		}
@@ -704,7 +726,21 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 
 	@NewInstance
 	public KImage tiling(int xNum, int yNum) {
-		return tiling(xNum, yNum, getWidth(), getHeight());
+		int w = (int) (this.image.getWidth() * xNum);
+		int h = (int) (this.image.getHeight() * yNum);
+		KImage res = new KImage(w, h);
+
+		GraphicsContext g = res.createGraphicsContext();
+		for (int y = 0; y < yNum; y++) {
+			for (int x = 0; x < xNum; x++) {
+				int locationX = x * getWidth();
+				int locationY = y * getHeight();
+				g.drawImage(this.image, locationX, locationY);
+			}
+		}
+
+		g.dispose();
+		return res;
 	}
 
 	@NewInstance
@@ -713,16 +749,24 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	}
 
 	@NewInstance
-	public KImage tiling(int xNum, int yNum, int drawW, int drawH) {
-		KImage dst = new KImage(xNum * drawW, yNum * drawH);
-		Graphics2D g2 = dst.createGraphics2D();
+	public KImage tiling(int xNum, int yNum, float drawW, float drawH) {
+		int w = (int) (this.image.getWidth() * drawW * xNum);
+		int h = (int) (this.image.getHeight() * drawH * yNum);
+		KImage res = new KImage(w, h);
+
+		GraphicsContext g = res.createGraphicsContext();
+		int tileW = (int) (this.image.getWidth() * drawW);
+		int tileH = (int) (this.image.getHeight() * drawH);
 		for (int y = 0; y < yNum; y++) {
 			for (int x = 0; x < xNum; x++) {
-				g2.drawImage(this.image, x * drawW, y * drawH, drawW, drawH, null);
+				int locationX = x * tileW;
+				int locationY = y * tileH;
+				g.drawImage(this.image, locationX, locationY, tileW, tileH);
 			}
 		}
-		g2.dispose();
-		return dst;
+
+		g.dispose();
+		return res;
 	}
 
 	@NewInstance
@@ -985,8 +1029,18 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	}
 
 	@NewInstance
+	public KImage setAlpha(int a) {
+		return asRaster().set(p -> p.setA(a)).newImage();
+	}
+
+	@NewInstance
 	public KImage addAlpha(int a) {
 		return asRaster().set(p -> p.addA(a)).newImage();
+	}
+
+	@NewInstance
+	public KImage mulAlpha(float t) {
+		return asRaster().set(p -> p.mulA(t)).newImage();
 	}
 
 	@NewInstance
@@ -1211,18 +1265,22 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 
 	public Color averageColor() {
 		int a, r, g, b;
-		a = r = g = b = 0;
+		r = g = b = 0;
+		a = 255;
 		List<Integer> pix = asRaster().stream().map(p -> p.value).toList();
 		for (int val : pix) {
-			a += ARGBColor.getAlpha(val);
 			r += ARGBColor.getRed(val);
 			g += ARGBColor.getGreen(val);
 			b += ARGBColor.getBlue(val);
 		}
-		a /= pix.size();
 		r /= pix.size();
 		g /= pix.size();
 		b /= pix.size();
 		return new Color(r, g, b, a);
+	}
+
+	@NewInstance
+	public Point centerLocation() {
+		return new Point(getWidth() / 2, getHeight() / 2);
 	}
 }

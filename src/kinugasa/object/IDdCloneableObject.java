@@ -25,6 +25,7 @@
 
 package kinugasa.object;
 
+import kinugasa.resource.ID;
 import java.util.Objects;
 
 /**
@@ -72,7 +73,7 @@ public abstract class IDdCloneableObject extends CloneableObject implements ID {
 	@Override
 	public IDdCloneableObject clone() {
 		IDdCloneableObject r = (IDdCloneableObject) super.clone();
-		r.id = this.id + "C";
+		r.id = this.id;
 		return r;
 	}
 

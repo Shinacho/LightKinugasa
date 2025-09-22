@@ -1,48 +1,42 @@
- /*
-  * MIT License
-  *
-  * Copyright (c) 2025 しなちょ
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy
-  * of this software and associated documentation files (the "Software"), to deal
-  * in the Software without restriction, including without limitation the rights
-  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  * copies of the Software, and to permit persons to whom the Software is
-  * furnished to do so, subject to the following conditions:
-  *
-  * The above copyright notice and this permission notice shall be included in all
-  * copies or substantial portions of the Software.
-  *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  * SOFTWARE.
-  */
-
-
+/*
+ * Copyright (C) 2025 Shinacho
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package kinugasa.game.field4;
 
+import java.io.File;
 import kinugasa.game.GameLog;
+import kinugasa.game.annotation.Singleton;
 import kinugasa.game.system.GameSystem;
 import kinugasa.resource.FileIOException;
-import kinugasa.resource.Storage;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.resource.text.IllegalXMLFormatException;
-import kinugasa.resource.text.XMLElement;
-import kinugasa.resource.text.XMLFile;
-import kinugasa.resource.text.XMLFileSupport;
+import kinugasa.resource.IDNotFoundException;
+import kinugasa.resource.Storage;
 
 /**
+ * FieldMapStorage.<br>
  *
- * @vesion 1.0.0 - 2021/11/25_18:32:21<br>
- * @author Shinacho<br>
+ * @vesion 1.0.0 - 2025/07/19_8:11:39<br>
+ * @author Shinacho.<br>
  */
-public class FieldMapStorage extends Storage<FieldMap> implements XMLFileSupport {
+@Singleton
+public final class FieldMapStorage {
 
 	private static final FieldMapStorage INSTANCE = new FieldMapStorage();
+	private final Storage<FieldMap> storage = new Storage<>();
+	public static final String SUFFIX = ".kfm.txt";
 
 	public static FieldMapStorage getInstance() {
 		return INSTANCE;
@@ -51,28 +45,38 @@ public class FieldMapStorage extends Storage<FieldMap> implements XMLFileSupport
 	private FieldMapStorage() {
 	}
 
-	@Override
-	public void readFromXML(String filePath) throws IllegalXMLFormatException, FileNotFoundException, FileIOException {
-
-		XMLFile file = new XMLFile(filePath);
-		if (!file.getFile().exists()) {
-			throw new FileNotFoundException(file + " is not found");
-		}
-
-		XMLElement root = file.load().getFirst();
-
-		for (XMLElement e : root.getElement("fieldMap")) {
-			String name = e.getAttributes().get("name").asId();
-			XMLFile fieldMapDataFile = new XMLFile(e.getAttributes().get("data").asFileName());
-			if (!fieldMapDataFile.exists()) {
-				throw new IllegalXMLFormatException("data file is not found " + fieldMapDataFile);
-			}
-			add(new FieldMap(name, fieldMapDataFile));
+	void init(File dir) throws FileNotFoundException, FileIOException {
+		if (!dir.isDirectory()) {
+			throw new FileIOException(dir.getName() + " is not directory");
 		}
 		if (GameSystem.isDebugMode()) {
-			GameLog.print(getAll());
+			GameLog.print("FMS : init start : " + dir.getPath());
+			GameLog.addIndent();
 		}
-//		printAll(System.out);
+		for (File f : dir.listFiles()) {
+			if (f.isDirectory()) {
+				init(f);
+				continue;
+			}
+			if (!f.getName().toLowerCase().endsWith(SUFFIX)) {
+				continue;
+			}
+			FieldMap d = new FieldMap(f);
+			//check
+			d.setLoadScriptCall(false);
+			d.load().free();
+			d.setLoadScriptCall(true);
+			this.storage.add(d);
+			if (GameSystem.isDebugMode()) {
+				GameLog.removeIndent();
+				GameLog.print("FMS : init end");
+			}
+		}
 	}
+
+	public FieldMap get(String id) throws IDNotFoundException {
+		return storage.get(id);
+	}
+	//--------------------------------------------------------------------------
 
 }

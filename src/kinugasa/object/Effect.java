@@ -25,7 +25,7 @@
 
 package kinugasa.object;
 
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 
 /**
  * このスプライトの実装は、指定された領域にフラッシュやフェード効果を表示することができます.
@@ -36,7 +36,7 @@ import kinugasa.game.GraphicsContext;
  * @version 1.0.0 - 2013/01/14_18:47:19<br>
  * @author Shinacho<br>
  */
-public abstract class Effect extends BasicSprite implements Statable {
+public abstract class Effect extends Sprite implements Statable {
 
 	public Effect(float width, float height) {
 		super(0, 0, width, height);

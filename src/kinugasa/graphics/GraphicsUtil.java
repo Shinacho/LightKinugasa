@@ -31,8 +31,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.List;
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.NewInstance;
+import kinugasa.game.annotation.NewInstance;
 import kinugasa.util.Random;
 
 /**

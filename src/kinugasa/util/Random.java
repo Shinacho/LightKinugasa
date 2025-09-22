@@ -34,7 +34,7 @@ import java.util.Map;
 import kinugasa.object.KVector;
 import kinugasa.object.Sprite;
 import kinugasa.resource.Storage;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
 
 /**
  * 乱数とダイスのエミュレートを提供します.
@@ -223,6 +223,12 @@ public final class Random implements Serializable {
 			return from;
 		}
 		return to;
+	}
+	
+	public static int spread(int n, float s){
+		int max = (int) (n + (n * s));
+		int min = (int) (n - (n * s));
+		return randomAbsInt(min, max);
 	}
 
 	public static <V extends ID> V randomChoice(Storage<V> v) {

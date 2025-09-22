@@ -25,11 +25,11 @@
 
 package kinugasa.util;
 
-import kinugasa.game.RequiresReturnTypeChange;
-import kinugasa.game.Virtual;
+import kinugasa.game.annotation.RequiresReturnTypeChange;
+import kinugasa.game.annotation.Virtual;
 import kinugasa.object.CloneableObject;
-import kinugasa.resource.Updateable;
-import kinugasa.game.NeedSuperCallWhenOverride;
+import kinugasa.object.Updateable;
+import kinugasa.game.annotation.NeedSuperCallWhenOverride;
 
 /**
  * 経過時間を計測し、条件判定をするための機能を定義します.

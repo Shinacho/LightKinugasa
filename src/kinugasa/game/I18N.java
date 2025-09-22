@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,15 +20,16 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
+import java.io.File;
+import kinugasa.game.annotation.OneceTime;
+import kinugasa.game.annotation.NoLoopCall;
 import java.util.HashSet;
 import java.util.Set;
-import kinugasa.resource.NameNotFoundException;
-import kinugasa.resource.text.IniFile;
+import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptSystem;
 
 /**
  *
@@ -46,7 +47,7 @@ public class I18N {
 		I18N.reader = reader;
 	}
 
-	public static void fromIni(IniFile f) {
+	public static void fromIni(File f) {
 		init(new IniI18NReader(f));
 	}
 
@@ -56,6 +57,10 @@ public class I18N {
 
 	public static <T extends Enum<T>> String get(T t) {
 		return get(t.toString());
+	}
+
+	public static I18NReader getReader() {
+		return reader;
 	}
 
 	private static String getText(String key) {
@@ -88,16 +93,46 @@ public class I18N {
 
 	@NoLoopCall
 	public static String get(String key, Object... param) {
-		String res = getText(key);
-		for (int i = 0; i < param.length; i++) {
-			Object o = param[i];
-			if (o instanceof VisibleNameSupport t) {
-				res = res.replaceAll("!" + i, t.getVisibleName().toString());
+		//ID = ${pc0()}のアイテム${itemOf("I0001").getVisibleName()}の${0}と${1}
+
+		String val = get(key);
+		char[] val2 = val.toCharArray();
+		//$nと${}の処理
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < val2.length; i++) {
+			char c = val2[i];
+			if (c == '$') {
+				int start = i + 2, end = start + 1;
+				for (; end < val2.length; end++) {
+					if (val2[end] == '}') {
+						break;
+					}
+				}
+				String inner = val.substring(start, end);
+
+				if (end >= val.length()) {
+					throw new IllegalArgumentException("I18N instantCall is not closed : " + key);
+				}
+
+				if (inner.matches("[0-9]*")) {
+					//paramモード
+					int pidx = Integer.parseInt(inner);
+					String p = pidx < param.length
+							? param[pidx].toString()
+							: "[?]";
+					sb.append(p);
+					i = end;
+				} else {
+					//callモード
+					var r = ScriptSystem.getInstance().instantCall(inner);
+					sb.append(r.resultObject.toString());
+					i = end;
+				}
 			} else {
-				res = res.replaceAll("!" + i, o.toString());
+				sb.append(c);
 			}
 		}
-		return res;
+		return sb.toString();
 	}
 
 }

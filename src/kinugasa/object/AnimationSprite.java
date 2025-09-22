@@ -25,8 +25,8 @@
 
 package kinugasa.object;
 
-import java.time.LocalDate;
-import kinugasa.game.GraphicsContext;
+import kinugasa.resource.ID;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.Animation;
 
 /**

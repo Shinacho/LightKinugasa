@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
 import java.awt.Canvas;
@@ -33,8 +31,10 @@ import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferStrategy;
 
 /**
@@ -45,6 +45,7 @@ import java.awt.image.BufferStrategy;
  */
 public class AWTGameWindow extends Frame implements GameWindow {
 
+	private GameManager gm;
 	/**
 	 * このフレームの内部領域のキャッシュです.座標は0,0になります.
 	 */
@@ -63,7 +64,8 @@ public class AWTGameWindow extends Frame implements GameWindow {
 	 *
 	 * @throws HeadlessException 実行環境がGUIをサポートしていない場合に投げられます。<br>
 	 */
-	AWTGameWindow() throws HeadlessException {
+	AWTGameWindow(GameManager gm) throws HeadlessException {
+		this.gm = gm;
 		add(canvas = new Canvas());
 		setUndecorated(false);
 		canvas.setFocusable(false);
@@ -80,6 +82,16 @@ public class AWTGameWindow extends Frame implements GameWindow {
 			}
 		});
 		pack();
+	}
+
+	@Override
+	public Insets getInsets() {
+		var r = super.getInsets();
+		if (r != null) {
+			return r;
+		}
+
+		return new Frame().getInsets();
 	}
 
 	@Override
@@ -147,12 +159,20 @@ public class AWTGameWindow extends Frame implements GameWindow {
 	@Override
 	public Rectangle getVisibleBounds() {
 		Rectangle r = getInternalBounds();
-		if (GameOption.getInstance().getDrawSize() == 1f) {
+		if (gm.getOption().getDrawSize() == 1f) {
 			return r;
 		}
-		r.width /= GameOption.getInstance().getDrawSize();
-		r.height /= GameOption.getInstance().getDrawSize();
+		r.width /= gm.getOption().getDrawSize();
+		r.height /= gm.getOption().getDrawSize();
 		return r;
+	}
+
+	@Override
+	public Point2D.Float getVisibleBoundsCenter() {
+		Point2D.Float p = new Point2D.Float(0, 0);
+		p.x += getVisibleBounds().width / 2;
+		p.y += getVisibleBounds().height / 2;
+		return p;
 	}
 
 	@Override
@@ -161,8 +181,8 @@ public class AWTGameWindow extends Frame implements GameWindow {
 	}
 
 	@Override
-	public KeyAdapter[] getKeyListeners() {
-		return getKeyListeners();
+	public KeyListener[] getKeyListeners() {
+		return super.getKeyListeners();
 	}
 
 }

@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.input;
 
 import java.awt.geom.Point2D;
@@ -86,17 +84,30 @@ public class GamePadStick extends InputDeviceState {
 		return NOTHING.equals(new Point2D.Float(x, y));
 	}
 
+	public FourDirection asFourDirection() {
+		for (var v : FourDirection.values()) {
+			if (is(v)) {
+				return v;
+			}
+		}
+		return null;
+	}
+
 	public boolean is(FourDirection dir) {
 		KVector v = new KVector(new Point2D.Float(x, y));
 		switch (dir) {
-			case NORTH:
+			case NORTH -> {
 				return v.checkRange(FourDirection.NORTH.getAngle(), 90);
-			case EAST:
+			}
+			case EAST -> {
 				return v.checkRange(FourDirection.EAST.getAngle(), 90);
-			case WEST:
+			}
+			case WEST -> {
 				return v.checkRange(FourDirection.WEST.getAngle(), 90);
-			case SOUTH:
+			}
+			case SOUTH -> {
 				return v.checkRange(FourDirection.SOUTH.getAngle(), 90);
+			}
 		}
 		throw new InternalError(dir + " is not found");
 	}

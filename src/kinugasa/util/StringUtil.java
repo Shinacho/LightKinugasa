@@ -1,28 +1,19 @@
- /*
-  * MIT License
-  *
-  * Copyright (c) 2025 しなちょ
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy
-  * of this software and associated documentation files (the "Software"), to deal
-  * in the Software without restriction, including without limitation the rights
-  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  * copies of the Software, and to permit persons to whom the Software is
-  * furnished to do so, subject to the following conditions:
-  *
-  * The above copyright notice and this permission notice shall be included in all
-  * copies or substantial portions of the Software.
-  *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  * SOFTWARE.
-  */
-
-
+/*
+ * Copyright (C) 2023 Shinacho
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package kinugasa.util;
 
 import kinugasa.game.I18NText;
@@ -44,6 +35,21 @@ public final class StringUtil {
 	private StringUtil() {
 	}
 
+	public static String repeat(String v, int n) {
+		StringBuilder s = new StringBuilder();
+		for (int i = 0; i < n; i++) {
+			s.append(v);
+		}
+		return s.toString();
+	}
+
+	public static String toPercent(float v) {
+		String r = Float.toString(v * 100);
+		return r.length() <= 4
+				? r.length() <= 2 && !r.contains(".") ? r + ".0" : r
+				: r.substring(0, 4);
+	}
+
 	public static boolean is半角(char c) {
 		// Unicodeブロックをチェック
 		Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
@@ -61,6 +67,9 @@ public final class StringUtil {
 	}
 
 	public static String spaceOf(String v) {
+		if (v.isEmpty()) {
+			return v;
+		}
 		StringBuilder sb = new StringBuilder();
 		for (char c : v.toCharArray()) {
 			sb.append(is半角(c) ? " " : "　");
@@ -157,10 +166,25 @@ public final class StringUtil {
 		if (val == null || val.isEmpty()) {
 			return new String[]{};
 		}
-		return val.contains(sep) ? val.split(sep) : new String[]{val};
+		String containsSep = sep;
+		String splitSep = sep;
+		if ("||".equals(sep)) {
+			splitSep = "[|][|]";
+		} else if (".".equals(sep) || "(".equals(sep) || ")".equals(sep) || "|".equals(sep)) {
+			splitSep = "[" + splitSep + "]";
+		}
+		return val.contains(containsSep) ? val.split(splitSep) : new String[]{val};
 	}
 
 	public static String[] safeSplit(I18NText val, String sep) {
-		return safeSplit(val.i18nd(), sep);
+		return safeSplit(val.toString(), sep);
 	}
+
+	public static int count(String v, String tgt) {
+		if (!v.contains(tgt)) {
+			return 0;
+		}
+		return safeSplit(v, tgt).length - 1;
+	}
+
 }

@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,13 +20,11 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
-import kinugasa.resource.NameNotFoundException;
-import kinugasa.resource.text.IniFile;
+import java.io.File;
+import kinugasa.resource.text.HeavyIniFile;
 
 /**
  * IniI18NReader.<br>
@@ -36,18 +34,14 @@ import kinugasa.resource.text.IniFile;
  */
 public class IniI18NReader implements I18NReader {
 
-	private IniFile file;
+	private HeavyIniFile file;
 
-	public IniI18NReader(IniFile file) {
-		this.file = file;
+	public IniI18NReader(File f) {
+		this.file = new HeavyIniFile(f);
 	}
 
 	@Override
-	public String getValue(String key) throws NameNotFoundException {
-		if (!file.getInputStatus().loaded()) {
-			file.load();
-		}
-		return file.containsKey(key) ? file.get(key).get().toString() : null;
-
+	public String getValue(String key){
+		return file.getValue(key).value();
 	}
 }

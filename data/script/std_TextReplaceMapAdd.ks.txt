@@ -1,0 +1,15 @@
+# std_TextReplaceMapAdd
+# Textの変換マップに値を追加します
+
+PARAM={
+	key # String
+	value # I18NText
+}
+
+
+#------------------------------------------------
+
+MAIN={
+	addTextReplaceMapI18N(key, value)
+}
+

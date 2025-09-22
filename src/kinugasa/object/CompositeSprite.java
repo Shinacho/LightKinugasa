@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 import java.awt.Dimension;
@@ -34,7 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 
 /**
  * 複数のスプライトをまとめて描画したり、ソートできるクラスです.
@@ -45,14 +43,15 @@ import kinugasa.game.GraphicsContext;
  * @version 1.0.0 - 2013/01/14_20:45:45<br>
  * @author Shinacho<br>
  */
-public class CompositeSprite extends BasicSprite {
+public class CompositeSprite extends Sprite {
 
-	/** この複合スプライトが持つスプライトのリストです. */
+	/**
+	 * この複合スプライトが持つスプライトのリストです.
+	 */
 	private ArrayList<Sprite> sprites;
 
 	/**
-	 * 新しい複合スプライトを作成します.
-	 * このコンストラクタでは、スプライトリストの初期容量は0になります。<br>
+	 * 新しい複合スプライトを作成します. このコンストラクタでは、スプライトリストの初期容量は0になります。<br>
 	 */
 	public CompositeSprite() {
 		this(Collections.<Sprite>emptyList());
@@ -78,13 +77,13 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * この複合スプライトに新しいスプライトを追加します.
-	 * 新しいスプライトはスプライトリストの最後尾に追加されます。<br>
+	 * この複合スプライトに新しいスプライトを追加します. 新しいスプライトはスプライトリストの最後尾に追加されます。<br>
 	 * Z軸座標は自動調整されません。<br>
 	 *
 	 * @param spr 追加するスプライトを指定します。<br>
 	 *
-	 * @throws IllegalArgumentException 追加するスプライトがthisのとき、または、追加するスプライトがCompositeSpriteで
+	 * @throws IllegalArgumentException
+	 * 追加するスプライトがthisのとき、または、追加するスプライトがCompositeSpriteで
 	 * その複合スプライトが保持するスプライトリスト内にthisまたは親のスプライトがある場合に投げられます。<br>
 	 * 複合スプライトの親がその複合スプライトが持つすべての子の親と循環参照になっているかのチェックは
 	 * 新しいスプライトを追加するたびに再帰的に行われます。<br>
@@ -97,13 +96,13 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * この複合スプライトに新しいスプライトを追加します.
-	 * 新しいスプライトはスプライトリストの最後尾に指定された順序で追加されます。<br>
+	 * この複合スプライトに新しいスプライトを追加します. 新しいスプライトはスプライトリストの最後尾に指定された順序で追加されます。<br>
 	 * Z軸座標は自動調整されません。<br>
 	 *
 	 * @param spr 追加するスプライトを指定します。<br>
 	 *
-	 * @throws IllegalArgumentException 追加するスプライトにthisが含まれるとき、または、追加するスプライトがCompositeSpriteで
+	 * @throws IllegalArgumentException
+	 * 追加するスプライトにthisが含まれるとき、または、追加するスプライトがCompositeSpriteで
 	 * その複合スプライトが保持するスプライトリスト内にthisまたは親のスプライトがある場合に投げられます。<br>
 	 * 複合スプライトの親がその複合スプライトが持つすべての子の親と循環参照になっているかのチェックは
 	 * 新しいスプライトを追加するたびに再帰的に行われます。<br>
@@ -115,13 +114,13 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * この複合スプライトに新しいスプライトを追加します.
-	 * 新しいスプライトはスプライトリストの最後尾に指定された順序で追加されます。<br>
+	 * この複合スプライトに新しいスプライトを追加します. 新しいスプライトはスプライトリストの最後尾に指定された順序で追加されます。<br>
 	 * Z軸座標は自動調整されません。<br>
 	 *
 	 * @param spr 追加するスプライトを指定します。<br>
 	 *
-	 * @throws IllegalArgumentException 追加するスプライトにthisが含まれるとき、または、追加するスプライトがCompositeSpriteで
+	 * @throws IllegalArgumentException
+	 * 追加するスプライトにthisが含まれるとき、または、追加するスプライトがCompositeSpriteで
 	 * その複合スプライトが保持するスプライトリスト内にthisまたは親のスプライトがある場合に投げられます。<br>
 	 * 複合スプライトの親がその複合スプライトが持つすべての子の親と循環参照になっているかのチェックは
 	 * 新しいスプライトを追加するたびに再帰的に行われます。<br>
@@ -167,6 +166,7 @@ public class CompositeSprite extends BasicSprite {
 	public boolean contains(Sprite spr) {
 		return sprites.contains(spr);
 	}
+
 	/*
 	 * TODO:追加するメソッド
 	 * public boolean containsAll(Sprite... spr);
@@ -204,8 +204,7 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * この複合スプライトが持つスプライトリストを取得します.
-	 * リストは参照を保持します。リストに対する操作は複合スプライトに適用されます。<br>
+	 * この複合スプライトが持つスプライトリストを取得します. リストは参照を保持します。リストに対する操作は複合スプライトに適用されます。<br>
 	 *
 	 * @return この複合スプライトのスプライトリストが返されます。<br>
 	 */
@@ -268,8 +267,7 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * 追加されているすべてのスプライトをその順序で描画します.
-	 * このメソッドでは、この複合スプライトの可視状態と生存状態が考慮されます。<br>
+	 * 追加されているすべてのスプライトをその順序で描画します. このメソッドでは、この複合スプライトの可視状態と生存状態が考慮されます。<br>
 	 * 各スプライトは、それぞれの可視状態と生存状態および座標が使用されます。<br>
 	 *
 	 * @param g 書き込むグラフィックスコンテキストを送信します。<br>
@@ -285,11 +283,9 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * 追加されているすべてのスプライトをソートしてから描画します.
-	 * このメソッドでは、この複合スプライトの可視状態と生存状態が考慮されます。<br>
+	 * 追加されているすべてのスプライトをソートしてから描画します. このメソッドでは、この複合スプライトの可視状態と生存状態が考慮されます。<br>
 	 * 各スプライトは、それぞれの可視状態と生存状態および座標が使用されます。<br>
-	 * このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、
-	 * その複合スプライトを再帰的にソートします。<br>
+	 * このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、 その複合スプライトを再帰的にソートします。<br>
 	 *
 	 * @param g 書き込むグラフィックスコンテキストを送信します。<br>
 	 * @param sortMode ソート方法を指定します。SpriteSortModeを指定できます。<br>
@@ -300,8 +296,7 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * スプライトリストをソートします.
-	 * このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、
+	 * スプライトリストをソートします. このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、
 	 * その複合スプライトを再帰的にソートします。<br>
 	 *
 	 * @param sortMode ソート方法を指定します。SpriteSortModeを指定できます。<br>
@@ -311,18 +306,15 @@ public class CompositeSprite extends BasicSprite {
 	}
 
 	/**
-	 * スプライトリストをソートします.
-	 * このメソッドでは、SpriteSortModeのBACK_TO_FRONTが使用されます。<br>
-	 * このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、
-	 * その複合スプライトを再帰的にソートします。<br>
+	 * スプライトリストをソートします. このメソッドでは、SpriteSortModeのBACK_TO_FRONTが使用されます。<br>
+	 * このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、 その複合スプライトを再帰的にソートします。<br>
 	 */
 	public void sort() {
 		sort(SpriteSortMode.BACK_TO_FRONT);
 	}
 
 	/**
-	 * スプライトリストを再帰的にソートします.
-	 * このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、
+	 * スプライトリストを再帰的にソートします. このメソッドでは、スプライトリスト内に複合スプライトが存在する場合は、
 	 * その複合スプライトを再帰的にソートします。<br>
 	 * このメソッドは再帰的に処理されます。<br>
 	 *
@@ -450,8 +442,8 @@ public class CompositeSprite extends BasicSprite {
 	public void setAngle(float angle) {
 		super.setAngle(angle);
 		for (int i = 0, sprSize = sprites.size(); i < sprSize; i++) {
-			if (sprites.get(i) instanceof BasicSprite) {
-				((BasicSprite) sprites.get(i)).setAngle(angle);
+			if (sprites.get(i) instanceof Sprite) {
+				((Sprite) sprites.get(i)).setAngle(angle);
 			}
 		}
 	}
@@ -460,8 +452,8 @@ public class CompositeSprite extends BasicSprite {
 	public void setMovingModel(MovingModel movingModel) {
 		super.setMovingModel(movingModel);
 		for (int i = 0, sprSize = sprites.size(); i < sprSize; i++) {
-			if (sprites.get(i) instanceof BasicSprite) {
-				((BasicSprite) sprites.get(i)).setMovingModel(movingModel);
+			if (sprites.get(i) instanceof Sprite) {
+				((Sprite) sprites.get(i)).setMovingModel(movingModel);
 			}
 		}
 	}
@@ -470,8 +462,8 @@ public class CompositeSprite extends BasicSprite {
 	public void setVector(KVector vector) {
 		super.setVector(vector);
 		for (int i = 0, sprSize = sprites.size(); i < sprSize; i++) {
-			if (sprites.get(i) instanceof BasicSprite) {
-				((BasicSprite) sprites.get(i)).setVector(vector);
+			if (sprites.get(i) instanceof Sprite) {
+				((Sprite) sprites.get(i)).setVector(vector);
 			}
 		}
 	}
@@ -480,18 +472,18 @@ public class CompositeSprite extends BasicSprite {
 	public void setSpeed(float speed) {
 		super.setSpeed(speed);
 		for (int i = 0, sprSize = sprites.size(); i < sprSize; i++) {
-			if (sprites.get(i) instanceof BasicSprite) {
-				((BasicSprite) sprites.get(i)).setSpeed(speed);
+			if (sprites.get(i) instanceof Sprite) {
+				((Sprite) sprites.get(i)).setSpeed(speed);
 			}
 		}
 	}
 
 	/**
 	 * スプライトの実装でフィルタリングし、サブリストを作成します.
+	 *
 	 * @param <T> スプライトの拡張クラスを指定します。<br>
 	 * @param type 検索する型を指定します。<br>
-	 * @return 指定した型の要素を新しいリストに格納して返します。順番は
-	 * この複合スプライトに格納されている”発見された順番”です。<br>
+	 * @return 指定した型の要素を新しいリストに格納して返します。順番は この複合スプライトに格納されている”発見された順番”です。<br>
 	 */
 	public <T extends Sprite> List<Sprite> subList(Class<T> type) {
 		List<Sprite> result = new ArrayList<Sprite>();

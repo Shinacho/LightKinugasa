@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.graphics;
 
 import java.awt.AWTException;
@@ -154,6 +152,7 @@ public final class ImageUtil {
 	 * @throws ContentsIOException ファイルがロードできない場合に投げられます。<br>
 	 */
 	public static BufferedImage load(String filePath) throws FileNotFoundException, ContentsIOException {
+		ImageIO.setUseCache(false);
 		StopWatch watch = new StopWatch().start();
 		WeakReference<BufferedImage> cacheRef = IMAGE_CACHE.get(filePath);
 		//キャッシュあり&GC未実行

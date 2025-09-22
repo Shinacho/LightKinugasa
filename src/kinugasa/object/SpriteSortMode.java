@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 import java.util.Comparator;
@@ -39,24 +37,28 @@ import kinugasa.util.Random;
  */
 public enum SpriteSortMode implements Comparator<Sprite> {
 
-	/** この列挙を指定すると、描画順はZ軸座標の大きい順になります.
-	 * したがって、Z軸座標の小さなスプライトが手前に表示されます. */
+	/**
+	 * この列挙を指定すると、描画順はZ軸座標の大きい順になります. したがって、Z軸座標の小さなスプライトが手前に表示されます.
+	 */
 	FRONT_TO_BACK {
 		@Override
 		public int compare(Sprite s1, Sprite s2) {
 			return java.lang.Float.compare(s2.getZ(), s1.getZ());
 		}
 	},
-	/** この列挙を指定すると、描画順はZ軸座標の小さい順になります.
-	 * したがって、Z軸座標の大きなスプライトが手前に表示されます. */
+	/**
+	 * この列挙を指定すると、描画順はZ軸座標の小さい順になります. したがって、Z軸座標の大きなスプライトが手前に表示されます.
+	 */
 	BACK_TO_FRONT {
 		@Override
 		public int compare(Sprite s1, Sprite s2) {
 			return java.lang.Float.compare(s1.getZ(), s2.getZ());
 		}
 	},
-	/** この列挙を指定すると、使用するたびに異なる滅茶苦茶な順番に並び替えます.
-	 * この列挙は21乱数ジェネレータ（twoone.util.Random）を使用します. */
+	/**
+	 * この列挙を指定すると、使用するたびに異なる滅茶苦茶な順番に並び替えます.
+	 * この列挙は21乱数ジェネレータ（twoone.util.Random）を使用します.
+	 */
 	RANDOM {
 		@Override
 		public int compare(Sprite s1, Sprite s2) {

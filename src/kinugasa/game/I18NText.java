@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,14 +20,17 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
+import java.util.List;
+import kinugasa.game.annotation.Immutable;
+import kinugasa.game.annotation.Virtual;
+import kinugasa.game.annotation.NewInstance;
 import java.util.Objects;
+import kinugasa.game.ui.Choice;
 import kinugasa.game.ui.Text;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
 
 /**
  *
@@ -37,7 +40,10 @@ import kinugasa.object.ID;
 @Immutable
 public class I18NText implements ID {
 
+	public static final I18NText EMPTY = of("");
+
 	private final String key;
+	private String value;
 
 	public static I18NText of(String msg) {
 		return new I18NText(msg) {
@@ -87,7 +93,10 @@ public class I18NText implements ID {
 
 	@Virtual
 	public String i18nd() {
-		return I18N.get(getKey());
+		if (value == null) {
+			value = I18N.get(getKey());
+		}
+		return value;
 	}
 
 	@Virtual

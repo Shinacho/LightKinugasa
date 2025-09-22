@@ -25,9 +25,9 @@
 
 package kinugasa.resource.text;
 
-import kinugasa.game.Immutable;
+import kinugasa.game.annotation.Immutable;
 import kinugasa.game.system.UniversalValue;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
 
 /**
  * XMLにおける"属性"を表すクラスです.

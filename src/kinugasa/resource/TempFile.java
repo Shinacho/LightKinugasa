@@ -25,7 +25,6 @@
 
 package kinugasa.resource;
 
-import kinugasa.object.ID;
 import java.io.File;
 import java.io.IOException;
 import kinugasa.game.GameLog;

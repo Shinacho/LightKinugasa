@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 /**
@@ -40,7 +38,7 @@ public enum FourDirection {
 	WEST(270),
 	NORTH(0),
 	SOUTH(180),;
-	private float angle;
+	private final float angle;
 
 	private FourDirection(float angle) {
 		this.angle = angle;
@@ -52,14 +50,18 @@ public enum FourDirection {
 
 	public FourDirection reverse() {
 		switch (this) {
-			case EAST:
+			case EAST -> {
 				return WEST;
-			case WEST:
+			}
+			case WEST -> {
 				return EAST;
-			case NORTH:
+			}
+			case NORTH -> {
 				return SOUTH;
-			case SOUTH:
+			}
+			case SOUTH -> {
 				return NORTH;
+			}
 		}
 		throw new InternalError("dir " + this + " is not found");
 	}

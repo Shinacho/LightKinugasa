@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.text;
 
 import java.io.File;
@@ -34,110 +32,129 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import kinugasa.resource.Input;
-import kinugasa.resource.InputStatus;
-import kinugasa.resource.Output;
-import kinugasa.resource.OutputResult;
-import kinugasa.object.ID;
+import kinugasa.game.GameLog;
+import kinugasa.game.system.UniversalValue;
+import kinugasa.object.FileObject;
+import kinugasa.object.Saveable;
+import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileIOException;
+import kinugasa.resource.FileNotFoundException;
 
 /**
  *
  * @vesion 1.0.0 - 2021/11/23_6:35:59<br>
  * @author Shinacho<br>
  */
-public class TextFile implements Input<TextFile>, Output, Iterable<String>, ID {
+public class TextFile extends FileObject implements Saveable<TextFile>, Iterable<UniversalValue> {
 
-	private File file;
+	private List<UniversalValue> data = new ArrayList<>();
 	private Charset charset;
+	private boolean loaded;
+
+	public TextFile(String fileName) {
+		this(new File(fileName), StandardCharsets.UTF_8);
+	}
 
 	public TextFile(File file) {
-		this.file = file;
-		charset = StandardCharsets.UTF_8;
+		this(file, StandardCharsets.UTF_8);
 	}
 
-	public TextFile(String path) {
-		this.file = new File(path);
-		charset = StandardCharsets.UTF_8;
+	public TextFile(String fileName, Charset cs) {
+		this(new File(fileName), cs);
 	}
 
-	public TextFile(File file, Charset c) {
-		this.file = file;
-		this.charset = c;
+	public TextFile(File file, Charset cs) {
+		super(file);
+		this.charset = cs;
+		data = new ArrayList<>();
 	}
 
-	public TextFile(String path, Charset c) {
-		this.file = new File(path);
-		this.charset = c;
-	}
-
-	public boolean exists() {
-		return file.exists();
-	}
-
-	@Override
-	public File getFile() {
-		return file;
-	}
-
-	@Override
-	public String getId() {
-		return file.getName();
-	}
-
-	public void setFile(File file) {
-		this.file = file;
-	}
-
-	public List<String> getData() {
+	public List<UniversalValue> getData() {
 		return data;
 	}
 
 	@Override
-	public Iterator<String> iterator() {
+	public Iterator<UniversalValue> iterator() {
 		return data.iterator();
+	}
+	private boolean skipEmptyLine = false;
+	private String skipCommentValue = null;
+	private boolean autoTrim = false;
+
+	public TextFile setAutoTrim(boolean autoTrim) {
+		this.autoTrim = autoTrim;
+		return this;
+	}
+
+	public TextFile setSkipCommentValue(String skipCommentValue) {
+		this.skipCommentValue = skipCommentValue;
+		return this;
+	}
+
+	public TextFile setSkipEmptyLine(boolean skipEmptyLine) {
+		this.skipEmptyLine = skipEmptyLine;
+		return this;
 	}
 
 	//--------------------------------------------------------------------------
-	private List<String> data = new ArrayList<>();
-
 	@Override
-	public TextFile load() throws FileIOException {
-		data = new ArrayList<>();
+	public TextFile load() throws FileIOException, FileNotFoundException {
+		if (!exists()) {
+			throw new FileNotFoundException(getFile());
+		}
 		try {
-			for (String line : Files.readAllLines(file.toPath(), charset)) {
-				data.add(line);
+			for (String line : Files.readAllLines(getPath(), charset)) {
+				if (skipEmptyLine) {
+					if (line.trim().isEmpty()) {
+						continue;
+					}
+				}
+				if (skipCommentValue != null) {
+					if (line.trim().startsWith(skipCommentValue)) {
+						continue;
+					}
+					if (line.contains(skipCommentValue)) {
+						line = line.substring(0, line.indexOf(skipCommentValue));
+					}
+				}
+				if (autoTrim) {
+					data.add(new UniversalValue(line.trim()));
+				} else {
+					data.add(new UniversalValue(line));
+				}
 			}
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
 		}
+		GameLog.print(getFile().getName() + " is loaded");
+		loaded = true;
 		return this;
 	}
 
 	@Override
-	public void dispose() {
+	public boolean isLoaded() {
+		return loaded;
+	}
+
+	@Override
+	public void free() {
 		data.clear();
-		data = null;
+		loaded = false;
 	}
 
 	@Override
-	public InputStatus getInputStatus() {
-		return data == null ? InputStatus.NOT_LOADED : InputStatus.LOADED;
-	}
-
-	@Override
-	public OutputResult save() throws FileIOException {
-		return saveTo(file);
-	}
-
-	@Override
-	public OutputResult saveTo(File f) throws FileIOException {
+	public void save() throws FileNotFoundException, ContentsIOException {
 		try {
-			Files.write(f.toPath(), data, charset, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(getPath(), data.stream().map(p -> p.toString()).toList(), charset, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			GameLog.print(this + " is saved");
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
 		}
-		return OutputResult.OK;
+	}
+
+	@Override
+	public String toString() {
+		return "TextFile{" + getFile().getName() + '}';
 	}
 
 }

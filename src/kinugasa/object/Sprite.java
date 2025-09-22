@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,26 +20,26 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import kinugasa.object.moveEvent.BasicMoving;
 import kinugasa.game.GameManager;
 import kinugasa.game.GameWindow;
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.NewInstance;
-import kinugasa.game.RequiresReturnTypeChange;
-import kinugasa.game.Virtual;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.RequiresReturnTypeChange;
+import kinugasa.game.annotation.Virtual;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.ImageUtil;
 import kinugasa.graphics.KImage;
 import kinugasa.graphics.RenderingQuality;
-import kinugasa.resource.Updateable;
 
 /**
  * ゲームに表示される自機やキャラクタの基底クラスです.
@@ -73,7 +73,7 @@ import kinugasa.resource.Updateable;
  * @author Shinacho<br>
  */
 public abstract class Sprite extends CloneableObject
-		implements Drawable, Shapeable, Comparable<Sprite>, Updateable<Sprite> {
+		implements Drawable, Shapeable, Comparable<Sprite>, Updateable<Sprite>, Controllable {
 
 	/**
 	 * 領域.
@@ -101,47 +101,23 @@ public abstract class Sprite extends CloneableObject
 	private boolean exist = true;
 
 	/**
-	 * 中心座標のキャッシュを作成します.
+	 * 角度と速度.
 	 */
-	private void setCenter() {
-		center = new Point2D.Float(bounds.x + bounds.width / 2,
-				bounds.y + bounds.height / 2);
-		personalCenter = new Point2D.Float(bounds.width / 2, bounds.height / 2);
-	}
-
+	private KVector vector;
 	/**
-	 * 中心座標のキャッシュを更新します.
+	 * 移動アルゴリズム.
 	 */
-	protected final void updateCenter() {
-		center.x = bounds.x + personalCenter.x;
-		center.y = bounds.y + personalCenter.y;
-	}
-
-	/**
-	 * 中心座標のキャッシュを更新します.
-	 */
-	protected final void updatePersonalCenter() {
-		personalCenter.x = bounds.width / 2;
-		personalCenter.y = bounds.height / 2;
-	}
+	private MovingModel moving;
 
 	/**
 	 * 新しいスプライトを作成します. 全てのフィールドが初期化されます.<br>
 	 */
 	public Sprite() {
-		bounds = new Rectangle2D.Float();
-		setCenter();
+		this(0, 0, 0, 0);
 	}
 
-	/**
-	 * 新しいスプライトを作成します. このコンストラクタでは、ディープコピーに近い、参照を利用したインスタンスの作成を行うことができます.<br>
-	 *
-	 * @param bounds このスプライトの領域.<br>
-	 */
-	private Sprite(Rectangle2D.Float bounds) {
-		this.bounds = bounds;
-		z = 0;
-		setCenter();
+	public Sprite(Rectangle r) {
+		this(r.x, r.y, r.width, r.height);
 	}
 
 	/**
@@ -168,7 +144,68 @@ public abstract class Sprite extends CloneableObject
 	public Sprite(float x, float y, float w, float h, float z) {
 		this.bounds = new Rectangle2D.Float(x, y, w, h);
 		this.z = z;
+		this.vector = new KVector(0, 0);
+		this.moving = BasicMoving.getInstance();
 		setCenter();
+	}
+
+	public Sprite(float x, float y, float w, float h, KVector vector) {
+		this(x, y, w, h);
+		this.vector = vector;
+		this.moving = BasicMoving.getInstance();
+	}
+
+	public Sprite(float x, float y, float w, float h, KVector vector, MovingModel model) {
+		this(x, y, w, h);
+		this.vector = vector;
+		this.moving = model;
+	}
+
+	public Sprite(float w, float h, KVector vector, MovingModel model) {
+		this(0, 0, w, h);
+		this.vector = vector;
+		this.moving = model;
+	}
+
+	public float getAngle() {
+		return vector.angle;
+	}
+
+	public void setAngle(float angle) {
+		vector.angle = angle;
+	}
+
+	public float getSpeed() {
+		return vector.speed;
+	}
+
+	public void setSpeed(float speed) {
+		vector.speed = speed;
+	}
+
+	/**
+	 * 中心座標のキャッシュを作成します.
+	 */
+	private void setCenter() {
+		center = new Point2D.Float(bounds.x + bounds.width / 2,
+				bounds.y + bounds.height / 2);
+		personalCenter = new Point2D.Float(bounds.width / 2, bounds.height / 2);
+	}
+
+	/**
+	 * 中心座標のキャッシュを更新します.
+	 */
+	protected final void updateCenter() {
+		center.x = bounds.x + personalCenter.x;
+		center.y = bounds.y + personalCenter.y;
+	}
+
+	/**
+	 * 中心座標のキャッシュを更新します.
+	 */
+	protected final void updatePersonalCenter() {
+		personalCenter.x = bounds.width / 2;
+		personalCenter.y = bounds.height / 2;
 	}
 
 	/**
@@ -275,11 +312,29 @@ public abstract class Sprite extends CloneableObject
 		return getBounds().intersects(r);
 	}
 
+	public boolean hitOnNextMove(Sprite s) {
+		final float SPEED = 0.7f;
+		Sprite c = this.clone();
+		if (c.getVector().getSpeed() < 0) {
+			c.getVector().setSpeed(-SPEED);
+		} else {
+			c.getVector().setSpeed(SPEED);
+		}
+		for (int i = 0; i < (int) (Math.abs(this.getVector().getSpeed()) / SPEED); i++) {
+			c.move();
+			if (c.hit(s)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * スプライトの左上の位置を取得します. このメソッドは新しいインスタンスを返します.<br>
 	 *
 	 * @return 左上の位置.<br>
 	 */
+	@NewInstance
 	public Point2D.Float getLocation() {
 		return new Point2D.Float(bounds.x, bounds.y);
 	}
@@ -318,6 +373,10 @@ public abstract class Sprite extends CloneableObject
 	public void setLocation(float x, float y) {
 		setX(x);
 		setY(y);
+	}
+
+	public void addLocation(float x, float y) {
+		setLocation(getX() + x, getY() + y);
 	}
 
 	//pがcenterになるように位置を設定
@@ -551,7 +610,6 @@ public abstract class Sprite extends CloneableObject
 		this.z = z;
 	}
 
-
 	@NewInstance
 	public KImage toImage() {
 		GameWindow window = GameManager.getInstance().getWindow();
@@ -561,31 +619,16 @@ public abstract class Sprite extends CloneableObject
 		g2.dispose();
 		return new KImage(image);
 	}
-	
+
 	@NewInstance
-	public KImage drawOn00(){
+	public KImage drawOn00() {
 		Sprite s = clone();
 		s.setLocation(0, 0);
-		KImage image = new KImage((int)getWidth(), (int)getHeight());
+		KImage image = new KImage((int) getWidth(), (int) getHeight());
 		Graphics2D g2 = image.createGraphics2D();
 		s.draw(g2);
 		g2.dispose();
 		return image;
-	}
-
-	/**
-	 * このスプライトの複製を作成します. このメソッドでは、全てのフィールドをクローニングします.<br>
-	 * このメソッドはサブクラスで適切にオーバーライドしてください.<br>
-	 *
-	 * @return このスプライトと同じ設定の新しいインスタンス.<br>
-	 */
-	@Override
-	public Sprite clone() {
-		Sprite s = (Sprite) super.clone();
-		s.bounds = (Rectangle2D.Float) this.bounds.clone();
-		s.center = (Point2D.Float) this.center.clone();
-		s.personalCenter = (Point2D.Float) this.personalCenter.clone();
-		return s;
 	}
 
 	/**
@@ -600,9 +643,187 @@ public abstract class Sprite extends CloneableObject
 		return java.lang.Float.compare(z, spr.z);
 	}
 
+	/**
+	 * オブジェクトに設定されているパラメータおよびアルゴリズムを使用して移動します.
+	 */
+	public void move() {
+		moving.move(this);
+		updateCenter();
+	}
+
+	//移動をシミュレートして、次の移動で移動後の座標を返します。
+	private Point2D.Float simulateMoveLocation;
+
+	public void commitMove() {
+		if (simulateMoveLocation == null) {
+			return;
+		}
+		setLocation(simulateMoveLocation);
+	}
+
+	public Point2D.Float simulateMove() {
+		Sprite s = clone();
+		s.move();
+		return simulateMoveLocation = s.getLocation();
+	}
+
+	public Point2D.Float simulateMoveCenterLocation() {
+		Sprite s = clone();
+		s.move();
+		return s.getCenter();
+	}
+
+	public Point2D.Float simulateMove(KVector v) {
+		Sprite s = asEmptySprite();
+		s.setVector(v);
+		s.move();
+		return s.getLocation();
+	}
+
+	public Point2D.Float simulateMoveCenterLocation(KVector v) {
+		Sprite s = asEmptySprite();
+		s.setVector(v);
+		s.move();
+		return s.getCenter();
+	}
+
+	@NewInstance
+	public EmptySprite asEmptySprite() {
+		return new EmptySprite(getLocation(), getSize());
+	}
+
+	/**
+	 * 指定のアルゴリズムを使用して移動します.
+	 *
+	 * @param m 移動方法.<br>
+	 */
+	public void move(MovingModel m) {
+		m.move(this);
+		updateCenter();
+	}
+
+	@Override
+	public boolean move(float xValue, float yValue, Shape s) {
+		float x = getX() + xValue * vector.speed;
+		float y = getY() - yValue * vector.speed;
+		if (s == null) {
+			setX(x);
+			setY(y);
+			updateCenter();
+			return true;
+		}
+		if (s.contains(new Point2D.Float(x + getPersonalCenterX(), y + getPersonalCenterY()))) {
+			setX(x);
+			setY(y);
+			updateCenter();
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean move(Point2D.Float p, Shape s) {
+		return move(p.x, p.y, s);
+	}
+
+	/**
+	 * このスプライトが現在の設定で次に移動した時の中心の座標を返します.
+	 * <br>
+	 * このメソッドは、移動モデルによる移動手段を考慮しません。<br>
+	 *
+	 * @return 次の中心座標.<br>
+	 */
+	public Point2D.Float getNextCenter() {
+		Point2D.Float p = (Point2D.Float) getCenter().clone();
+		p.x += vector.getX();
+		p.y += vector.getY();
+		return p;
+	}
+
+	/**
+	 * このスプライトが現在の設定で次に移動した時の左上の座標を返します.
+	 * <br>
+	 * このメソッドは、移動モデルによる移動手段を考慮しません。<br>
+	 *
+	 * @return 次の座標.<br>
+	 */
+	public Point2D.Float getNextLocation() {
+		Point2D.Float p = getLocation();
+		p.x += vector.getX();
+		p.y += vector.getY();
+		return p;
+	}
+
+	public KVector getVector() {
+		return vector;
+	}
+
+	public void setVector(KVector vector) {
+		this.vector = vector;
+	}
+
+	/**
+	 * 移動モデルを取得します.
+	 *
+	 * @return 移動モデル.<br>
+	 */
+	public MovingModel getMovingModel() {
+		return moving;
+	}
+
+	/**
+	 * このスプライトの移動イベントのうち、指定したクラスのイベントを返します.
+	 * このメソッドでは、このスプライトの移動イベントがMovingEventである場合には
+	 * その内部を検索して移動イベントの実装を返します。<br>MovingEventを取得するには、
+	 * 引数にMovingEventのクラスを指定します。<br>
+	 *
+	 * @param model 検索するモデルのクラス。<br>
+	 *
+	 * @return 指定したクラスのイベントが含まれている場合にそのインスタンスを返す。存在しない場合はnullを返す。<br>
+	 */
+	public MovingModel getMovingModel(Class<? extends MovingModel> model) {
+		return (model.isInstance(moving)) ? moving : null;
+	}
+
+	/**
+	 * 移動モデルを設定します.
+	 *
+	 * @param movingModel 移動モデル.<br>
+	 */
+	public void setMovingModel(MovingModel movingModel) {
+		this.moving = movingModel;
+	}
+
+	/**
+	 * このスプライトの複製を作成します. このメソッドでは、全てのフィールドをクローニングします.<br>
+	 * このメソッドはサブクラスで適切にオーバーライドしてください.<br>
+	 *
+	 * @return このスプライトと同じ設定の新しいインスタンス.<br>
+	 */
+	@Override
+	public Sprite clone() {
+		Sprite s = (Sprite) super.clone();
+		s.bounds = (Rectangle2D.Float) this.bounds.clone();
+		s.center = (Point2D.Float) this.center.clone();
+		s.personalCenter = (Point2D.Float) this.personalCenter.clone();
+		s.vector = this.vector.clone();
+		s.moving = this.moving.clone();
+		return s;
+	}
+
+	/**
+	 * スプライトの文字列表記を取得します.
+	 * 文字列にはスプライトのフィールド情報が含まれています.これらの値はすべてアクセサを通して取得可能です.<br>
+	 *
+	 * @return スプライトの情報.<br>
+	 */
 	@Override
 	public String toString() {
-		return "Sprite{" + "bounds=" + bounds + ", center=" + center + ", personalCenter="
-				+ personalCenter + ", z=" + z + ", visible=" + visible + ", exist=" + exist + '}';
+		return "Sprite location=[" + getX() + "," + getY() + "] size=["
+				+ getWidth() + "," + getHeight() + "] " + "center=["
+				+ getCenterX() + "," + getCenterY() + "] personalCenter=["
+				+ getPersonalCenterX() + "," + getPersonalCenterY() + "] visible=["
+				+ isVisible() + "] exist=[" + isExist() + "] vector=[" + getVector() + "] "
+				+ "z=[" + getZ() + "]";
 	}
 }

@@ -27,7 +27,7 @@ package kinugasa.object;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 
 /**
  * 空のスプライトです。何も表示しません。座標計算などで使うダミーのスプライトの実装です。
@@ -35,7 +35,7 @@ import kinugasa.game.GraphicsContext;
  * @vesion 1.0.0 - 2022/11/25_20:18:38<br>
  * @author Shinacho<br>
  */
-public class EmptySprite extends BasicSprite {
+public class EmptySprite extends Sprite {
 
 	public EmptySprite() {
 		super(0, 0, 0, 0);

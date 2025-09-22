@@ -1,74 +1,114 @@
- /*
-  * MIT License
-  *
-  * Copyright (c) 2025 しなちょ
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy
-  * of this software and associated documentation files (the "Software"), to deal
-  * in the Software without restriction, including without limitation the rights
-  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  * copies of the Software, and to permit persons to whom the Software is
-  * furnished to do so, subject to the following conditions:
-  *
-  * The above copyright notice and this permission notice shall be included in all
-  * copies or substantial portions of the Software.
-  *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  * SOFTWARE.
-  */
-
-
+/*
+ * Copyright (C) 2025 Shinacho
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package kinugasa.game.field4;
 
 import java.awt.geom.Point2D;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import kinugasa.object.ID;
+import kinugasa.game.annotation.Immutable;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.object.FourDirection;
+import static kinugasa.object.FourDirection.EAST;
+import static kinugasa.object.FourDirection.WEST;
+import kinugasa.object.IDdCloneableObject;
 
 /**
- * 2次元配列の座標をカプセル化するクラスです. これは、表示座標と区別するために使用されます。
+ * D2Idx.<br>
  *
- * @vesion 1.0.0 - 2022/11/09_18:18:35<br>
- * @author Shinacho<br>
+ * @vesion 1.0.0 - 2025/07/19_8:00:58<br>
+ * @author Shinacho.<br>
  */
-public class D2Idx implements ID, Cloneable {
+@Immutable
+public class D2Idx extends IDdCloneableObject {
 
-	public int x;
-	public int y;
+	public final int x;
+	public final int y;
 
 	public D2Idx(int x, int y) {
+		super(x + "," + y);
 		this.x = x;
 		this.y = y;
 	}
 
-	public D2Idx(D2Idx idx) {
-		this(idx.x, idx.y);
-	}
-
 	@Override
-	public final String getId() {
-		return x + "," + y;
+	public D2Idx clone() {
+		return (D2Idx) super.clone();
 	}
 
-	public Point2D.Float asPoint2D() {
-		return new Point2D.Float(x, y);
+	@NewInstance
+	public D2Idx add(D2Idx d) {
+		return new D2Idx(x + d.x, y + d.y);
+	}
+
+	@NewInstance
+	public D2Idx addX(int i) {
+		return new D2Idx(this.x + i, y);
+	}
+
+	@NewInstance
+	public D2Idx addY(int i) {
+		return new D2Idx(this.x, y + i);
 	}
 
 	@Override
 	public String toString() {
-		return "D2Idx{" + "x=" + x + ", y=" + y + '}';
+		return getId();
+	}
+
+	@NewInstance
+	public D2Idx distance(D2Idx i) {
+		return new D2Idx(
+				this.x - i.x,
+				this.y - i.y);
+	}
+
+	@NewInstance
+	public Point2D.Float asPoint() {
+		return new Point2D.Float(x, y);
+	}
+
+	@NewInstance
+	public D2Idx add(FourDirection dir, int d) {
+		int x = this.x;
+		int y = this.y;
+
+		x += switch (dir) {
+			case EAST ->
+				d;
+			case WEST ->
+				-d;
+			default ->
+				0;
+		};
+		y += switch (dir) {
+			case SOUTH ->
+				d;
+			case NORTH ->
+				-d;
+			default ->
+				0;
+		};
+		return new D2Idx(x, y);
+
 	}
 
 	@Override
 	public int hashCode() {
-		int hash = 3;
-		hash = 19 * hash + this.x;
-		hash = 19 * hash + this.y;
+		int hash = 7;
+		hash = 41 * hash + this.x;
+		hash = 41 * hash + this.y;
 		return hash;
 	}
 
@@ -87,19 +127,7 @@ public class D2Idx implements ID, Cloneable {
 		if (this.x != other.x) {
 			return false;
 		}
-		if (this.y != other.y) {
-			return false;
-		}
-		return true;
-	}
-
-	@Override
-	public D2Idx clone() {
-		try {
-			return (D2Idx) super.clone();
-		} catch (CloneNotSupportedException ex) {
-			throw new InternalError(ex);
-		}
+		return this.y == other.y;
 	}
 
 }

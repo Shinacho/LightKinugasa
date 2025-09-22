@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,17 +20,15 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import kinugasa.game.GraphicsContext;
-import kinugasa.graphics.ImageUtil;
+import java.util.List;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.KImage;
 import kinugasa.util.FrameTimeCounter;
 import kinugasa.util.TimeCounter;
@@ -164,19 +162,26 @@ public class SimpleMessageWindowModel extends MessageWindowModel {
 		float size = font == null || font.getFont() == null ? g2.getFont().getSize() : font.getFont().getSize();
 		y += BORDER_SIZE * 5 + size;
 
-		String visibleText = mw.getVisibleText();
-		String[] text = visibleText.contains(Text.getLineSep()) ? visibleText.split(Text.getLineSep()) : new String[]{visibleText};
+		List<String> text = mw.getVisibleText();
+
 		if (font != null) {
 			g2.setFont(font.getFont());
 		}
-		for (String t : text) {
+		for (int i = 0; i < text.size(); i++) {
+			String t = text.get(i);
+			if (mw.getText().hasSpeaker()
+					&& mw.getText().getSpeaker().getMWSpeakerName() != null
+					&& !mw.getText().getSpeaker().getMWSpeakerName().isEmpty()
+					&& i == 0) {
+				t = mw.getText().getSpeaker().getMWSpeakerName().toString() + "「" + t;
+			}
 			g2.drawString(t, x, y);
 			y += size + BORDER_SIZE * 2;
 		}
 		y += size;
 		// オプションと選択の表示
 		if (mw.isAllVisible()) {
-			if (mw.getText() instanceof Choice) {
+			if (mw.isChoice()) {
 				y -= size / 2;
 				for (int i = 0; i < mw.getChoice().getOptions().size(); i++) {
 					if (i == mw.getSelect()) {
@@ -194,8 +199,8 @@ public class SimpleMessageWindowModel extends MessageWindowModel {
 				iconVisible = !iconVisible;
 			}
 			if (iconVisible) {
-				x = (int) (mw.getX() + mw.getWidth() - 18);
-				if (mw.getText().hasImage()) {
+				x = (int) (mw.getX() + mw.getWidth() - 22);
+				if (mw.getText().hasSpeaker()) {
 					x -= CHARA_IMAGE_W;
 				}
 				y = (int) (mw.getY() + mw.getHeight() - 12);
@@ -203,15 +208,13 @@ public class SimpleMessageWindowModel extends MessageWindowModel {
 			}
 		}
 
-		if (mw.getText().hasImage()) {
+		if (mw.getText().hasSpeaker() && mw.getText().getSpeaker().getMWSpeakerImage() != null) {
 			if (charaImage == null) {
-				if (mw.getText().getImage().getWidth() == CHARA_IMAGE_W && mw.getText().getImage().getHeight() == CHARA_IMAGE_H) {
-					charaImage = mw.getText().getImage();
-				} else {
-
+				charaImage = mw.getText().getSpeaker().getMWSpeakerImage();
+				if (mw.getText().getSpeaker().getMWSpeakerImage().getWidth() != CHARA_IMAGE_W || mw.getText().getSpeaker().getMWSpeakerImage().getHeight() != CHARA_IMAGE_H) {
 					charaImage = charaImage.resizeTo(
-							(CHARA_IMAGE_W / mw.getText().getImage().getWidth()),
-							(CHARA_IMAGE_H / mw.getText().getImage().getHeight()));
+							(CHARA_IMAGE_W / charaImage.getWidth()),
+							(CHARA_IMAGE_H / charaImage.getHeight()));
 				}
 			}
 			x = (int) (mw.getX() + mw.getWidth() - CHARA_IMAGE_W - (BORDER_SIZE * 3));

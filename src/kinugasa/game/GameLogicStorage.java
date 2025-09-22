@@ -26,7 +26,7 @@
 package kinugasa.game;
 
 import kinugasa.game.system.GameSystem;
-import kinugasa.resource.NameNotFoundException;
+import kinugasa.resource.IDNotFoundException;
 import kinugasa.resource.Storage;
 
 /**
@@ -69,10 +69,10 @@ public class GameLogicStorage extends Storage<GameLogic> {
 			kinugasa.game.GameLog.print("kinugasa.game.GameLogicStorage.changeTo():" + name);
 		}
 		if (!contains(name)) {
-			throw new NameNotFoundException("logic " + name + " is not found");
+			throw new IDNotFoundException("logic " + name + " is not found");
 		}
 		if (current != null) {
-			current.dispose();
+			current.free();
 			System.gc();
 		}
 		prev = current;

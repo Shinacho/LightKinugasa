@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,13 +20,11 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
 import java.awt.Graphics2D;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.object.IDdCloneableObject;
 
 /**
@@ -77,7 +75,9 @@ public abstract class TextLabelModel extends IDdCloneableObject {
 
 	@Override
 	public TextLabelModel clone() {
-		return (TextLabelModel) super.clone();
+		var r = (TextLabelModel) super.clone();
+		r.font = this.font.clone();
+		return r;
 	}
 
 }

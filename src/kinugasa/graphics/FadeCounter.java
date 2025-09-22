@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.graphics;
 
 /**
@@ -36,12 +34,14 @@ package kinugasa.graphics;
  */
 public class FadeCounter extends ColorTransitionModel {
 
-	private static final long serialVersionUID = -1609450992263652227L;
-	/** フェードの速度です。カウンタの現在値に足されます. */
+	/**
+	 * フェードの速度です。カウンタの現在値に足されます.
+	 */
 	private int speed;
 
 	/**
 	 * 初期値と遷移速度を指定して、フェードカウンタを作成します.
+	 *
 	 * @param value カウンタの初期値です。0から255の間で指定します。<br>
 	 * @param speed カウンタの遷移速度です。負数を指定できます。<br>
 	 * @throws IllegalArgumentException 初期値が0未満か、255を超える場合に投げられます。<br>
@@ -52,23 +52,23 @@ public class FadeCounter extends ColorTransitionModel {
 	}
 
 	/**
-	 * 0から開始するカウンタを作成します.
-	 * @param speed カウンタの遷移速度を指定します。
-	 * このメソッドでは、通常は正数を指定します。<br>
-	 * @return フェードイン用のカウンタを作成します。<br>
+	 * 255から開始するカウンタを作成します.
+	 *
+	 * @param speed カウンタの遷移速度を指定します。 このメソッドでは、通常は負数を指定します。<br>
+	 * @return フェードアウト用のカウンタを作成します。<br>
 	 */
 	public static FadeCounter fadeIn(int speed) {
-		return new FadeCounter(MIN, speed);
+		return new FadeCounter(MAX, speed);
 	}
 
 	/**
-	 * 255から開始するカウンタを作成します.
-	 * @param speed カウンタの遷移速度を指定します。
-	 * このメソッドでは、通常は負数を指定します。<br>
-	 * @return フェードアウト用のカウンタを作成します。<br>
+	 * 0から開始するカウンタを作成します.
+	 *
+	 * @param speed カウンタの遷移速度を指定します。 このメソッドでは、通常は正数を指定します。<br>
+	 * @return フェードイン用のカウンタを作成します。<br>
 	 */
 	public static FadeCounter fadeOut(int speed) {
-		return new FadeCounter(MAX, speed);
+		return new FadeCounter(MIN, speed);
 	}
 
 	@Override
@@ -86,13 +86,13 @@ public class FadeCounter extends ColorTransitionModel {
 			ended = true;
 		}
 	}
-	/** 「開始している」状態フラグです.
-	 * 最初にupdateを呼び出すと、trueになります。
-	 * それ以降は、常にtrueを返します。 */
+	/**
+	 * 「開始している」状態フラグです. 最初にupdateを呼び出すと、trueになります。 それ以降は、常にtrueを返します。
+	 */
 	private boolean started = false;
-	/** 「終了している」状態フラグです.
-	 * カウンタの値が有効範囲から出ると
-	 * trueになります。それ以降は常にtrueを返します。 */
+	/**
+	 * 「終了している」状態フラグです. カウンタの値が有効範囲から出ると trueになります。それ以降は常にtrueを返します。
+	 */
 	private boolean ended = false;
 
 	/**
@@ -108,8 +108,7 @@ public class FadeCounter extends ColorTransitionModel {
 	/**
 	 * {@inheritDoc }
 	 * <br>
-	 * この実装では、updateメソッドによってカウンタの値が有効範囲から出ると
-	 * それ以降は常に「終了している状態」となります。<br>
+	 * この実装では、updateメソッドによってカウンタの値が有効範囲から出ると それ以降は常に「終了している状態」となります。<br>
 	 */
 	@Override
 	public boolean isEnded() {

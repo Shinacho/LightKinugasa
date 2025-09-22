@@ -41,7 +41,7 @@ public abstract class MovingModel extends CloneableObject {
 	public MovingModel() {
 	}
 
-	public abstract void move(BasicSprite s);
+	public abstract void move(Sprite s);
 
 	@Override
 	public MovingModel clone() {

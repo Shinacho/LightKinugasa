@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
 import static java.awt.SystemColor.text;
@@ -101,7 +99,10 @@ public final class GameLoop implements Runnable {
 			if (updateIfNotActive) {
 				while (exec) {
 					startTime = System.nanoTime();
-					game.update(gtm, InputState.getInstance());
+					InputState is = InputState.getInstance();
+					SystemUpdateInjector.update();
+					game.update(gtm, is);
+					game.getUpdateLogicInjectors().forEach(p -> p.update(gtm, is));
 					game.repaint();
 					gtm.sleep(startTime);
 				}
@@ -109,7 +110,10 @@ public final class GameLoop implements Runnable {
 				while (exec) {
 					if (game.getWindow().isActive() || GameSystem.isDebugMode()) {
 						startTime = System.nanoTime();
-						game.update(gtm, InputState.getInstance());
+						InputState is = InputState.getInstance();
+						SystemUpdateInjector.update();
+						game.update(gtm, is);
+						game.getUpdateLogicInjectors().forEach(p -> p.update(gtm, is));
 						game.repaint();
 						game.clearEndedEffects();
 						gtm.sleep(startTime);
@@ -129,12 +133,10 @@ public final class GameLoop implements Runnable {
 			Toolkit.getDefaultToolkit().beep();
 			String v = getExceptionMsg(ex);
 			GameLog.print(v);
-			Dialog.error("Sorry", v);
-			if (Dialog.yesOrNo("Sorrt", DialogIcon.QUESTION, "copy to clipboard?") == DialogOption.YES) {
+			if (Dialog.yesOrNo("Sorry, Kinugasa is clashed", DialogIcon.QUESTION, v + "\r\n-------------------\r\n" + "copy to clipboard?") == DialogOption.YES) {
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 				StringSelection selection = new StringSelection(v);
 				clipboard.setContents(selection, null);
-				Dialog.info("Sorry", "We apologize for the inconvenience and thank you for your cooperation.");
 			}
 			LockUtil.deleteAllLockFile();
 			System.exit(1);
@@ -143,7 +145,7 @@ public final class GameLoop implements Runnable {
 
 	private String getExceptionMsg(Throwable t) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("!> Sorry, the game was crashed!").append("\n");
+		sb.append("!> Sorry, the game was crashed").append("\n");
 		sb.append("Please report a this capture or log file and it may be corrected\n");
 		sb.append("--------------catch:").append(t.toString()).append("\n");
 		//Cause

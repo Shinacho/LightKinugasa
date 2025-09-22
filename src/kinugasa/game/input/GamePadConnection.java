@@ -53,8 +53,6 @@ public final class GamePadConnection {
 
 	public static native float[] getNativeState(int playerIndex);
 
-	public static native void free();
-
 	public static final int LENGTH = 21;
 	/**
 	 * これらの値はゲームパッドのデジタルボタンを識別します.

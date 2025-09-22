@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,48 +20,45 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.LoopCall;
-import kinugasa.object.BasicSprite;
-import kinugasa.resource.NameNotFoundException;
-import kinugasa.resource.Storage;
-import kinugasa.object.ID;
+import java.util.ArrayList;
+import java.util.List;
+import kinugasa.game.I18NText;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.annotation.LoopCall;
+import kinugasa.object.Sprite;
+import kinugasa.util.StringUtil;
 
 /**
+ * メッセージウインドウです。 <br>
+ * 注意！：必ずsetTextを通してテキストを設定すること。そうしないとサブクラスで変になる可能性アリ
  *
  * @vesion 1.0.0 - 2021/11/25_15:05:14<br>
  * @author Shinacho<br>
  */
-public class MessageWindow extends BasicSprite {
+public class MessageWindow extends Sprite {
 
 	private MessageWindowModel model;
-	private TextStorage textStorage;
 	private Text text;
 
 	public MessageWindow(float x, float y, float w, float h, MessageWindowModel model) {
-		this(x, y, w, h, model, new TextStorage("AUTO_FROM_MW"), Text.of(""));
+		this(x, y, w, h, model, Text.EMPTY);
 	}
 
 	public MessageWindow(float x, float y, float w, float h) {
-		this(x, y, w, h, new SimpleMessageWindowModel(), new TextStorage("AUTO_FROM_MW"), Text.of(""));
+		this(x, y, w, h, new SimpleMessageWindowModel(), Text.EMPTY);
 	}
 
 	public MessageWindow(float x, float y, float w, float h, Text text) {
-		this(x, y, w, h, new SimpleMessageWindowModel(), new TextStorage("AUTO_FROM_MW"), text);
+		this(x, y, w, h, new SimpleMessageWindowModel(), text);
 	}
 
-	public MessageWindow(float x, float y, float w, float h, MessageWindowModel model, TextStorage ts, Text text) {
+	public MessageWindow(float x, float y, float w, float h, MessageWindowModel model, Text text) {
 		super(x, y, w, h);
 		this.model = model;
-		this.text = text;
-		this.textStorage = ts;
+		setText(text);
 	}
 
 	public Text getText() {
@@ -75,7 +72,6 @@ public class MessageWindow extends BasicSprite {
 
 		return this;
 	}
-	private boolean set = false;
 
 	public void setModel(MessageWindowModel model) {
 		this.model = model;
@@ -85,22 +81,16 @@ public class MessageWindow extends BasicSprite {
 		return model;
 	}
 
-	public TextStorage getTextStorage() {
-		return textStorage;
-	}
-
-	public void setTextStorage(TextStorage textStorage) {
-		this.textStorage = textStorage;
-	}
-
 	public void showAllNow() {
 		text.allText();
 	}
 
 	public void setText(Text text) {
 		this.text = text;
-		set = false;
 		select = 0;
+		if (this.text.getScript() != null) {
+			this.text.getScript().exec();
+		}
 	}
 
 	public void setTextDirect(String text) {
@@ -111,16 +101,27 @@ public class MessageWindow extends BasicSprite {
 		setText(Text.empty());
 	}
 
-	public void setTextFromId(String id) {
-		setText(textStorage.get(id));
-	}
-
 	public boolean isAllVisible() {
 		return text.isAllVisible();
 	}
 
-	public String getVisibleText() {
-		return text.getVisibleText();
+	public List<String> getVisibleText() {
+		String[] r = StringUtil.safeSplit(text.getText(), Text.getLineSep());
+
+		int visible = text.getVisibleIdx();
+
+		List<String> res = new ArrayList<>();
+		for (var v : r) {
+			if (v.length() < visible) {
+				res.add(v);
+				visible -= v.length();
+			} else {
+				res.add(v.substring(0, visible));
+				break;
+			}
+		}
+		return res;
+
 	}
 
 	@Override
@@ -137,14 +138,24 @@ public class MessageWindow extends BasicSprite {
 		return text.hasNext();
 	}
 
+	public void next(Text t) {
+		setText(t);
+		getText().reset();
+		select = 0;
+	}
+
 	public void next() {
-		setText(textStorage.get(text.getNextId()));
+		String nid = getText().getNextId();
+		Text t = new I18NText(nid).toText();
+		setText(t);
 		getText().reset();
 		select = 0;
 	}
 
 	public void choicesNext() {
-		setText(textStorage.get(getChoiceOption().getNextId()));
+		String nid = getSelectedChoiceOption().getNextId();
+		Text t = new I18NText(nid).toText();
+		setText(t);
 		getText().reset();
 	}
 
@@ -160,19 +171,6 @@ public class MessageWindow extends BasicSprite {
 
 	public int getSelect() {
 		return select;
-	}
-
-	public <T extends ID> T of(Storage<? extends T> s) {
-		return s.get(getChoice().getOptions().get(select).getText());
-	}
-
-	public <T extends ID> T of(Collection<? extends T> s) {
-		for (T t : s) {
-			if (t.getId().equals(getChoice().getText())) {
-				return t;
-			}
-		}
-		throw new NameNotFoundException("name not found : " + getChoice() + " of / " + s);
 	}
 
 	public void close() {
@@ -203,8 +201,13 @@ public class MessageWindow extends BasicSprite {
 		}
 	}
 
-	public Text getChoiceOption() {
+	public Text getSelectedChoiceOption() {
 		return getChoice().getOptions().get(select);
+	}
+
+	@Override
+	public String toString() {
+		return "MessageWindow{" + "text=" + text + ", select=" + select + '}';
 	}
 
 }

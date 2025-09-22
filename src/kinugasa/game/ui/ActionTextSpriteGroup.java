@@ -29,7 +29,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Arrays;
 import java.util.List;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.object.Drawable;
 import kinugasa.util.FrameTimeCounter;
 import kinugasa.util.TimeCounter;

@@ -28,12 +28,12 @@ package kinugasa.game.input;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import javax.swing.ImageIcon;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.game.ui.FontModel;
 import kinugasa.game.ui.SimpleTextLabelModel;
 import kinugasa.game.ui.TextLabelModel;
 import kinugasa.game.ui.TextLabelSprite;
-import kinugasa.object.BasicSprite;
+import kinugasa.object.Sprite;
 
 /**
  * ゲームパッドの状態を表示するスプライトです。
@@ -41,7 +41,7 @@ import kinugasa.object.BasicSprite;
  * @vesion 1.0.0 - 2021/11/23_8:44:45<br>
  * @author Shinacho<br>
  */
-public class GamePadStatusMonitor extends BasicSprite {
+public class GamePadStatusMonitor extends Sprite {
 
 	private ImageIcon image = new ImageIcon(getClass().getResource("gamepad.png"));
 

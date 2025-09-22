@@ -25,7 +25,7 @@
 
 package kinugasa.resource.sound;
 
-import kinugasa.game.Immutable;
+import kinugasa.game.annotation.Immutable;
 
 /**
  *

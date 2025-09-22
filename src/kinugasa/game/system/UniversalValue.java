@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,40 +20,33 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.system;
 
-import java.awt.Desktop.Action;
-import java.awt.event.ActionEvent;
-import java.awt.print.Book;
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import kinugasa.game.I18NText;
-import kinugasa.game.Immutable;
-import kinugasa.game.NotNull;
-import kinugasa.game.Nullable;
-import kinugasa.game.field4.BeforeLayerSprite;
-import kinugasa.game.field4.BeforeLayerSpriteStorage;
+import kinugasa.game.annotation.Immutable;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.NotNull;
+import kinugasa.game.annotation.Nullable;
+import kinugasa.game.event.ScriptCall;
 import kinugasa.game.field4.D2Idx;
-import kinugasa.game.field4.FieldMap;
-import kinugasa.game.field4.FieldMapStorage;
-import kinugasa.game.field4.Node;
-import kinugasa.game.ui.TextStorage;
-import kinugasa.game.ui.TextStorageStorage;
+import kinugasa.game.field4.MapChipSet;
+import kinugasa.game.system.actor.Actor;
+import kinugasa.game.system.actor.Follower;
+import kinugasa.game.system.actor.NPC;
+import kinugasa.graphics.KImage;
 import kinugasa.graphics.SpriteSheet;
 import kinugasa.object.FourDirection;
-import kinugasa.object.UIDSupport;
-import kinugasa.object.UIDSystem;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.resource.NameNotFoundException;
+import kinugasa.resource.ID;
 import kinugasa.resource.sound.FramePosition;
 import kinugasa.resource.sound.MasterGain;
 import kinugasa.resource.sound.Sound;
+import kinugasa.resource.sound.SoundSystem;
 import kinugasa.resource.text.XMLAttribute;
 import kinugasa.util.FrameTimeCounter;
 import kinugasa.util.ManualTimeCounter;
@@ -67,7 +60,7 @@ import kinugasa.util.TimeCounter;
  * @author Shinacho<br>
  */
 @Immutable
-public sealed class UniversalValue permits XMLAttribute {
+public sealed class UniversalValue implements ID permits XMLAttribute {
 
 	private final String value;
 
@@ -76,15 +69,40 @@ public sealed class UniversalValue permits XMLAttribute {
 	}
 
 	public UniversalValue(String value) {
-		this.value = value;
+		if (value == null || "null".equals(value)) {
+			this.value = null;
+		} else {
+			this.value = value;
+		}
 	}
 
 	public String value() {
 		return value;
 	}
 
+	@NewInstance
+	public UniversalValue trim() {
+		return new UniversalValue(value.trim());
+	}
+
+	@Override
+	public String getId() {
+		return value;
+	}
+
+	public boolean startWith(String s) {
+		return value.startsWith(s);
+	}
+
 	public boolean is(Object o) {
 		return value.equals(o);
+	}
+
+	public KImage asKImageFile() {
+		if (value.equals("null")) {
+			return null;
+		}
+		return new KImage(asFile());
 	}
 
 	public String asId() {
@@ -130,8 +148,22 @@ public sealed class UniversalValue permits XMLAttribute {
 		return new String[]{value};
 	}
 
-	public <T extends UIDSupport> T as(Class<T> t) {
-		return UIDSystem.getInstance().of(value).as(t);
+	public UniversalValue[] safeSplitUV(String sep) {
+		if (value == null) {
+			return new UniversalValue[]{};
+		}
+		if (value.contains(sep)) {
+			String[] v = safeSplit(sep);
+			UniversalValue[] res = new UniversalValue[v.length];
+			for (int i = 0; i < res.length; i++) {
+				res[i] = new UniversalValue(v[i].trim());
+			}
+			return res;
+		}
+		if (value.isEmpty()) {
+			return new UniversalValue[]{};
+		}
+		return new UniversalValue[]{this};
 	}
 
 	public <T extends Enum<T>> T of(Class<T> c) {
@@ -140,7 +172,7 @@ public sealed class UniversalValue permits XMLAttribute {
 		}
 		T[] values = c.getEnumConstants();
 		for (T t : values) {
-			if (t.toString().equals(value.toUpperCase())) {
+			if (t.toString().equals(value.trim().toUpperCase())) {
 				return t;
 			}
 		}
@@ -182,10 +214,6 @@ public sealed class UniversalValue permits XMLAttribute {
 		return null;
 	}
 
-	public <T extends UIDSupport> T asTOrNull(Class<T> t) {
-		return UIDSystem.getInstance().of(value).asTorNull(t);
-	}
-
 	public int asInt() {
 		return Integer.parseInt(value);
 	}
@@ -200,10 +228,6 @@ public sealed class UniversalValue permits XMLAttribute {
 
 	public boolean is(String v) {
 		return value.equals(v);
-	}
-
-	public boolean is(Class<? extends UIDSupport> i) {
-		return UIDSystem.getInstance().of(asId()).is(i);
 	}
 
 	public boolean isTrue() {
@@ -238,9 +262,8 @@ public sealed class UniversalValue permits XMLAttribute {
 		return value;
 	}
 
-	public D2Idx asD2IdxCSV() {
-		String[] v = StringUtil.safeSplit(value, ",");
-		return new D2Idx(Integer.parseInt(v[0]), Integer.parseInt(v[1]));
+	public File asFile() {
+		return new File(value);
 	}
 
 	public SpriteSheet asSpriteSheetFileName() {
@@ -251,52 +274,8 @@ public sealed class UniversalValue permits XMLAttribute {
 		return FourDirection.valueOf(value);
 	}
 
-	public TextStorage asTextStorage() {
-		return TextStorageStorage.getInstance().get(value);
-	}
-
-	public NPCSprite asNewNPC() {
-		return new NPCSprite(value);
-	}
-
-	public NPCSprite asCurrentMapNPC() {
-		return FieldMap.getCurrentInstance().getNpcStorage().get(value);
-	}
-
-	public BeforeLayerSprite asBeforeLayerSprite() {
-		return BeforeLayerSpriteStorage.getInstance().get(value);
-	}
-
-	public Sound asBGM() {
-		return asSound(Sound.Type.BGM);
-	}
-
-	public Sound asSE() {
-		return asSound(Sound.Type.SE);
-	}
-
-	public Sound asSound(Sound.Type t) {
-		return new Sound(value, t, value);
-	}
-
-	public FieldMap asFieldMap() {
-		return FieldMapStorage.getInstance().get(value);
-	}
-
-	public Node asNodeCSV() {
-		String[] v = StringUtil.safeSplit(value, ",");
-		return FieldMapStorage.getInstance().get(v[0])
-				.getNodeStorage().get(new D2Idx(Integer.parseInt(v[1]), Integer.parseInt(v[2])));
-	}
-
-	public Node asNewOutNodeCSV() {
-		String[] v = StringUtil.safeSplit(value, ",");
-		String id = v[0];
-		String outMapName = v[1];
-		int x = Integer.parseInt(v[2]);
-		int y = Integer.parseInt(v[3]);
-		FourDirection outDir = FourDirection.valueOf(v[4]);
-		return Node.ofOutNode(id, outMapName, x, y, outDir);
+	public Sound asSoundID() {
+		return SoundSystem.getInstance().of(value);
 	}
 
 	public FramePosition asFramePosition() {
@@ -305,6 +284,38 @@ public sealed class UniversalValue permits XMLAttribute {
 
 	public MasterGain asMasterGain() {
 		return new MasterGain(asFloat());
+	}
+
+	public D2Idx asD2IdxCSV() {
+		int x = safeSplitUV(",")[0].asInt();
+		int y = safeSplitUV(",")[1].asInt();
+		return new D2Idx(x, y);
+	}
+
+	public FrameTimeCounter asFrameTimeCounterCSV() {
+		int[] v = asSafeIntArray(",");
+		return new FrameTimeCounter(v);
+	}
+
+	public MapChipSet asMapChipSetFile() {
+		return new MapChipSet(asFile());
+	}
+
+	public ScriptCall asScriptCall() {
+		return new ScriptCall(value);
+	}
+
+	@Nullable
+	public FlagSystem.FlagFile asFlag() {
+		return FlagSystem.getInstance().get(value);
+	}
+
+	public Follower asFollowerFile() {
+		return new Follower(asFile());
+	}
+
+	public Actor asActorFile() {
+		return new Actor(asFile());
 	}
 
 	@Override

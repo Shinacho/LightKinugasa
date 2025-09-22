@@ -36,7 +36,7 @@ module kinugasa {
 	exports kinugasa.game;
 	exports kinugasa.graphics;
 	exports kinugasa.object;
-	exports kinugasa.object.movemodel;
+	exports kinugasa.object.moveEvent;
 	exports kinugasa.resource.sound;
 	exports kinugasa.resource.text;
 	exports kinugasa.resource;

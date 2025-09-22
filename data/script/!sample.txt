@@ -1,0 +1,35 @@
+# std_sample
+# これはひな形として使うものです。
+
+PARAM={
+	# name{=defaultValue}
+}
+
+
+#------------------------------------------------
+
+MAIN={
+	# IF( booleanResultMethd(name, param2) )
+		# IF( booleanResultMethd1() || booleanResultMethd2() )
+			# @ScriptCall(param1, param2){.BLOCK}
+			# (ScriptAccessObject.getInstance()).scriptAccessMethod(param1, param2)
+		# END IF
+	# END IF
+}
+
+
+STEP_ON={
+}
+
+STEP_DOWN={
+}
+
+TOUCH={
+}
+
+TALK={
+}
+
+MANUAL={
+}
+

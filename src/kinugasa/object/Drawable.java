@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,14 +20,12 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 import java.awt.Graphics2D;
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.LoopCall;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.annotation.LoopCall;
 import kinugasa.graphics.KImage;
 
 /**
@@ -45,9 +43,9 @@ public interface Drawable {
 	@LoopCall
 	void draw(GraphicsContext g);
 
+	@Deprecated
 	public default void draw(Graphics2D g2) {
 		this.draw(new GraphicsContext(g2));
 	}
-	
-	
+
 }

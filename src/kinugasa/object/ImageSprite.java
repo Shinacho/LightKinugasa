@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,16 +20,14 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.NewInstance;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.annotation.NewInstance;
 import kinugasa.graphics.KImage;
 
 /**
@@ -43,7 +41,7 @@ import kinugasa.graphics.KImage;
  * @version 1.4.0 - 2013/05/05_19:25<br>
  * @author Shinacho<br>
  */
-public class ImageSprite extends BasicSprite {
+public class ImageSprite extends Sprite {
 
 	private KImage image;
 	private ImagePainter painter;

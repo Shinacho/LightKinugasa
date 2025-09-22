@@ -26,7 +26,7 @@
 package kinugasa.object;
 
 import java.awt.Color;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.GraphicsUtil;
 import kinugasa.util.TimeCounter;
 import kinugasa.util.TimeCounterState;

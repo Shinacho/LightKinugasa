@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,14 +20,11 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
 import java.util.List;
-import kinugasa.game.I18NText;
-import kinugasa.resource.NameNotFoundException;
+import kinugasa.resource.IDNotFoundException;
 import kinugasa.util.TimeCounter;
 import kinugasa.util.TimeCounterState;
 
@@ -40,45 +37,54 @@ public final class Choice extends Text {
 
 	private List<Text> options;
 
-	private Choice(List<Text> options, String name, String text, TimeCounter tc, int visibleIdx) {
-		super(name, text, tc, visibleIdx);
+	private Choice(List<Text> options, String id, String text, TimeCounter tc, int visibleIdx) {
+		super(id, text, tc, visibleIdx);
 		this.options = options;
 	}
 
-	public static Choice of(List<Text> options, String name, String text, TimeCounter tc, int visibleIdx) {
-		Choice c = new Choice(options, name, text, tc, visibleIdx);
+	public static Choice of(List<Text> options, String id, String text, TimeCounter tc, int visibleIdx) {
+		Choice c = new Choice(options, id, text, tc, visibleIdx);
 		c.options = options;
-		c.allText();
+//		c.allText();
 		return c;
 	}
 
-	public static Choice of(List<Text> options, String name, String text) {
-		Choice c = new Choice(options, name, text, TimeCounter.always(TimeCounterState.ACTIVE), Integer.MAX_VALUE);
+	public static Choice of(List<Text> options, String id, String text) {
+		Choice c = new Choice(options, id, text, TimeCounter.always(TimeCounterState.ACTIVE), 0);
 		c.options = options;
-		c.allText();
+//		c.allText();
 		return c;
 	}
 
-	public static Choice of(List<Text> options, String name, I18NText text) {
-		return of(options, name, text.toString());
+	public static Choice of(List<Text> options, Text text) {
+		Choice c = new Choice(options, text.getId(), text.getText(), TimeCounter.always(TimeCounterState.ACTIVE), 0);
+		c.options = options;
+//		c.allText();
+		return c;
 	}
 
 	public List<Text> getOptions() {
 		return options;
 	}
 
-	public Text getOption(String name) throws NameNotFoundException {
+	public Text getOption(String id) throws IDNotFoundException {
 		for (Text t : options) {
-			if (t.getId().equals(name)) {
+			if (t.getId().equals(id)) {
 				return t;
 			}
 		}
-		throw new NameNotFoundException(name + " is not found");
+		throw new IDNotFoundException(id + " is not found");
+	}
+
+	@Override
+	public Choice allText() {
+		super.allText();
+		return this;
 	}
 
 	@Override
 	public String toString() {
-		return "Choice{" + "options=" + options + '}';
+		return "Choice{" + super.getText() + " / " + options + '}';
 	}
 
 }

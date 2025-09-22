@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,16 +20,11 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.util;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 配列の操作や要素の検査ユーティリティです.
@@ -80,5 +75,15 @@ public final class ArrayUtil {
 		}
 		return false;
 	}
-}
 
+
+	public static <T> String toString(T[][] t) {
+		StringBuilder sb = new StringBuilder();
+
+		for (T[] t1 : t) {
+			sb.append(Arrays.toString(t1)).append("\n");
+		}
+
+		return sb.toString();
+	}
+}

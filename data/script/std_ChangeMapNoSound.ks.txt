@@ -1,0 +1,52 @@
+# std_FieldMapChange
+# 指定されたパラメータに基づいて、フィールドマップ間の移動を行います。
+
+PARAM={
+	nextID # fieldMap.id
+	x # int
+	y #int 
+	dir #FourDirection
+	tooltip #I18NText
+	
+}
+
+
+#------------------------------------------------
+
+MAIN={
+
+}
+
+
+STEP_ON={
+	#set tooltip
+	setNode(nextID, x, y, dir, tooltip);
+	
+}
+
+STEP_DOWN={
+	#unset tooltip
+	unsetNode();
+
+}
+
+TOUCH={
+
+}
+
+APPROACH={
+
+
+}
+
+LEAVE={
+}
+
+
+TALK={
+}
+
+MANUAL={
+
+}
+

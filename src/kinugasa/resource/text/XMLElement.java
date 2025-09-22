@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import kinugasa.game.GameLog;
 import kinugasa.game.system.GameSystem;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
 
 /**
  * "要素"クラスは、XMLの1つのエレメントに対応します.

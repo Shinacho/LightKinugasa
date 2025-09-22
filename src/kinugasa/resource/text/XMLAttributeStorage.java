@@ -26,7 +26,7 @@
 package kinugasa.resource.text;
 
 import java.util.Collection;
-import kinugasa.resource.NameNotFoundException;
+import kinugasa.resource.IDNotFoundException;
 import kinugasa.resource.Storage;
 
 /**
@@ -74,10 +74,10 @@ public class XMLAttributeStorage extends Storage<XMLAttribute> {
 	}
 
 	@Override
-	public XMLAttribute get(String key) throws NameNotFoundException {
+	public XMLAttribute get(String key) throws IDNotFoundException {
 		try {
 			return super.get(key); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
-		} catch (NameNotFoundException ex) {
+		} catch (IDNotFoundException ex) {
 			kinugasa.game.GameLog.print("XML ATTR KEY NOT FOUND");
 			throw ex;
 		}

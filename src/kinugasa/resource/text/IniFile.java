@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,74 +20,70 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.text;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import kinugasa.game.GameLog;
-import kinugasa.resource.Input;
-import kinugasa.resource.InputStatus;
-import kinugasa.resource.Output;
-import kinugasa.resource.OutputResult;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.Nullable;
+import kinugasa.game.system.KeyAndValue;
+import kinugasa.game.system.UniversalValue;
+import kinugasa.object.FileObject;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
+import kinugasa.resource.IDImpl;
+import kinugasa.object.Saveable;
+import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileIOException;
+import kinugasa.util.StringUtil;
 
 /**
  *
  * @vesion 1.0.0 - 2021/08/17_6:55:06<br>
  * @author Shinacho<br>
  */
-public class IniFile implements Input<IniFile>, Output, ID {
+public final class IniFile extends FileObject implements Saveable<IniFile>, Iterable<KeyAndValue<ID, UniversalValue>> {
 
-	private final File file;
-	private final Map<String, Value> map;
-	private InputStatus status = InputStatus.NOT_LOADED;
+	private Charset charset;
+	private final Set<KeyAndValue<ID, UniversalValue>> data;
+	private boolean loaded;
 
 	public IniFile(String fileName) {
 		this(new File(fileName));
 	}
 
 	public IniFile(File file) {
-		this.file = file;
-		map = new HashMap<>();
+		super(file);
+		data = new HashSet<>();
+		charset = StandardCharsets.UTF_8;
 	}
 
-	@Override
-	public String getId() {
-		return file.getName();
+	public IniFile(String fileName, Charset c) {
+		this(new File(fileName), c);
+	}
+
+	public IniFile(File file, Charset c) {
+		super(file);
+		data = new HashSet<>();
+		charset = c;
 	}
 
 	@Override
 	public IniFile load() throws FileNotFoundException, FileFormatException {
-		this.addAll(this.file);
-		return this;
-	}
-
-	@Override
-	public File getFile() {
-		return file;
-	}
-
-	private IniFile addAll(File file) {
-
-		if (file == null || !file.exists()) {
-			throw new FileNotFoundException(file);
-		}
 		try {
-			for (String line : Files.readAllLines(file.toPath())) {
+			for (String line : Files.readAllLines(getPath(), charset)) {
 				line = line.trim();
 				if (line.isEmpty()) {
 					continue;
@@ -97,157 +93,137 @@ public class IniFile implements Input<IniFile>, Output, ID {
 				}
 				if (line.startsWith("[")) {
 					if (!line.endsWith("]")) {
-						throw new FileFormatException(file, line);
+						throw new FileFormatException(getFile(), line);
 					}
 					continue;
 				}
+				if (line.endsWith("]")) {
+					if (!line.startsWith("[")) {
+						if (!line.endsWith("]")) {
+							throw new FileFormatException(getFile(), line);
+						}
+						continue;
+					}
+				}
 				if (!line.contains("=")) {
-					throw new FileFormatException(file, line);
+					throw new FileFormatException(getFile(), line);
 				}
-				String[] val = line.split("=");
-				if (map.containsKey(val[0])) {
-					throw new FileFormatException("this ini files key is duplicated:" + file.getName() + " / " + val[0]);
+				String[] val = StringUtil.safeSplit(line, "=");
+				if (val.length == 0 || val.length >= 3) {
+					throw new FileFormatException(getFile(), line);
 				}
-				if (val.length == 1) {
-					map.put(val[0], new Value(""));
-				} else {
-					map.put(val[0], new Value(val[1]));
+				//すでにある場合は上書きする
+				IDImpl k = new IDImpl(val[0]);
+				UniversalValue v = val.length == 2 ? new UniversalValue(val[1]) : new UniversalValue("");
+				if (containsKey(k)) {
+					throw new FileFormatException(getFile(), line);
 				}
+				data.add(new KeyAndValue<>(k, v));
 			}
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
 		}
-		status = InputStatus.LOADED;
-
-		GameLog.print(file.getPath());
-//		map.entrySet().forEach(e -> {
-//			GameLog.printInfoIfUsing(e.getKey() + "=" + e.getValue());
-//		});
-
+		GameLog.print(getFile().getName() + " is loaded");
+		loaded = true;
 		return this;
 	}
 
 	@Override
-	public void dispose() {
-		map.clear();
-		status = InputStatus.NOT_LOADED;
+	public void free() {
+		data.clear();
+		loaded = false;
 	}
 
 	@Override
-	public InputStatus getInputStatus() {
-		return status;
+	public boolean isLoaded() {
+		return loaded;
 	}
 
 	@Override
-	public OutputResult save() throws FileIOException {
-		return saveTo(file);
-	}
-
-	@Override
-	public OutputResult saveTo(File f) throws FileIOException {
+	public void save() throws FileNotFoundException, ContentsIOException {
+		if (!exists()) {
+			throw new FileNotFoundException(getFile());
+		}
 		try {
 			List<String> list = new ArrayList<>();
-			map.entrySet().forEach(e -> {
-				list.add(e.getKey() + e.getValue());
-			});
-			Files.write(f.toPath(), list, StandardOpenOption.CREATE_NEW, StandardOpenOption.TRUNCATE_EXISTING);
+			data.forEach(p -> list.add(p.toString()));
+			Files.write(getPath(), list, charset, StandardOpenOption.CREATE_NEW, StandardOpenOption.TRUNCATE_EXISTING);
+			GameLog.print(this + " is saved");
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
 		}
-		return OutputResult.OK;
+	}
+
+	@Nullable
+	private UniversalValue findOrNull(String key) {
+		for (var v : data) {
+			if (v.getKey().getId().equals(key)) {
+				return v.getValue();
+			}
+		}
+		return null;
 	}
 
 	public boolean containsKey(String key) {
-		return map.containsKey(key);
+		return findOrNull(key) != null;
 	}
 
-	public Value getValue(String key) {
-		return map.get(key);
+	public boolean containsKey(ID key) {
+		return containsKey(key.getId());
 	}
 
-	public Optional<Value> get(String key) {
+	@Nullable
+	public UniversalValue getValue(String key) {
+		return findOrNull(key);
+	}
+
+	@Nullable
+	public UniversalValue getValue(ID key) {
+		return getValue(key.getId());
+	}
+
+	public Optional<UniversalValue> get(String key) {
 		return Optional.of(getValue(key));
 	}
 
+	public Optional<UniversalValue> get(ID key) {
+		return get(key.getId());
+	}
+
 	public void remove(String key) {
-		map.remove(key);
-	}
-
-	public void put(String key, Value v) {
-		map.put(key, v);
-	}
-
-	public IniFile addAll(String filePath) {
-		return this.addAll(new File(filePath));
-	}
-
-	public static final class Value {
-
-		private final String value;
-
-		public Value(String value) {
-			this.value = value;
-		}
-
-		public String value() {
-			return value;
-		}
-
-		public int asInt() throws NumberFormatException {
-			return Integer.parseInt(value);
-		}
-
-		public long asLong() throws NumberFormatException {
-			return Long.parseLong(value);
-		}
-
-		public float asFloat() throws NumberFormatException {
-			return Float.parseFloat(value);
-		}
-
-		public List<String> asCsv() {
-			if (value.contains(",")) {
-				return Arrays.asList(value.split(","));
+		KeyAndValue<ID, UniversalValue> remove = null;
+		for (var v : data) {
+			if (v.getId().equals(key)) {
+				remove = v;
+				break;
 			}
-			return Collections.EMPTY_LIST;
 		}
+		if (remove != null) {
+			data.remove(remove);
+		}
+	}
 
-		public int[] asCsvInt() {
-			if (value.contains(",")) {
-				List<String> csv = asCsv();
-				return csv.stream().mapToInt(i -> Integer.parseInt(i)).toArray();
-			}
-			return new int[0];
-		}
+	public void remove(ID key) {
+		remove(key.getId());
+	}
 
-		public Value asCsvOf(int i) {
-			return new Value(asCsv().get(i));
-		}
+	public void put(String key, UniversalValue v) {
+		put(new KeyAndValue<>(new IDImpl(key), v));
+	}
 
-		public boolean isTrue() {
-			return "true".equals(value.toLowerCase());
-		}
+	public void put(KeyAndValue<ID, UniversalValue> v) {
+		data.add(new KeyAndValue<>(v));
+	}
 
-		public boolean is(String val) {
-			return val.equals(value);
-		}
+	@Override
+	@NewInstance
+	public Iterator<KeyAndValue<ID, UniversalValue>> iterator() {
+		return data.iterator();
+	}
 
-		public boolean is(int val) {
-			return asInt() == val;
-		}
-
-		public boolean is(long val) {
-			return asLong() == val;
-		}
-
-		public boolean is(float val) {
-			return asFloat() == val;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
+	@Override
+	public String toString() {
+		return "IniFile{" + getFile().getName() + '}';
 	}
 
 }

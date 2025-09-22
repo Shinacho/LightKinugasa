@@ -1,360 +1,871 @@
- /*
-  * MIT License
-  *
-  * Copyright (c) 2025 しなちょ
-  *
-  * Permission is hereby granted, free of charge, to any person obtaining a copy
-  * of this software and associated documentation files (the "Software"), to deal
-  * in the Software without restriction, including without limitation the rights
-  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  * copies of the Software, and to permit persons to whom the Software is
-  * furnished to do so, subject to the following conditions:
-  *
-  * The above copyright notice and this permission notice shall be included in all
-  * copies or substantial portions of the Software.
-  *
-  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-  * SOFTWARE.
-  */
-
-
+/*
+ * Copyright (C) 2025 Shinacho
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package kinugasa.game.field4;
 
-import kinugasa.game.system.NPCSprite;
-import kinugasa.game.system.PCSprite;
+import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.util.LinkedList;
-import kinugasa.game.GameOption;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.List;
+import kinugasa.game.GameLog;
+import kinugasa.game.GameManager;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.Nullable;
+import kinugasa.game.annotation.Singleton;
+import kinugasa.game.event.ScriptCall;
+import kinugasa.game.field4.layer.FMNomalLayerSprite;
 import kinugasa.game.system.GameSystem;
+import kinugasa.game.system.actor.NPC;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.graphics.GraphicsUtil;
+import kinugasa.graphics.KImage;
+import kinugasa.object.EmptySprite;
+import kinugasa.object.FourDirection;
 import kinugasa.object.KVector;
-import kinugasa.object.BasicSprite;
+import kinugasa.object.Sprite;
+import kinugasa.util.FrameTimeCounter;
+import kinugasa.util.TimeCounter;
+import kinugasa.util.TimeCounterState;
 
 /**
- * フィールドマップの視点をカプセル化するクラスです。 このクラスにより、フィールドマップの各レイヤーが移動されます。
- * ただし、ビフォアレイヤーは移動されません。
+ * FieldMapCamera.<br>
  *
- * @vesion 1.0.0 - 2022/11/10_16:43:45<br>
- * @author Shinacho<br>
+ * @vesion 1.0.0 - 2025/07/23_22:28:52<br>
+ * @author Shinacho.<br>
  */
+@Singleton
 public class FieldMapCamera {
 
-	private FieldMap map;
-	private FieldMapCameraMode mode = FieldMapCameraMode.FOLLOW_TO_CENTER;
-	private final D2Idx playerLocationBuf;
-	private D2Idx currentCenter;
-	private D2Idx targetIdx;
+	private static boolean ignoreVhicle = false;
 
-	public FieldMapCamera(FieldMap map) {
-		this.map = map;
-		// 画面サイズとチップサイズからキャラクタ表示インデックスを計算
-		int chipW = map.getChipW();
-		int chipH = map.getChipH();
-		int screenW = (int) (GameOption.getInstance().getWindowSize().width / GameOption.getInstance().getDrawSize());
-		int screenH = (int) (GameOption.getInstance().getWindowSize().height / GameOption.getInstance().getDrawSize());
-		int x = (int) ((float) (screenW / 2 / chipW));
-		int y = (int) ((float) (screenH / 2 / chipH));
-		playerLocationBuf = new D2Idx(x, y);
-		currentCenter = playerLocationBuf.clone();
-		INSTANCE = this;
+	public static void setIgnoreVhicle(boolean canStepAll) {
+		FieldMapCamera.ignoreVhicle = canStepAll;
 	}
-	private static FieldMapCamera INSTANCE;
+	private FieldMap fm;
+	private FMNomalLayerSprite layer0;
+	private EmptySprite layer0MoveArea;
+	private D2Idx idxOfScreenCenter;
+	private D2Idx pcIDXOnTile;
+	private EmptySprite pcLocationOnScreen;
+	private int chipSize;
+	private EmptySprite windowArea;
+	private boolean isSmallMapX = false, isSmallMapY = false;
+	//
+	private TimeCounter debugRimmedBlinkRate;
+	private boolean debugRimmedBlinkVisible = false;
 
-	static FieldMapCamera getInstance() {
+	private static final FieldMapCamera INSTANCE = new FieldMapCamera();
+
+	public static FieldMapCamera getInstance() {
 		return INSTANCE;
 	}
 
-	D2Idx getCurrentCenter() {
-		return currentCenter;
+	void set(FieldMap fm) {
+		this.fm = fm;
+		init();
 	}
 
-	void setTargetIdx(D2Idx idx, float speed) {
-		this.targetIdx = idx;
-		//currentからtgtへの角度算出
-		KVector v = new KVector(currentCenter.asPoint2D(), targetIdx.asPoint2D());
-		v.setSpeed(speed);
-		map.setVector(v);
-		mode = FieldMapCameraMode.FREE;
+	private FieldMapCamera() {
 	}
 
-	public FieldMapCameraMode getMode() {
-		return mode;
-	}
+	private void init() {
+		debugMapImage = null;
+		layer0 = fm.getNomalLayerSprite().get(0);
+		chipSize = layer0.getChipDrawSize();
+		int insetsTop = GameManager.getInstance().getWindow().getInsets().top;
 
-	public void setMode(FieldMapCameraMode mode) {
-		this.mode = mode;
-		if (mode == FieldMapCameraMode.FOLLOW_TO_CENTER) {
-			updateToCenter();
+		//window Size
+		{
+			int w = GameManager.getInstance().getOption().getWindowSize().width;
+			int h = GameManager.getInstance().getOption().getWindowSize().height;
+			windowArea = new EmptySprite(0, 0, w, h);
 		}
+
+		//layer0 move area
+		{
+			float x = layer0.getWidth() - windowArea.getWidth();
+			float y = layer0.getHeight() - windowArea.getHeight();
+			layer0MoveArea = new EmptySprite(-x, -y, x + 1, y + 1);
+		}
+
+		//pcLocation
+		idxOfScreenCenter = new D2Idx(
+				(int) ((windowArea.getWidth() / chipSize / 2f)),
+				(int) (((windowArea.getHeight() - insetsTop) / chipSize / 2f))
+		);
+		pcIDXOnTile = idxOfScreenCenter.clone();
+		pcLocationOnScreen = new EmptySprite(idxOfScreenCenter.x * chipSize, idxOfScreenCenter.y * chipSize, chipSize, chipSize);
+		isSmallMapX = isSmallMapY = false;
 	}
 
-	public static String cameraCantMoveDesc;
+	void setLocationByCenter(D2Idx tgt) throws IllegalArgumentException {
+		if (layer0 == null) {
+			init();
+		}
+		if (tgt.x < 0 || tgt.y < 0) {
+			throw new IllegalArgumentException("tgt idx is over map size : " + tgt + " / " + layer0.getDataWidth() + "," + layer0.getDataHeight());
+		}
+		if (tgt.x >= layer0.getDataWidth() || tgt.y >= layer0.getDataHeight()) {
+			throw new IllegalArgumentException("tgt idx is over map size : " + tgt + " / " + layer0.getDataWidth() + "," + layer0.getDataHeight());
+		}
+		this.pcIDXOnTile = tgt.clone();
+		this.pcLocationOnScreen.setLocation(idxOfScreenCenter.x * chipSize, idxOfScreenCenter.y * chipSize);
+		{
+			int x = (int) (pcIDXOnTile.x * chipSize - windowArea.getCenterX() + pcLocationOnScreen.getWidth() / 2);
+			int y = (int) (pcIDXOnTile.y * chipSize - (windowArea.getCenterY() - pcLocationOnScreen.getHeight() / 2) + pcLocationOnScreen.getHeight() / 2);
 
-	public void move() {
-		//追従モードで次のチップが乗れない場合移動しない
-		if (mode == FieldMapCameraMode.FOLLOW_TO_CENTER) {
-			//次フレームの座標取得
-			int chipW = map.getChipW();
-			int chipH = map.getChipH();
-			BasicSprite base = map.getBaseLayer();
-			float fieldMapX = ((-base.getX() + (chipW / 2) - (chipW / 4) + base.getVector().reverse().getLocation().x)) / chipW;
-			float fieldMapY = ((-base.getY() + (chipH / 2) + (chipH / 4) + base.getVector().reverse().getLocation().y)) / chipH;
-			int x = (int) (playerLocationBuf.x + fieldMapX);
-			int y = (int) (playerLocationBuf.y + fieldMapY);
+			if (layer0MoveArea.contains(new Point2D.Float(-x, -y))) {
+				//移動可能
+				Point2D.Float gap = layer0.getLocation();
 
-			//領域外の判定
-			if (x < 1 || y < 1) {
-				cameraCantMoveDesc = "[1]x < 1 || y < 1";
+				fm.getNomalLayerSprite().forEach(p -> p.setLocation(-x, -y));
+				gap.x += layer0.getX();
+				gap.y += layer0.getY();
+
+				if (fm.getBackLayerSprite() != null) {
+					fm.getBackLayerSprite().addLocation(gap.x, gap.y);
+				}
+				fm.getAnimationLayerSprite().forEach(p -> p.addLocation(gap.x, gap.y));
+
+				//NPC
+				for (var v : fm.getNPCMap().getMap().entrySet()) {
+					D2Idx i = v.getKey();
+					NPC n = v.getValue();
+					float nx = gap.x + (i.x * chipSize);
+					float ny = gap.y + (i.y * chipSize);
+					n.getSprite().setLocation(nx, ny);
+				}
+
+				if (fm.isDebugMode()) {
+					GameLog.print("FM SET:" + fm.getTile(pcIDXOnTile));
+				}
 				return;
 			}
-			if (map.getBaseLayer().getDataWidth() <= x + 1 || map.getBaseLayer().getDataHeight() <= y + 1) {
-				cameraCantMoveDesc = "[1]x > dataWidth || y > dataHeight";
+		}
+		//小さいマップの判定
+		{
+			if (layer0.getDataWidth() < idxOfScreenCenter.x * 2) {
+				isSmallMapX = true;
+			}
+			if (layer0.getDataHeight() < idxOfScreenCenter.y * 2) {
+				isSmallMapY = true;
+			}
+			if (isSmallMapX || isSmallMapY) {
+
+				int x = (int) (isSmallMapX
+						? this.windowArea.getCenterX() - layer0.getWidth() / 2
+						: -(pcIDXOnTile.x * chipSize - windowArea.getCenterX() + pcLocationOnScreen.getWidth() / 2));
+				int y = (int) (isSmallMapY
+						? this.windowArea.getCenterY() - layer0.getHeight() / 2
+						: -(pcIDXOnTile.y * chipSize - (windowArea.getCenterY() - pcLocationOnScreen.getHeight() / 2) + pcLocationOnScreen.getHeight() / 2));
+
+				//移動可能
+				Point2D.Float gap = layer0.getLocation();
+
+				fm.getNomalLayerSprite().forEach(p -> p.setLocation(x, y));
+				gap.x += layer0.getX();
+				gap.y += layer0.getY();
+				if (fm.getBackLayerSprite() != null) {
+					fm.getBackLayerSprite().addLocation(gap.x, gap.y);
+				}
+				fm.getAnimationLayerSprite().forEach(p -> p.addLocation(gap.x, gap.y));
+
+				//NPC
+				for (var v : fm.getNPCMap().getMap().entrySet()) {
+					D2Idx i = v.getKey();
+					NPC n = v.getValue();
+					float nx = gap.x + (i.x * chipSize);
+					float ny = gap.y + (i.y * chipSize);
+					n.getSprite().setLocation(nx, ny);
+				}
+
+				//PC
+				{
+					float px = layer0.getX() + (pcIDXOnTile.x * chipSize);
+					float py = layer0.getY() + (pcIDXOnTile.y * chipSize);
+
+					this.pcLocationOnScreen.setLocation(px, py);
+
+				}
+
+				if (fm.isDebugMode()) {
+					GameLog.print("FM SET *SMALL[" + isSmallMapX + "," + isSmallMapY + "]*:" + fm.getTile(pcIDXOnTile));
+				}
 				return;
 			}
 
-			//NPC衝突判定
-			if (map.getNpcStorage().get(new D2Idx(x, y)) != null) {
-				cameraCantMoveDesc = "[1]NPC hit[" + map.getNpcStorage().get(new D2Idx(x, y)) + "]";
-				NPCSprite npc = map.getNpcStorage().get(new D2Idx(x, y));
+		}
+		{
+			float x;
+			if (pcIDXOnTile.x < idxOfScreenCenter.x) {
+				x = 0;
+			} else if (pcIDXOnTile.x > (layer0.getDataWidth() - idxOfScreenCenter.x)) {
+				x = layer0MoveArea.getWidth() - 1;
+			} else {
+				x = (int) (pcIDXOnTile.x * chipSize - windowArea.getCenterX() + pcLocationOnScreen.getWidth() / 2);
+			}
+			float y;
+			if (pcIDXOnTile.y < idxOfScreenCenter.y) {
+				y = 0;
+			} else if (pcIDXOnTile.y > (layer0.getDataHeight() - idxOfScreenCenter.y)) {
+				y = layer0MoveArea.getHeight() - 1;
+			} else {
+				y = (int) (pcIDXOnTile.y * chipSize - windowArea.getCenterY() + pcLocationOnScreen.getHeight() / 2);
+			}
+			if (layer0MoveArea.contains(new Point2D.Float(-x, -y))) {
+				//移動可能
+				Point2D.Float gap = layer0.getLocation();
+
+				fm.getNomalLayerSprite().forEach(p -> p.setLocation(-x, -y));
+				gap.x += layer0.getX();
+				gap.y += layer0.getY();
+				if (fm.getBackLayerSprite() != null) {
+					fm.getBackLayerSprite().addLocation(gap.x, gap.y);
+				}
+				fm.getAnimationLayerSprite().forEach(p -> p.addLocation(gap.x, gap.y));
+
+				//NPC
+				for (var v : fm.getNPCMap().getMap().entrySet()) {
+					D2Idx i = v.getKey();
+					NPC n = v.getValue();
+					float nx = gap.x + (i.x * chipSize);
+					float ny = gap.y + (i.y * chipSize);
+					n.getSprite().setLocation(nx, ny);
+				}
+
+				this.pcLocationOnScreen.setLocation(pcIDXOnTile.x * chipSize + gap.x, pcIDXOnTile.y * chipSize + gap.y);
+				if (fm.isDebugMode()) {
+					GameLog.print("FM SET *RIM* :" + fm.getTile(pcIDXOnTile));
+				}
 				return;
+			} else {
+				throw new AssertionError("FieldMapCamera initial location is over moveable area *RIM");
 			}
 
-			//乗れるチップかの判定
-			if (!VehicleStorage.getInstance().getCurrentVehicle().isStepOn(map.getTile(new D2Idx(x, y)).getChip())) {
-				cameraCantMoveDesc = "[1]cant step[" + map.getTile(new D2Idx(x, y)).getChip() + "]";
-				return;
+		}
+
+	}
+
+	public void move(Point2D.Float p) {
+		move(p.x, p.y);
+	}
+
+	public void move(float xSpeed, float ySpeed) {
+		D2Idx prev = pcIDXOnTile.clone();
+		move(xSpeed < 0 ? FourDirection.WEST : FourDirection.EAST, Math.abs(xSpeed));
+		move(ySpeed < 0 ? FourDirection.NORTH : FourDirection.SOUTH, Math.abs(ySpeed));
+		if (!pcIDXOnTile.equals(prev)) {
+			//新しいタイルに乗った
+			debugMovePrint();
+		}
+	}
+
+	private void move(FourDirection d, float speed) {
+		if (d == null) {
+			return;
+		}
+		KVector v = new KVector(d, speed);
+		if (v.getSpeed() == 0) {
+			return;
+		}
+		KVector v2 = v.reverse();
+		Point2D.Float layer0Next = layer0.simulateMove(v2);
+		Point2D.Float plosNext = pcLocationOnScreen.simulateMoveCenterLocation(v);
+
+		if (isSmallMapX) {
+			switch (d) {
+				case EAST, WEST -> {
+					plosMoveSmall(plosNext);
+				}
+				case NORTH, SOUTH -> {
+					if (!isSmallMapY) {
+						layerMove(plosNext, layer0Next, v2);
+					}
+				}
 			}
 		}
-		cameraCantMoveDesc = null;
-
-		if (map.getBackgroundLayerSprite() != null) {
-			map.getBackgroundLayerSprite().move();
+		if (isSmallMapY) {
+			switch (d) {
+				case NORTH, SOUTH -> {
+					plosMoveSmall(plosNext);
+				}
+				case EAST, WEST -> {
+					if (!isSmallMapX) {
+						layerMove(plosNext, layer0Next, v2);
+					}
+				}
+			}
 		}
-		map.getBacklLayeres().forEach(e -> e.move());
-		if (mode != FieldMapCameraMode.FOLLOW_TO_CENTER) {
-			//追従モードじゃない場合は同じベクトルで移動
-			FieldMap.getPlayerCharacter().get(0).move();
+		if (isSmallMapX || isSmallMapY) {
+			return;
+		}
 
-		} else {
-			if (FieldMap.getPlayerCharacter().size() > 1) {
-				FieldMap.getPlayerCharacter().subList(1, FieldMap.getPlayerCharacter().size()).forEach(p -> p.move());
+		RimInfo ri = isRimArea();
+
+		if (layer0MoveArea.contains(layer0Next) && !ri.any()) {
+			layerMove(plosNext, layer0Next, v2);
+		}
+
+		MoveInfo m = getMoveInfo(ri, plosNext);
+
+		if (m.plosMove) {
+			plosMoveRim(plosNext);
+		}
+
+		if (m.layerMove) {
+			if (layer0MoveArea.contains(layer0Next)) {
+				layerMove(plosNext, layer0Next, v2);
 			}
 		}
 
-		map.getNpcStorage().forEach(e -> e.move());
-		map.getFrontlLayeres().forEach(e -> e.move());
-		map.getFrontAnimation().forEach(e -> e.move());
-		//移動後の座標再計算
-		//NPCの位置更新
-		int chipW = map.getChipW();
-		int chipH = map.getChipH();
+	}
 
-		BasicSprite base = map.getBaseLayer();
-		float fieldMapX = ((-base.getX() + (chipW / 2) - (chipW / 4) + base.getVector().reverse().getLocation().x)) / chipW;
-		float fieldMapY = ((-base.getY() + (chipH / 2) + (chipH / 4) + base.getVector().reverse().getLocation().y)) / chipH;
-		int x = (int) (playerLocationBuf.x + fieldMapX);
-		int y = (int) (playerLocationBuf.y + fieldMapY);
-		currentCenter = new D2Idx(x, y);
-		switch (mode) {
-			case FOLLOW_TO_CENTER:
-				//追従モードの場合、キャラクタの座標を再計算する
-				//プレイヤーキャラクター（中心）IDX更新
+	private void npcMove(KVector kv) {
+		for (var v : fm.getNPCMap()) {
+			v.getSprite().fmMove(kv);
+		}
+		var pcList = GameSystem.getInstance().getPcList();
+		for (int i = 1; i < pcList.size(); i++) {
+			pcList.get(i).getSprite().fmMove(kv);
+		}
+	}
 
-				//領域外の判定
-				if (x < 1 || y < 1) {
-					cameraCantMoveDesc = "[2]x < 1 || y < 1";
-					return;
+	@Nullable
+	private KImage debugMapImage;
+
+	public class RimInfo {
+
+		public final boolean north, south, east, west;
+
+		public RimInfo(boolean north, boolean south, boolean east, boolean west) {
+			this.north = north;
+			this.south = south;
+			this.east = east;
+			this.west = west;
+		}
+
+		public boolean any() {
+			return north || south || east || west;
+		}
+
+	}
+
+	public RimInfo isRimArea() {
+		float speed = FieldMapSystem.getInstance().getCurrentVehicle().getSpeed();
+
+		boolean north, south, east, west;
+
+		KVector v = new KVector(FourDirection.NORTH, speed);
+		north = !layer0MoveArea.contains(layer0.simulateMove(v.reverse()));
+
+		v = new KVector(FourDirection.SOUTH, speed);
+		south = !layer0MoveArea.contains(layer0.simulateMove(v.reverse()));
+
+		v = new KVector(FourDirection.EAST, speed);
+		east = !layer0MoveArea.contains(layer0.simulateMove(v.reverse()));
+
+		v = new KVector(FourDirection.WEST, speed);
+		west = !layer0MoveArea.contains(layer0.simulateMove(v.reverse()));
+		return new RimInfo(north, south, east, west);
+	}
+
+	public void draw(GraphicsContext g, List<? extends Sprite> pcSprite) {
+		if (fm.getBackLayerSprite() != null) {
+			fm.getBackLayerSprite().draw(g);
+		}
+		fm.getNomalLayerSprite().forEach(p -> p.draw(g));
+		if (fm.isDebugMode()) {
+			debugDraw(g);
+		}
+		fm.getNPCMap().values().forEach(p -> p.getSprite().draw(g));
+		pcSprite.forEach(p -> p.draw(g));
+		fm.getFrontLayerSprite().draw(g);
+	}
+
+	private void debugDraw(GraphicsContext g) {
+
+		//中心レティクル
+		{
+			Point2D.Float p1 = new Point2D.Float(0, 0);
+			Point2D.Float p2 = new Point2D.Float(GameManager.getInstance().getOption().getWindowSize().width,
+					GameManager.getInstance().getOption().getWindowSize().height);
+			g.setColor(new Color(Color.YELLOW.getRed(), Color.YELLOW.getGreen(), Color.YELLOW.getBlue(), 128));
+			g.drawLine(p1, p2);
+			g.drawLine(p2.x, p1.y, p1.x, p2.y);
+			g.setColor(Color.YELLOW);
+			String v = (int) windowArea.getCenterX() + "," + (int) windowArea.getCenterY();
+			g.drawString("SCREEN_CENTER:" + v, 4, 54);
+		}
+		//Rimmed
+		{
+			g.setColor(Color.YELLOW);
+			RimInfo i = isRimArea();
+			List<String> v = new ArrayList<>();
+			if (i.north) {
+				v.add("N");
+			}
+			if (i.south) {
+				v.add("S");
+			}
+			if (i.east) {
+				v.add("E");
+			}
+			if (i.west) {
+				v.add("W");
+			}
+			g.drawString("RIM:" + (v.isEmpty() ? "-" : String.join(",", v)), 4, 42);
+
+			//RIMMED AREA
+			g.drawRect((int) layer0.getX(), (int) layer0.getY(), (int) layer0MoveArea.getWidth(), (int) layer0MoveArea.getHeight());
+
+			if (debugRimmedBlinkRate == null) {
+				debugRimmedBlinkRate = new FrameTimeCounter(12);
+			}
+			if (isRimArea().any()) {
+				if (debugRimmedBlinkRate.update() == TimeCounterState.ACTIVE) {
+					debugRimmedBlinkRate.reset();
+					debugRimmedBlinkVisible = !debugRimmedBlinkVisible;
 				}
-				if (map.getBaseLayer().getDataWidth() <= x + 1 || map.getBaseLayer().getDataHeight() <= y + 1) {
-					cameraCantMoveDesc = "[2]x > dataWidth || y > dataHeight";
-					return;
+				if (debugRimmedBlinkVisible) {
+					g.drawString("RIM", (int) windowArea.getCenterX() - 10, (int) windowArea.getCenterY() - 30);
 				}
-				//NPC衝突判定
-				if (map.getNpcStorage().get(new D2Idx(x, y)) != null) {
-					cameraCantMoveDesc = "[2]NPC hit[" + map.getNpcStorage().get(new D2Idx(x, y)) + "]";
-					NPCSprite npc = map.getNpcStorage().get(new D2Idx(x, y));
-					return;
-				}
-
-				//乗れるチップかの判定
-				if (!VehicleStorage.getInstance().getCurrentVehicle().isStepOn(map.getTile(new D2Idx(x, y)).getChip())) {
-					cameraCantMoveDesc = "[2]cant step[" + map.getTile(new D2Idx(x, y)).getChip() + "]";
-					return;
-				}
-				cameraCantMoveDesc = null;
-				map.setCurrentIdx(new D2Idx(x, y));
-				break;
-			case FREE:
-				// フリーモードの場合カメラのみをを動かし、何もしない
-				if (currentCenter.equals(targetIdx)) {
-					//オートムーブ終了
-					targetIdx = null;
-					map.setVector(new KVector(0, 0));
-				}
-				break;
-		}
-	}
-
-	public boolean hasTarget() {
-		return targetIdx != null;
-	}
-
-	D2Idx getTargetIdx() {
-		return targetIdx;
-	}
-
-	public void setSpeed(float speed) {
-		if (map.getBackgroundLayerSprite() != null) {
-			map.getBackgroundLayerSprite().setSpeed(speed);
-		}
-		map.getBacklLayeres().forEach(e -> e.setSpeed(speed));
-		map.getNpcStorage().forEach(e -> e.setSpeed(speed));
-		FieldMap.getPlayerCharacter().forEach(v -> v.setSpeed(speed));
-		map.getFrontlLayeres().forEach(e -> e.setSpeed(speed));
-		map.getFrontAnimation().forEach(e -> e.setSpeed(speed));
-	}
-
-	public void setAngle(float angle) {
-		if (map.getBackgroundLayerSprite() != null) {
-			map.getBackgroundLayerSprite().setAngle(angle);
-		}
-		map.getBacklLayeres().forEach(e -> e.setAngle(angle));
-		map.getNpcStorage().forEach(e -> e.setAngle(angle));
-		FieldMap.getPlayerCharacter().forEach(v -> v.setAngle(angle));
-		map.getFrontlLayeres().forEach(e -> e.setAngle(angle));
-		map.getFrontAnimation().forEach(e -> e.setAngle(angle));
-	}
-
-	public void setVector(KVector v) {
-		setSpeed(v.getSpeed());
-		setAngle(v.getAngle());
-	}
-
-	public void setLocation(float x, float y) {
-		setLocation(new Point2D.Float(x, y));
-	}
-
-	public void setLocation(Point2D.Float p) {
-		int chipW = map.getChipW();
-		int chipH = map.getChipH();
-
-		if (map.getBackgroundLayerSprite() != null) {
-			map.getBackgroundLayerSprite().setLocation(p);
-		}
-		map.getBacklLayeres().forEach(e -> e.setLocation(p));
-		map.getNpcStorage().forEach(e -> e.setLocation(p));
-		FieldMap.getPlayerCharacter().forEach(v -> v.setLocation(p));
-		map.getFrontlLayeres().forEach(e -> e.setLocation(p));
-		float fieldMapX = map.getBaseLayer().getX();
-		float fieldMapY = map.getBaseLayer().getY();
-		for (FieldAnimationSprite s : map.getFrontAnimation()) {
-			float xx = fieldMapX + (s.getIdx().x * chipW);
-			float yy = fieldMapY + (s.getIdx().y * chipH);
-			s.setLocation(xx, yy);
-		}
-	}
-
-	public void setX(float x) {
-		int chipW = map.getChipW();
-
-		if (map.getBackgroundLayerSprite() != null) {
-			map.getBackgroundLayerSprite().setX(x);
-		}
-		map.getBacklLayeres().forEach(e -> e.setX(x));
-		map.getNpcStorage().forEach(e -> e.setX(x));
-		FieldMap.getPlayerCharacter().get(0).setX(x);
-		map.getFrontlLayeres().forEach(e -> e.setX(x));
-		float fieldMapX = map.getBaseLayer().getX();
-		for (FieldAnimationSprite s : map.getFrontAnimation()) {
-			float xx = fieldMapX + (s.getIdx().x * chipW);
-			s.setX(xx);
-		}
-	}
-
-	public void setY(float y) {
-		int chipH = map.getChipH();
-
-		if (map.getBackgroundLayerSprite() != null) {
-			map.getBackgroundLayerSprite().setY(y);
-		}
-		map.getBacklLayeres().forEach(e -> e.setY(y));
-		map.getNpcStorage().forEach(e -> e.setY(y));
-		FieldMap.getPlayerCharacter().get(0).setY(y);
-		map.getFrontlLayeres().forEach(e -> e.setY(y));
-		float fieldMapY = map.getBaseLayer().getY();
-		for (FieldAnimationSprite s : map.getFrontAnimation()) {
-			float yy = fieldMapY + (s.getIdx().y * chipH);
-			s.setY(yy);
-		}
-	}
-
-	/**
-	 * フィールドマップのカレントIDXを中心に表示するよう、カメラ位置を更新します。
-	 */
-	public void updateToCenter() {
-		D2Idx currentIdx = map.getCurrentIdx();
-		int chipW = map.getChipW();
-		int chipH = map.getChipH();
-		int screenW = (int) (GameOption.getInstance().getWindowSize().width / GameOption.getInstance().getDrawSize());
-		int screenH = (int) (GameOption.getInstance().getWindowSize().height / GameOption.getInstance().getDrawSize());
-		//表示位置＝中心-画面サイズ
-		int x = currentIdx.x * chipW - (screenW / 2);
-		int y = currentIdx.y * chipH - (screenH / 2);
-		x += chipW / 2;
-		y += chipH / 2;
-		setLocation(-x, -y);
-		//キャラクタの位置修正
-		int charaW = FieldMap.getPlayerCharacter().get(0).getImageWidth();
-		int charaH = FieldMap.getPlayerCharacter().get(0).getImageHeight();
-
-		float cx = screenW / 2 - (charaW / 2);
-		float cy = screenH / 2 - (charaH / 2);
-		FieldMap.getPlayerCharacter().forEach(v -> v.setLocation(cx, cy));
-
-		//NPCの位置更新
-		for (NPCSprite n : map.getNpcStorage()) {
-			float nx = map.getBaseLayer().getX() + n.getCurrentIdx().x * chipW;
-			float ny = map.getBaseLayer().getY() + n.getCurrentIdx().y * chipH;
-			n.setLocation(nx, ny);
-		}
-		//PCの位置更新
-		for (PCSprite c : FieldMap.getPlayerCharacter().subList(1, FieldMap.getPlayerCharacter().size())) {
-			if (c.getCurrentIdx() != null) {
-				float nx = map.getBaseLayer().getX() + c.getCurrentIdx().x * chipW;
-				float ny = map.getBaseLayer().getY() + c.getCurrentIdx().y * chipH;
-				c.setLocation(nx, ny);
 			}
 		}
-		currentCenter = map.getCurrentIdx();
+		//FM領域デバッグ表示システム
+		if (debugMapImage == null) {
+			// base
+			{
+				//back Layer
+				Color backColor = fm.getBackLayerSprite() != null ? fm.getBackLayerSprite().getImage().averageColor() : new Color(0, 0, 0, 0);
+				debugMapImage = new KImage(layer0.getDataWidth(), layer0.getDataHeight()).fillBy(backColor);
+
+				//nomal layer
+				{
+					KImage.KRaster r = debugMapImage.asRaster();
+					for (var l : fm.getNomalLayerSprite()) {
+						for (int y = 0; y < l.getData().length; y++) {
+							for (int x = 0; x < l.getData()[y].length; x++) {
+								KImage cell = l.getData()[y][x].getImage();
+								if (!cell.hasClaerPixel()) {
+									r.of(x, y).to(cell.averageColor());
+								}
+							}
+						}
+					}
+					debugMapImage = r.updateImage();
+				}
+			}
+			debugMapImage.addAlpha(-128);
+		}
+		//AREA
+		{
+			int x = 36;
+			int y = 130;
+			//base
+			{
+				g.setColor(Color.YELLOW);
+				g.drawString("AREA", 4, 114);
+				g.drawImage(debugMapImage, x, y);
+				g.drawRect(x, y, debugMapImage.getWidth() - 1, debugMapImage.getHeight() - 1);
+			}
+			//Move Area
+			{
+				float w = layer0MoveArea.getWidth() * (debugMapImage.getWidth() / layer0.getWidth());
+				float h = layer0MoveArea.getHeight() * (debugMapImage.getHeight() / layer0.getHeight());
+				g.setColor(GraphicsUtil.transparent(Color.PINK, 72));
+				g.fillRect(x, y, (int) w, (int) h);
+			}
+			//PC IDX
+			{
+				g.setColor(Color.YELLOW);
+				g.fillRect(x + pcIDXOnTile.x, y + pcIDXOnTile.y, 1, 1);
+			}
+			//CAMERA
+			{
+				float wScale = debugMapImage.getWidth() / layer0.getWidth();
+				float hScale = debugMapImage.getHeight() / layer0.getHeight();
+				float cx = x + -layer0.getX() * wScale;
+				float cy = y + -layer0.getY() * hScale;
+				float w = windowArea.getWidth() * wScale;
+				float h = windowArea.getHeight() * hScale;
+				g.setColor(Color.BLACK);
+				g.drawRect((int) cx, (int) cy, (int) w, (int) h);
+			}
+		}
+		//PC IDX ON TILE
+		{
+			float x = fm.getNomalLayerSprite().get(0).getX();
+			float y = fm.getNomalLayerSprite().get(0).getY();
+
+			x += pcIDXOnTile.x * chipSize;
+			y += pcIDXOnTile.y * chipSize;
+
+			g.setColor(Color.YELLOW);
+			g.drawRect((int) x, (int) y, chipSize, chipSize);
+			String miniMapLabel = fm.getMiniMapLabelStorage().contains(pcIDXOnTile.getId())
+					? " \"" + fm.getMiniMapLabelStorage().get(pcIDXOnTile.getId()).getText().toString() + "\""
+					: "";
+			String event = fm.getEventScriptMap().has(pcIDXOnTile)
+					? fm.getEventScriptMap().get(pcIDXOnTile).getOriginal()
+					: "";
+
+			g.drawString("PC_IDX_ON_TILE:" + fm.getTile(pcIDXOnTile) + " " + miniMapLabel + " " + event, 4, 18);
+		}
+		//PC LOCATION ON LAYER
+		{
+			g.setColor(Color.YELLOW);
+			Point2D.Float p = pcLocationOnScreen.getCenter();
+			g.drawLine(p.x - chipSize, p.y, p.x + chipSize, p.y);
+			g.drawLine(p.x, p.y - chipSize, p.x, p.y + chipSize);
+			String v = (int) pcLocationOnScreen.getCenterX() + "," + (int) pcLocationOnScreen.getCenterY();
+			g.drawString("PC_LOCATION_ON_SCREEN:" + v, 4, 30);
+		}
+		//PC_LIST
+		{
+			g.setColor(Color.YELLOW);
+			var pcList = GameSystem.getInstance().getPcList();
+			for (int i = 0; i < pcList.size(); i++) {
+				Sprite s = pcList.get(i).getSprite();
+				g.drawRect(s);
+				g.drawString(pcList.get(i).getId(), (int) s.getX(), (int) s.getY());
+			}
+
+		}
+		//ベースレイヤー範囲
+		{
+			Rectangle2D.Float r = fm.getNomalLayerSprite().get(0).getBounds();
+			g.setColor(Color.YELLOW);
+			g.fillOval(r.x - 9, r.y - 9, 18, 18);
+			g.fillOval(r.x + r.width - 9, r.y - 9, 18, 18);
+			g.fillOval(r.x - 9, r.y + r.height - 9, 18, 18);
+			g.fillOval(r.x + r.width - 9, r.y + r.height - 9, 18, 18);
+			g.drawRect((int) r.x + 3, (int) r.y + 3, (int) r.width - 6, (int) r.height - 6);
+			String v = (int) layer0.getX() + "," + (int) layer0.getY() + "," + (int) layer0.getWidth() + "," + (int) layer0.getHeight();
+			g.drawString("LAYER[0]:" + v, 4, 66);
+		}
+		//IGNORE VHICLE
+		{
+			g.setColor(Color.YELLOW);
+			g.drawString("IGNORE_VHICLE:" + ignoreVhicle, 4, 78);
+		}
+		//CHIP_SIZE
+		{
+			g.setColor(Color.YELLOW);
+			g.drawString("CHIP_SIZE:" + chipSize, 4, 90);
+
+		}
+		//SMALL_MAP
+		{
+			g.setColor(Color.YELLOW);
+			g.drawString("SMALL_MAP:" + isSmallMapX + "," + isSmallMapY, 4, 102);
+
+		}
+		//EVENT
+		{
+			g.setColor(Color.YELLOW);
+			for (var v : fm.getEventScriptMap().all().entrySet()) {
+				D2Idx i = v.getKey();
+				ScriptCall sc = v.getValue();
+
+				float x = fm.getNomalLayerSprite().get(0).getX();
+				x += (i.x * chipSize);
+				float y = fm.getNomalLayerSprite().get(0).getY();
+				y += (i.y * chipSize);
+
+				g.drawRect((int) x, (int) y, chipSize, chipSize);
+				g.drawString(sc.getScriptName(), (int) x, (int) y);
+			}
+		}
+		//NPC
+		{
+			g.setColor(Color.YELLOW);
+			for (var v : fm.getNPCMap()) {
+				float x = fm.getNomalLayerSprite().get(0).getX();
+				x += (v.getSprite().getMoveModel().getInitialLocation().x * chipSize);
+				x += v.getSprite().getWidth() / 2;
+				float y = fm.getNomalLayerSprite().get(0).getY();
+				y += (v.getSprite().getMoveModel().getInitialLocation().y * chipSize);
+				y += v.getSprite().getHeight() / 2;
+
+				Point2D.Float c = v.getSprite().getCenter();
+				g.drawLine(x, y, c.x, c.y);
+
+				g.drawString(v.getId() + ":" + v.getSprite().getMoveModel().toString(), (int) v.getSprite().getX(), (int) v.getSprite().getY());
+				g.drawRect(v.getSprite());
+			}
+		}
 
 	}
 
-	//PCがいないマップはこちらを使用する
-	public void updateToCenterNoPC() {
-		D2Idx currentIdx = map.getCurrentIdx();
-		int chipW = map.getChipW();
-		int chipH = map.getChipH();
-		int screenW = (int) (GameOption.getInstance().getWindowSize().width / GameOption.getInstance().getDrawSize());
-		int screenH = (int) (GameOption.getInstance().getWindowSize().height / GameOption.getInstance().getDrawSize());
-		//表示位置＝中心-画面サイズ
-		int x = currentIdx.x * chipW - (screenW / 2);
-		int y = currentIdx.y * chipH - (screenH / 2);
-		x += chipW / 2;
-		y += chipH / 2;
-		setLocation(-x, -y);
+	public D2Idx getPcLocation() {
+		return pcIDXOnTile;
+	}
 
-		//NPCの位置更新
-		for (NPCSprite n : map.getNpcStorage()) {
-			float nx = map.getBaseLayer().getX() + n.getCurrentIdx().x * chipW;
-			float ny = map.getBaseLayer().getY() + n.getCurrentIdx().y * chipH;
-			n.setLocation(nx, ny);
+	public D2Idx getIdxOfScreenCenter() {
+		return idxOfScreenCenter;
+	}
+
+	@NewInstance
+	public Point2D.Float getPcLocationOnScreen() {
+		return pcLocationOnScreen.getCenter();
+	}
+
+	private void debugMovePrint() {
+		if (fm.isDebugMode()) {
+			GameLog.print("FMC MOVE " + fm.getTile(pcIDXOnTile));
 		}
-		currentCenter = map.getCurrentIdx();
+	}
 
+	private boolean plosMoveSmall(Point2D.Float plosNext) {
+		//plos移動
+		if (!layer0.contains(plosNext)) {
+			return false;
+		}
+		return plosMove(plosNext);
+	}
+
+	private boolean plosMoveRim(Point2D.Float plosNext) {
+		if (!windowArea.contains(plosNext)) {
+			return false;
+		}
+		return plosMove(plosNext);
+	}
+
+	private boolean plosMove(Point2D.Float plosNext) {
+
+		Point2D.Float newLocation = (Point2D.Float) plosNext.clone();
+		newLocation.x -= layer0.getX();
+		newLocation.x /= chipSize;
+		newLocation.y -= layer0.getY();
+		newLocation.y /= chipSize;
+		D2Idx prev = pcIDXOnTile.clone();
+		D2Idx newPcIDXOnTile = new D2Idx((int) (newLocation.x), (int) (newLocation.y));
+		if (!prev.equals(newPcIDXOnTile)) {
+			if (!canStep(newPcIDXOnTile, plosNext)) {
+				return false;
+			}
+		}
+		pcIDXOnTile = newPcIDXOnTile;
+		pcLocationOnScreen.setLocationByCenter(plosNext);
+		return true;
+	}
+
+	private boolean layerMove(Point2D.Float plosNext, Point2D.Float layer0Next, KVector v2) {
+		//通常移動
+		Point2D.Float newLocation = pcLocationOnScreen.getCenter();
+		newLocation.x -= layer0Next.getX();
+		newLocation.x /= chipSize;
+		newLocation.y -= layer0Next.getY();
+		newLocation.y /= chipSize;
+		D2Idx prev = pcIDXOnTile.clone();
+		D2Idx newPcIDXOnTile = new D2Idx((int) (newLocation.x), (int) (newLocation.y));
+
+		if (!prev.equals(newPcIDXOnTile)) {
+			if (!canStep(newPcIDXOnTile, plosNext)) {
+				return false;
+			}
+		}
+		pcIDXOnTile = newPcIDXOnTile;
+		fm.getNomalLayerSprite().forEach(p -> p.setVector(v2));
+		fm.getNomalLayerSprite().forEach(p -> p.move());
+		if (fm.getBackLayerSprite() != null) {
+			if (fm.getBackLayerSprite().isTraceMove()) {
+				fm.getBackLayerSprite().setVector(v2);
+				fm.getBackLayerSprite().move();
+			}
+		}
+		fm.getAnimationLayerSprite().forEach(p -> p.setVector(v2));
+		fm.getAnimationLayerSprite().forEach(p -> p.move());
+		npcMove(v2);
+		return true;
+	}
+
+	private boolean canStep(D2Idx newPcIDXOnTile, Point2D.Float plosNext) {
+		//領域判定
+		if (newPcIDXOnTile.x < 0 || newPcIDXOnTile.y < 0) {
+			return false;
+		}
+		if (newPcIDXOnTile.x >= layer0.getDataWidth() || newPcIDXOnTile.y >= layer0.getDataHeight()) {
+			return false;
+		}
+		//乗れるチップの判定
+		if (!ignoreVhicle) {
+			if (!FieldMapSystem.getInstance().getCurrentVehicle().canStep(fm.getTile(newPcIDXOnTile))) {
+				//移動不可だがPC0のTOだけする
+				pc0To(plosNext);
+				return false;
+			}
+		}
+		//NPC衝突判定
+		{
+			for (var n : fm.getNPCMap()) {
+				D2Idx npcTgt = n.getSprite().getMoveModel().getCurrentTgt();
+				if (npcTgt != null && newPcIDXOnTile.equals(npcTgt)) {
+					//移動不可だがPC0のTOだけする
+					pc0To(plosNext);
+					return false;
+				}
+			}
+		}
+		{
+			if (fm.getNPCMap().has(newPcIDXOnTile)) {
+				//移動不可だがPC0のTOだけする
+				pc0To(plosNext);
+				//乗れないが、TOUCHを起動する
+				NPC n = fm.getNPCMap().get(newPcIDXOnTile);
+				FieldMapSystem.getInstance().touch(n);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void pc0To(Point2D.Float p) {
+		FourDirection d = new KVector(pcLocationOnScreen.getCenter(), p).round();
+		if (!GameSystem.getInstance().getPcList().isEmpty()) {
+			GameSystem.getInstance().getPc0().getSprite().to(d);
+		}
+	}
+
+	private static class MoveInfo {
+
+		public final boolean plosMove;
+		public final boolean layerMove;
+
+		public MoveInfo(boolean plosMove, boolean layerMove) {
+			this.plosMove = plosMove;
+			this.layerMove = layerMove;
+		}
+
+		@Override
+		public String toString() {
+			return "moveInfo{" + "plosMove=" + plosMove + ", layerMove=" + layerMove + '}';
+		}
+
+	}
+
+	private MoveInfo getMoveInfo(RimInfo ri, Point2D.Float plosNext) {
+		boolean plosMove = false;
+		boolean layerMove = false;
+		if (ri.north) {
+			//north
+			if (plosNext.y < pcLocationOnScreen.getCenterY()) {
+				//layerは動かさず、plosを動かす
+				plosMove = true;
+			}
+			//south
+			if (plosNext.y > pcLocationOnScreen.getCenterY()) {
+				//centerYまでplosを動かす
+				plosMove = plosNext.y < windowArea.getCenterY();
+				layerMove = !plosMove;
+				if (!plosMove) {
+					plosNext.y = windowArea.getCenterY();
+				}
+			}
+			//west
+			if (plosNext.x < pcLocationOnScreen.getCenterX()) {
+				plosMove = ri.west ? true : plosNext.x > windowArea.getCenterX();
+				layerMove = !plosMove;
+			}
+			//east8
+			if (plosNext.x > pcLocationOnScreen.getCenterX()) {
+				plosMove = ri.east ? true : plosNext.x < windowArea.getCenterX();
+				layerMove = !plosMove;
+			}
+		}
+		if (ri.south) {
+			//south
+			if (plosNext.y > pcLocationOnScreen.getCenterY()) {
+				//layerは動かさず、plosを動かす
+				plosMove = true;
+			}
+			//north
+			if (plosNext.y < pcLocationOnScreen.getCenterY()) {
+				//centerYまでplosを動かす
+				plosMove = plosNext.y > windowArea.getCenterY();
+				layerMove = !plosMove;
+				if (!plosMove) {
+					plosNext.y = windowArea.getCenterY();
+				}
+			}
+			//west
+			if (plosNext.x < pcLocationOnScreen.getCenterX()) {
+				plosMove = ri.west ? true : plosNext.x > windowArea.getCenterX();
+				layerMove = !plosMove;
+			}
+			//east
+			if (plosNext.x > pcLocationOnScreen.getCenterX()) {
+				plosMove = ri.east ? true : plosNext.x < windowArea.getCenterX();
+				layerMove = !plosMove;
+			}
+		}
+		if (ri.west) {
+			//west
+			if (plosNext.x < pcLocationOnScreen.getCenterX()) {
+				//laxerは動かさず、plosを動かす
+				plosMove = true;
+			}
+			//east
+			if (plosNext.x > pcLocationOnScreen.getCenterX()) {
+				//centerXまでplosを動かす
+				plosMove = plosNext.x < windowArea.getCenterX();
+				layerMove = !plosMove;
+				if (!plosMove) {
+					plosNext.x = windowArea.getCenterX();
+				}
+			}
+			//north
+			if (plosNext.y < pcLocationOnScreen.getCenterY()) {
+				plosMove = ri.north ? true : plosNext.y > windowArea.getCenterY();
+				layerMove = !plosMove;
+			}
+			//south
+			if (plosNext.y > pcLocationOnScreen.getCenterY()) {
+				plosMove = ri.south ? true : plosNext.y < windowArea.getCenterY();
+				layerMove = !plosMove;
+			}
+		}
+		if (ri.east) {
+			//west
+			if (plosNext.x > pcLocationOnScreen.getCenterX()) {
+				//laxerは動かさず、plosを動かす
+				plosMove = true;
+			}
+			//east
+			if (plosNext.x < pcLocationOnScreen.getCenterX()) {
+				//centerXまでplosを動かす
+				plosMove = plosNext.x > windowArea.getCenterX();
+				layerMove = !plosMove;
+				if (!plosMove) {
+					plosNext.x = windowArea.getCenterX();
+				}
+			}
+			//north
+			if (plosNext.y < pcLocationOnScreen.getCenterY()) {
+				plosMove = ri.north ? true : plosNext.y > windowArea.getCenterY();
+				layerMove = !plosMove;
+			}
+			//south
+			if (plosNext.y > pcLocationOnScreen.getCenterY()) {
+				plosMove = ri.south ? true : plosNext.y < windowArea.getCenterY();
+				layerMove = !plosMove;
+			}
+		}
+		return new MoveInfo(plosMove, layerMove);
 	}
 
 }

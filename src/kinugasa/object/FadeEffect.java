@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,13 +20,15 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
-import kinugasa.game.GraphicsContext;
+import java.awt.Color;
+import kinugasa.graphics.ARGBColor;
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.ColorChanger;
+import kinugasa.graphics.ColorTransitionModel;
+import kinugasa.graphics.FadeCounter;
 import kinugasa.graphics.GraphicsUtil;
 
 /**
@@ -44,6 +46,14 @@ public class FadeEffect extends Effect {
 	private ColorChanger initialColor;
 	private boolean running = false;
 	private boolean ended = false;
+
+	public static FadeEffect alphaFade(float w, float h, Color baseColor, int speed) {
+		ColorTransitionModel r = ColorTransitionModel.valueOf(ARGBColor.getRed(ARGBColor.toARGB(baseColor)));
+		ColorTransitionModel g = ColorTransitionModel.valueOf(ARGBColor.getGreen(ARGBColor.toARGB(baseColor)));
+		ColorTransitionModel b = ColorTransitionModel.valueOf(ARGBColor.getBlue(ARGBColor.toARGB(baseColor)));
+		FadeCounter a = speed > 0 ? FadeCounter.fadeOut(speed) : FadeCounter.fadeIn(speed);
+		return new FadeEffect(w, h, new ColorChanger(r, g, b, a));
+	}
 
 	public FadeEffect(float width, float height, ColorChanger color) {
 		super(width, height);

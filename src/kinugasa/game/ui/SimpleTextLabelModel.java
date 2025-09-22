@@ -27,7 +27,7 @@ package kinugasa.game.ui;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import kinugasa.game.GraphicsContext;
+import kinugasa.graphics.GraphicsContext;
 
 /**
  * .

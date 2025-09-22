@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,15 +20,12 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
 import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -38,6 +35,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import kinugasa.game.I18NText;
+import kinugasa.graphics.KImage;
 
 /**
  *
@@ -116,12 +114,12 @@ public class Dialog {
 		return DialogOption.of(r);
 	}
 
-	public static void image(String title, BufferedImage image) {
-		JOptionPane.showMessageDialog(null, new ImageIcon(image), title, JOptionPane.DEFAULT_OPTION);
+	public static void image(String title, KImage image) {
+		JOptionPane.showMessageDialog(null, new ImageIcon(image.asAWTImage()), title, JOptionPane.DEFAULT_OPTION);
 	}
 
-	public static void image(I18NText title, BufferedImage image) {
-		JOptionPane.showMessageDialog(null, new ImageIcon(image), title.toString(), JOptionPane.DEFAULT_OPTION);
+	public static void image(I18NText title, KImage image) {
+		JOptionPane.showMessageDialog(null, new ImageIcon(image.asAWTImage()), title.toString(), JOptionPane.DEFAULT_OPTION);
 	}
 
 	public static DialogOption okOrCancel(I18NText title, DialogIcon icon, Object msg) {

@@ -3,7 +3,17 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/sample/SampleMain.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/event/ScriptSystem.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/system/actor/CharaSprite.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/event/ScriptBlock.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/event/ScriptParam.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/ui/Choice.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/field4/FieldMapCamera.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/sample/Test.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/system/actor/StandardFieldMapNPCMoveModel.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/field4/FieldMap.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/event/ScriptCall.java</file>
+            <file>file:/D:/Project/Kinugasa2/src/kinugasa/game/field4/FieldMapSystem.java</file>
         </group>
     </open-files>
 </project-private>

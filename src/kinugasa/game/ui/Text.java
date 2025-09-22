@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,24 +20,22 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import kinugasa.game.I18N;
-import kinugasa.game.Nullable;
+import kinugasa.game.annotation.Nullable;
 import kinugasa.game.system.GameSystemException;
 import kinugasa.util.FrameTimeCounter;
 import kinugasa.util.TimeCounter;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
 import kinugasa.game.I18NText;
-import kinugasa.graphics.KImage;
+import kinugasa.game.event.ScriptBlock;
+import kinugasa.game.event.ScriptCall;
 import kinugasa.util.TimeCounterState;
 
 /**
@@ -46,8 +44,6 @@ import kinugasa.util.TimeCounterState;
  * @author Shinacho<br>
  */
 public sealed class Text implements ID permits Choice {
-
-	public static final Text EMPTY = new Text("");
 
 	public static Text empty() {
 		return EMPTY;
@@ -94,8 +90,12 @@ public sealed class Text implements ID permits Choice {
 	private int visibleIdx = 0;
 	private String nextId;
 	private static int autoId = 0;
-	private static String lineSep = "/";
-	private KImage image;
+	private static String lineSep = "<br>";
+	@Nullable
+	private MWSpeaker speaker;
+	//このテキストが次に送られるときまたはChoiceの場合は選択されたときに実行されるAUTO属性イベント
+	@Nullable
+	private ScriptCall script;
 
 	public static final Text LINE_SEP = new Text("LINE_SEP");
 
@@ -125,13 +125,9 @@ public sealed class Text implements ID permits Choice {
 		this.text = "";
 	}
 
-	//i18nd
-	protected Text(String textID, String text, TimeCounter tc, int visibleIdx) {
-		if (text == null) {
-			throw new GameSystemException("text is null, use Text.empty");
-		}
+	protected Text(String textID, String textI18Nd, TimeCounter tc, int visibleIdx) {
 		this.id = textID;
-		this.text = text;
+		this.text = textI18Nd;
 		this.tc = tc;
 		this.visibleIdx = visibleIdx;
 		setReplace();
@@ -183,32 +179,6 @@ public sealed class Text implements ID permits Choice {
 		return t;
 	}
 
-	public static Text doI18N(String textID, String text, TimeCounter tc, int visibleIdx) {
-		if (text == null) {
-			throw new GameSystemException("text is null, use Text.empty");
-		}
-		Text t = new Text();
-		t.id = textID;
-		t.text = I18N.get(text);
-		t.tc = tc;
-		t.visibleIdx = visibleIdx;
-		t.setReplace();
-		return t;
-	}
-
-	public static Text doI18N(String text, TimeCounter tc, int visibleIdx) {
-		if (text == null) {
-			throw new GameSystemException("text is null, use Text.empty");
-		}
-		Text t = new Text();
-		t.id = "TEXT_" + autoId++;
-		t.text = I18N.get(text);
-		t.tc = tc;
-		t.visibleIdx = visibleIdx;
-		t.setReplace();
-		return t;
-	}
-
 	public static Text of(String text) {
 		if (text == null) {
 			throw new GameSystemException("text is null, use Text.empty");
@@ -225,10 +195,10 @@ public sealed class Text implements ID permits Choice {
 			throw new GameSystemException("text is null, use Text.empty");
 		}
 		if (text.getKey() == null || text.getKey().isEmpty() || text.i18nd() == null || text.i18nd().isEmpty()) {
-			throw new GameSystemException("text is null, use Text.empty");
+			throw new GameSystemException("text is null, use Text.empty : " + text);
 		}
 		Text t = new Text();
-		t.id = "TEXT_" + autoId++;
+		t.id = text.getId();
 		t.text = text.toString();
 
 		t.setReplace();
@@ -270,7 +240,97 @@ public sealed class Text implements ID permits Choice {
 		return t;
 	}
 
-	public static Text of(String textID, String text, TimeCounter tc, int visibleIdx) {
+	public static Text doI18N(String text, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = "TEXT_" + autoId++;
+		t.text = I18N.get(text);
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text doI18N(String textID, String text, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = textID;
+		t.text = I18N.get(text);
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text doI18N(String textID, String text, TimeCounter tc, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = textID;
+		t.text = I18N.get(text);
+		t.tc = tc;
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text doI18N(String text, TimeCounter tc, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = "TEXT_" + autoId++;
+		t.text = I18N.get(text);
+		t.tc = tc;
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text of(String text, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = "TEXT_" + autoId++;
+		t.text = text;
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text of(I18NText text, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		if (text.getKey() == null || text.getKey().isEmpty() || text.i18nd() == null || text.i18nd().isEmpty()) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = "TEXT_" + autoId++;
+		t.text = text.toString();
+
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text of(String textID, String text, MWSpeaker s) {
+		if (text == null) {
+			throw new GameSystemException("text is null, use Text.empty");
+		}
+		Text t = new Text();
+		t.id = textID;
+		t.text = text;
+		t.setReplace();
+		t.speaker = s;
+		return t;
+	}
+
+	public static Text of(String textID, String text, TimeCounter tc, MWSpeaker s) {
 		if (text == null) {
 			throw new GameSystemException("text is null, use Text.empty");
 		}
@@ -278,12 +338,12 @@ public sealed class Text implements ID permits Choice {
 		t.id = textID;
 		t.text = text;
 		t.tc = tc;
-		t.visibleIdx = visibleIdx;
 		t.setReplace();
+		t.speaker = s;
 		return t;
 	}
 
-	public static Text of(String text, TimeCounter tc, int visibleIdx) {
+	public static Text of(String text, TimeCounter tc, MWSpeaker s) {
 		if (text == null) {
 			throw new GameSystemException("text is null, use Text.empty");
 		}
@@ -291,22 +351,22 @@ public sealed class Text implements ID permits Choice {
 		t.id = "TEXT_" + autoId++;
 		t.text = text;
 		t.tc = tc;
-		t.visibleIdx = visibleIdx;
 		t.setReplace();
+		t.speaker = s;
 		return t;
 	}
 
-	public boolean hasImage() {
-		return image != null;
+	public boolean hasSpeaker() {
+		return speaker != null;
 	}
 
 	@Nullable
-	public KImage getImage() {
-		return image;
+	public MWSpeaker getSpeaker() {
+		return speaker;
 	}
 
-	public void setImage(KImage image) {
-		this.image = image;
+	public void setSpeaker(MWSpeaker speaker) {
+		this.speaker = speaker;
 	}
 
 	public void setTextDirect(String t) {
@@ -355,6 +415,7 @@ public sealed class Text implements ID permits Choice {
 		return text;
 	}
 
+	@Deprecated
 	public String getVisibleText() {
 		if (text == null || text.isEmpty()) {
 			return "";
@@ -370,10 +431,11 @@ public sealed class Text implements ID permits Choice {
 		return visibleIdx;
 	}
 
-	public void allText() {
+	public Text allText() {
 		if (text != null) {
 			visibleIdx = text.length();
 		}
+		return this;
 	}
 
 	public boolean isAllVisible() {
@@ -403,14 +465,27 @@ public sealed class Text implements ID permits Choice {
 		this.nextId = nextId;
 	}
 
+	public void setScript(ScriptCall script) {
+		this.script = script;
+	}
+
+	public ScriptCall getScript() {
+		return script;
+	}
+
+	public Choice toChoice(List<Text> options) {
+		return Choice.of(options, this);
+	}
+
 	@Override
 	public String toString() {
-		return "Text{" + "name=" + id + ", nextId=" + nextId + '}';
+		return "Text{" + "id=" + id + ", next=" + nextId + '}';
 	}
 
 	public void reset() {
 		tc.reset();
 		visibleIdx = 0;
 	}
+	public static final Text EMPTY = Text.of("");
 
 }

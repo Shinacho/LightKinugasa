@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,13 +20,13 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.input;
 
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.geom.Point2D;
+import kinugasa.game.GameManager;
 
 /**
  * マウスによる入力状態を格納します.
@@ -69,10 +69,11 @@ public final class MouseState extends InputDeviceState {
 		this.IN_WINDOW = IN_WINDOW;
 		this.DRAG_NOW = DRAG_NOW;
 		this.WHEEL_VALUE = WHEEL_VALUE;
-		this.location = (Point) location.clone();
-		this.locationOnScreen = (Point) locationOnScreen.clone();
-		this.draggedLocation = draggedLocation;
-
+		this.location = new Point2D.Float(location.x, location.y);
+		this.locationOnScreen = new Point2D.Float(locationOnScreen.x, locationOnScreen.y);
+		if (draggedLocation != null) {
+			this.draggedLocation = new Point2D.Float(draggedLocation.x, draggedLocation.y);
+		}
 	}
 	/**
 	 * 左ボタンの入力状態です.
@@ -101,16 +102,16 @@ public final class MouseState extends InputDeviceState {
 	/**
 	 * ウインドウ上のカーソルの位置です.
 	 */
-	private Point location;
+	private Point2D.Float location;
 	/**
 	 * スクリーン上のカーソルの位置です.
 	 */
-	private Point locationOnScreen;
+	private Point2D.Float locationOnScreen;
 	/**
 	 * 0,0を表す座標です.
 	 */
 	private static final Point ZERO_POINT = new Point(0, 0);
-	private Point draggedLocation;
+	private Point2D.Float draggedLocation;
 
 	@Override
 	public boolean isAnyInput() {
@@ -138,14 +139,13 @@ public final class MouseState extends InputDeviceState {
 	}
 
 	/**
-	 * マウスのウインドウ上の位置を取得します.
-	 * この座標はタイトルバーを含めた座標となりますので、実際にはその補正が必要です。<br>
+	 * マウスのウインドウ上の位置を取得します. この座標はタイトルバーを含めた座標となりますので、実際にはその補正が必要です。<br>
 	 * 補正は、Game.gerWindowから行います。<br>
 	 *
 	 * @return ウインドウ上の位置のクローンです。<br>
 	 */
-	public Point getLocation() {
-		return (Point) location.clone();
+	public Point2D.Float getLocation() {
+		return (Point2D.Float) location.clone();
 	}
 
 	/**
@@ -153,7 +153,7 @@ public final class MouseState extends InputDeviceState {
 	 *
 	 * @return ウインドウの位置からのX位置を返します。
 	 */
-	public int getX() {
+	public float getX() {
 		return location.x;
 	}
 
@@ -162,7 +162,7 @@ public final class MouseState extends InputDeviceState {
 	 *
 	 * @return ウインドウの位置からのY置を返します。
 	 */
-	public int getY() {
+	public float getY() {
 		return location.y;
 	}
 
@@ -171,8 +171,22 @@ public final class MouseState extends InputDeviceState {
 	 *
 	 * @return スクリーン上の位置のクローンです。<br>
 	 */
-	public Point getLocationOnScreen() {
-		return (Point) locationOnScreen.clone();
+	public Point2D.Float getLocationOnScreen() {
+		return (Point2D.Float) locationOnScreen.clone();
+	}
+
+	public Point2D.Float getLocationOnVisibleArea() {
+		var v = GameManager.getInstance().getWindow().getInsets();
+		Point2D.Float r = getLocation();
+		r.x -= v.left;
+		r.y -= v.top;
+		if (GameManager.getInstance().getOption().getDrawSize() == 1f) {
+			return r;
+		}
+		r.x /= GameManager.getInstance().getOption().getDrawSize();
+		r.y /= GameManager.getInstance().getOption().getDrawSize();
+
+		return r;
 	}
 
 	/**
@@ -180,7 +194,7 @@ public final class MouseState extends InputDeviceState {
 	 *
 	 * @return スクリーンの左上からのX位置を返します。
 	 */
-	public int getXOnScreen() {
+	public float getXOnScreen() {
 		return locationOnScreen.x;
 	}
 
@@ -189,7 +203,7 @@ public final class MouseState extends InputDeviceState {
 	 *
 	 * @return スクリーンの左上からのY位置を返します。
 	 */
-	public int getYOnScreen() {
+	public float getYOnScreen() {
 		return locationOnScreen.y;
 	}
 
@@ -241,8 +255,8 @@ public final class MouseState extends InputDeviceState {
 	@Override
 	public MouseState clone() {
 		MouseState result = (MouseState) super.clone();
-		result.location = (Point) this.location.clone();
-		result.locationOnScreen = (Point) this.locationOnScreen.clone();
+		result.location = (Point2D.Float) this.location.clone();
+		result.locationOnScreen = (Point.Float) this.locationOnScreen.clone();
 		return result;
 	}
 }

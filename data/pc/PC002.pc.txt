@@ -1,0 +1,11 @@
+# PC
+# VisibleNameIDInjector
+
+PI={
+	#faceImage=data/image/face/npc001.png
+
+	waTime = 8
+	sprite=data/image/npc001.png
+
+	moveModel = follow
+}

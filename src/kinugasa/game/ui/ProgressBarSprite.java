@@ -27,15 +27,15 @@ package kinugasa.game.ui;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import kinugasa.game.GraphicsContext;
-import kinugasa.object.BasicSprite;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.object.Sprite;
 
 /**
  *
  * @vesion 1.0.0 - 2022/11/22_5:25:16<br>
  * @author Shinacho<br>
  */
-public class ProgressBarSprite extends BasicSprite {
+public class ProgressBarSprite extends Sprite {
 
 	private int val, initial, max;
 	private Color color = Color.GREEN;

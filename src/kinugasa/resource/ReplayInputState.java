@@ -25,7 +25,6 @@
 
 package kinugasa.resource;
 
-import kinugasa.object.ID;
 import java.io.Serializable;
 import kinugasa.game.input.InputState;
 

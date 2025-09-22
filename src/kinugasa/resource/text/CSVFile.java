@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,76 +20,56 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.text;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import kinugasa.game.GameLog;
 import kinugasa.game.system.UniversalValue;
-import kinugasa.resource.Input;
-import kinugasa.resource.InputStatus;
-import kinugasa.resource.Output;
-import kinugasa.resource.OutputResult;
+import kinugasa.object.FileObject;
 import kinugasa.util.StringUtil;
-import kinugasa.object.ID;
+import kinugasa.object.Saveable;
+import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileIOException;
+import kinugasa.resource.FileNotFoundException;
 
 /**
  *
  * @vesion 1.0.0 - 2021/11/23_6:23:42<br>
  * @author Shinacho<br>
  */
-public class CSVFile implements Input<CSVFile>, Output, Iterable<List<UniversalValue>>, ID {
+public class CSVFile extends FileObject implements Saveable<CSVFile>, Iterable<List<UniversalValue>> {
 
-	private File file;
 	private Charset charset;
+	private List<List<UniversalValue>> data = new ArrayList<>();
+	private boolean loaded = false;
 
 	public CSVFile(File file) {
-		this.file = file;
-		charset = Charset.forName("UTF-8");
+		super(file);
+		charset = StandardCharsets.UTF_8;
 	}
 
 	public CSVFile(String path) {
-		this.file = new File(path);
-		charset = Charset.forName("UTF-8");
-
+		this(new File(path));
 	}
 
 	public CSVFile(File file, Charset c) {
-		this.file = file;
+		super(file);
 		this.charset = c;
 	}
 
 	public CSVFile(String path, Charset c) {
-		this.file = new File(path);
+		this(new File(path), c);
 		this.charset = c;
-	}
-
-	public boolean exists() {
-		return file.exists();
-	}
-
-	@Override
-	public String getId() {
-		return file.getName();
-	}
-
-	@Override
-	public File getFile() {
-		return file;
-	}
-
-	public void setFile(File file) {
-		this.file = file;
 	}
 
 	public List<List<UniversalValue>> getData() {
@@ -110,52 +90,62 @@ public class CSVFile implements Input<CSVFile>, Output, Iterable<List<UniversalV
 	}
 
 	//--------------------------------------------------------------------------
-	private List<List<UniversalValue>> data = new ArrayList<>();
-
 	@Override
 	public CSVFile load() throws FileIOException {
+		if (!exists()) {
+			throw new FileNotFoundException(getFile());
+		}
 		data = new ArrayList<>();
 		try {
-			for (String line : Files.readAllLines(file.toPath(), charset)) {
+			for (String line : Files.readAllLines(getFile().toPath(), charset)) {
 				if (line.isEmpty() || line.equals("\r") || line.equals("\r\n")) {
 					continue;
 				}
+				if(line.trim().startsWith("#")){
+					continue;
+				}
+				if (line.contains("#")) {
+					line = line.substring(0, line.indexOf("#"));
+				}
+				line = line.trim();
 				data.add(new ArrayList<>(Arrays.stream(StringUtil.safeSplit(line, ",")).map(p -> new UniversalValue(p)).toList()));
 			}
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
 		}
+		loaded = true;
+		GameLog.print(getFile().getName() + " is loaded");
 		return this;
 	}
 
 	@Override
-	public void dispose() {
+	public void free() {
 		data.clear();
-		data = null;
+		loaded = false;
 	}
 
 	@Override
-	public InputStatus getInputStatus() {
-		return data == null ? InputStatus.NOT_LOADED : InputStatus.LOADED;
+	public boolean isLoaded() {
+		return loaded;
 	}
 
 	@Override
-	public OutputResult save() throws FileIOException {
-		return saveTo(file);
-	}
-
-	@Override
-	public OutputResult saveTo(File f) throws FileIOException {
+	public void save() throws FileNotFoundException, ContentsIOException {
 		List<String> lines = new ArrayList<>();
 		for (List<UniversalValue> l : data) {
 			lines.add(String.join(",", l.stream().map(p -> p.toString()).toList()));
 		}
 		try {
-			Files.write(f.toPath(), lines, charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(getFile().toPath(), lines, charset, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			GameLog.print(this + " is saved");
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
 		}
-		return OutputResult.OK;
+	}
+
+	@Override
+	public String toString() {
+		return "CSVFile{" + getFile().getName() + '}';
 	}
 
 }

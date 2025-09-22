@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.graphics;
 
 import java.awt.Graphics2D;
@@ -31,10 +29,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import kinugasa.game.Nullable;
+import kinugasa.game.annotation.CopyCtor;
+import kinugasa.game.annotation.Nullable;
 import kinugasa.object.CloneableObject;
 import kinugasa.object.Sprite;
-import kinugasa.resource.Updateable;
+import kinugasa.object.Updateable;
 import kinugasa.util.ArrayIndexModel;
 import kinugasa.util.SimpleIndex;
 import kinugasa.util.TimeCounter;
@@ -67,6 +66,20 @@ public class Animation extends CloneableObject implements Iterable<KImage>, Upda
 	private boolean repeat = true;
 	private boolean stop = false;
 	private boolean run = false;
+
+	@CopyCtor
+	public Animation(Animation a) {
+		setBy(a);
+	}
+
+	public void setBy(Animation a) {
+		this.visibleTime = a.visibleTime.clone();
+		this.index = a.index.clone();
+		this.images = new ArrayList<>(a.images);
+		this.repeat = a.repeat;
+		this.stop = a.stop;
+		this.run = a.run;
+	}
 
 	/**
 	 * 新しいアニメーションを構築します. このコンストラクタでは、配列インデックスは＋方向へループするシーケンシャルなモデルになります。<br>

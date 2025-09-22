@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,14 +20,11 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.sound;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -35,22 +32,21 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import kinugasa.game.DescSupport;
 import kinugasa.game.GameLog;
 import kinugasa.game.I18NText;
-import kinugasa.game.NotNewInstance;
-import kinugasa.game.NotNull;
-import kinugasa.game.Nullable;
-import kinugasa.game.UnneedTranslate;
-import kinugasa.game.VisibleNameSupport;
+import kinugasa.game.annotation.NotNewInstance;
+import kinugasa.game.annotation.NotNull;
+import kinugasa.game.annotation.Nullable;
+import kinugasa.game.annotation.UnneedTranslate;
+import kinugasa.game.VisibleNameIDInjector;
 import kinugasa.game.system.GameSystem;
-import kinugasa.object.UIDKey;
-import kinugasa.object.UIDSupport;
-import kinugasa.object.UIDValue;
+import kinugasa.object.FileObject;
 import kinugasa.resource.FileIOException;
-import kinugasa.resource.Input;
-import kinugasa.resource.InputStatus;
-import kinugasa.resource.Updateable;
+import kinugasa.object.Updateable;
+import kinugasa.resource.sound.tags.SoundTagSystem;
+import kinugasa.resource.sound.tags.SoundTagData;
+import kinugasa.resource.sound.tags.ID3V23TagKeys;
+import kinugasa.resource.sound.tags.StandardTXXXValue;
 import kinugasa.util.StopWatch;
 
 /**
@@ -58,8 +54,8 @@ import kinugasa.util.StopWatch;
  * @vesion 1.0.0 - 2024/08/14_22:10:39<br>
  * @author Shinacho<br>
  */
-public final class Sound
-		implements Input<Sound>, UIDSupport, VisibleNameSupport, DescSupport, Updateable<Sound.State>, Comparable<Sound> {
+public final class Sound extends FileObject
+		implements VisibleNameIDInjector<Sound>, Updateable<Sound.State>, Comparable<Sound> {//TrackNo順
 
 	@UnneedTranslate
 	public enum State {
@@ -76,40 +72,40 @@ public final class Sound
 	}
 
 	//-------------------------------------
-	private final UIDKey uidk;
-	private final UIDValue uidv;
-	private final File file;
-	private final Type type;
+	private Type type;
 	private int trackNo;
 	private State soundStatus;
-	private InputStatus inputStatus;
 	private MasterGain masterGain;
-	private FadeOutModel fadeOutModel;
 	private LoopPoint loopPoint;
 	private Clip clip;
-	private I18NText visibleName, desc;
+	private I18NText comment;
+	private FadeOutModel fadeOutModel;
 	private int pauseLocation = -1;
+	private SoundTagData tags;
 	//-------------------------------------
 
-	public Sound(Type t, String fileName) {
-		this(fileName, t, new File(fileName));
+	Sound(String fileName) {
+		this(new File(fileName));
 	}
 
-	public Sound(String id, Type t, String fileName) {
-		this(id, t, new File(fileName));
-	}
-
-	public Sound(String id, Type t, File f) {
-		this.uidk = UIDKey.of(id);
-		this.type = t;
-		this.file = f;
-		this.soundStatus = State.NOT_YET_LOADED;
-		this.inputStatus = InputStatus.NOT_LOADED;
-		this.uidv = createSoftUIDValue();
+	Sound(File f) {
+		super(f);
+		this.type = null;
+		this.soundStatus = State.NOT_YET_LOADED;;
 		this.masterGain = new MasterGain(1f);
 		this.fadeOutModel = null;
 		this.loopPoint = null;
 		this.clip = null;
+
+	}
+
+	@Override
+	public String getId() {
+		String res = super.getId();
+		if (res.contains(".")) {
+			res = res.substring(0, res.lastIndexOf("."));
+		}
+		return res;
 	}
 
 	@Override
@@ -136,11 +132,14 @@ public final class Sound
 	}
 
 	public Sound play() {
-		if (inputStatus == InputStatus.NOT_LOADED) {
+		if (!isLoaded()) {
 			throw new IllegalStateException("sound " + this.getId() + " is not yet loaded");
 		}
 		if (soundStatus == State.PLAYING) {
 			return this;
+		}
+		if (pauseLocation == - 1) {
+			clip.setFramePosition(0);
 		}
 		if (loopPoint != null) {
 			if (pauseLocation != -1) {
@@ -160,7 +159,7 @@ public final class Sound
 	}
 
 	public Sound pause() {
-		if (inputStatus == InputStatus.NOT_LOADED) {
+		if (!isLoaded()) {
 			throw new IllegalStateException("sound " + this.getId() + " is not yet loaded");
 		}
 		if (soundStatus == State.LOADED_STOP) {
@@ -173,7 +172,7 @@ public final class Sound
 	}
 
 	public Sound stop() {
-		if (inputStatus == InputStatus.NOT_LOADED) {
+		if (!isLoaded()) {
 			return this;
 		}
 		if (soundStatus == State.LOADED_STOP) {
@@ -221,7 +220,7 @@ public final class Sound
 	}
 
 	public Sound setMasterGainNow() {
-		if (getInputStatus() == InputStatus.NOT_LOADED) {
+		if (!isLoaded()) {
 			return this;
 		}
 		try {
@@ -274,31 +273,24 @@ public final class Sound
 		return type;
 	}
 
-	public Sound setVisibleName(I18NText visibleName) {
-		this.visibleName = visibleName;
-		return this;
-	}
-
-	public Sound setDesc(I18NText desc) {
-		this.desc = desc;
+	public Sound setComment(I18NText comment) {
+		this.comment = comment;
 		return this;
 	}
 
 	//-------------------------------------
 	//-------------------------------------------------------------------------
-	@Override
-	@NotNewInstance
-	@Deprecated
-	public File getFile() {
-		return file;
-	}
+	private boolean loaded = false;
 
 	@Override
 	public Sound load() throws FileIOException {
-		if (getInputStatus() == InputStatus.LOADED) {
+		if (isLoaded()) {
 			return this;
 		}
 		StopWatch watch = new StopWatch().start();
+
+		//ID3タグ
+		setTagData();
 		try (AudioInputStream stream = AudioSystem.getAudioInputStream(getFile())) {
 			DataLine.Info dInfo = new DataLine.Info(Clip.class, stream.getFormat());
 			clip = (Clip) AudioSystem.getLine(dInfo);
@@ -311,53 +303,44 @@ public final class Sound
 			throw new FileIOException(ex);
 		}
 		watch.stop();
-		inputStatus = InputStatus.LOADED;
 		soundStatus = State.LOADED_STOP;
-		if (GameSystem.isDebugMode()) {
-			GameLog.print("Sound is loaded id=[" + getId() + "](" + watch.getTime() + " ms)");
-		}
+		GameLog.print("Sound is loaded id=[" + getId() + "](" + watch.getTime() + " ms)");
+		loaded = true;
 		return this;
 	}
 
 	@Override
-	public void dispose() {
-		if (getInputStatus() == InputStatus.NOT_LOADED) {
+	public void free() {
+		if (!isLoaded()) {
 			return;
 		}
 		stop();
 		clip.flush();
 		clip.close();
 		clip = null;
-		inputStatus = InputStatus.NOT_LOADED;
 		soundStatus = State.NOT_YET_LOADED;
-		if (GameSystem.isDebugMode()) {
-			GameLog.print("Sound : [" + getId() + "] : is disposed");
-		}
+		tags = null;
+		setTag = false;
+		loaded = false;
+		GameLog.print("Sound : [" + getId() + "] : is disposed");
 	}
 
 	@Override
-	public InputStatus getInputStatus() {
-		return inputStatus;
+	public boolean isLoaded() {
+		return loaded;
 	}
 
-	@Override
-	public UIDKey getUIDKey() {
-		return uidk;
+	public void setType(Type type) {
+		this.type = type;
 	}
 
-	@Override
-	public UIDValue getUIDValue() {
-		return uidv;
+	public I18NText getComment() {
+		return comment;
 	}
 
-	@Override
-	public I18NText getVisibleName() {
-		return visibleName;
-	}
-
-	@Override
-	public I18NText getDesc() {
-		return desc;
+	public Sound setAutoClose() {
+		SoundSystem.getInstance().addAutoCloseSound(this);
+		return this;
 	}
 
 	@Override
@@ -365,35 +348,83 @@ public final class Sound
 		if (this.trackNo != o.trackNo) {
 			return Integer.compare(trackNo, o.trackNo);
 		}
-		return getUIDKey().getId().compareTo(o.getUIDKey().getId());
+		return getName().compareTo(o.getName());
+	}
+
+	@Nullable
+	public SoundTagData getTags() {
+		if (this.tags == null) {
+			try {
+				this.tags = SoundTagSystem.getTags(getFile());
+				if (GameSystem.isDebugMode()) {
+					GameLog.addIndent();
+					GameLog.print("SOUND " + getId() + " / ID3Tag : " + tags.getV2Tags());
+					GameLog.removeIndent();
+				}
+			} catch (Exception ex) {
+				if (GameSystem.isDebugMode()) {
+					GameLog.addIndent();
+					GameLog.print("! > ID3Tag Error : " + ex);
+					ex.printStackTrace();
+					GameLog.removeIndent();
+				}
+				this.tags = null;
+			}
+		}
+		return this.tags;
+	}
+
+	private boolean setTag = false;
+
+	public void setTagData() {
+		if (setTag) {
+			return;
+		}
+		getTags();
+		if (this.tags != null) {
+			//comment
+			if (this.tags.getV2Tags().containsKey(ID3V23TagKeys.COMM)) {
+				setComment(this.tags.getV2Tags().get(ID3V23TagKeys.COMM).asI18N());
+			}
+			//TXXX
+			StandardTXXXValue txxx = this.tags.getTXXXValue();
+			if (GameSystem.isDebugMode()) {
+				GameLog.addIndent();
+				GameLog.addIndent();
+				GameLog.print("TXXX : " + getId() + " / " + txxx);
+				GameLog.removeIndent();
+				GameLog.removeIndent();
+			}
+			setType(txxx.getType());
+			setMasterGain(txxx.getMasterGain());
+			setLoopPoint(txxx.getLoop());
+
+			//track
+			if (this.tags.getV2Tags().containsKey(ID3V23TagKeys.TRCK)) {
+				setTrackNo(this.tags.getV2Tags().get(ID3V23TagKeys.TRCK).trim().asInt());
+			}
+			setTag = true;
+		}
 	}
 	//--------------------------------------------------------------------------
 
 	@Override
 	public String toString() {
-		return "Sound{" + "uidv=" + uidv + ", file=" + file + ", type=" + type + ", trackNo=" + trackNo + ", soundStatus=" + soundStatus + ", inputStatus=" + inputStatus + ", masterGain=" + masterGain + ", fadeOutModel=" + fadeOutModel + ", loopPoint=" + loopPoint + ", visibleName=" + visibleName + ", desc=" + desc + '}';
-	}
-
-	@Override
-	public int hashCode() {
-		int hash = 5;
-		hash = 79 * hash + Objects.hashCode(this.uidv);
-		return hash;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		final Sound other = (Sound) obj;
-		return Objects.equals(this.uidv, other.uidv);
+		StringBuilder sb = new StringBuilder();
+		sb.append("Sound{");
+		sb.append("id=").append(getId());
+		sb.append(", type=").append(type);
+		sb.append(", trackNo=").append(trackNo);
+		sb.append(", soundStatus=").append(soundStatus);
+		sb.append(", masterGain=").append(masterGain);
+		sb.append(", loopPoint=").append(loopPoint);
+		sb.append(", comment=").append(comment);
+		sb.append(", fadeOutModel=").append(fadeOutModel);
+		sb.append(", pauseLocation=").append(pauseLocation);
+		sb.append(", tags=").append(tags);
+		sb.append(", loaded=").append(loaded);
+		sb.append('}');
+		return sb.toString();
 	}
 
 }

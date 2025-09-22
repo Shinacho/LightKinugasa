@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,12 +20,12 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.sound;
 
+import java.io.File;
 import kinugasa.resource.Storage;
+import kinugasa.resource.text.FileFormatException;
 
 /**
  * SoundStorage.<br>
@@ -37,8 +37,20 @@ public class SoundStorage extends Storage<Sound> {
 
 	private static final SoundStorage INSTANCE = new SoundStorage();
 
-	public static SoundStorage getInstance() {
+	static SoundStorage getInstance() {
 		return INSTANCE;
+	}
+
+	void init(File dir) throws FileFormatException {
+		for (var v : dir.listFiles()) {
+			if (v.isDirectory()) {
+				init(v);
+			}
+			if (!v.getName().toLowerCase().endsWith(".wav")) {
+				continue;
+			}
+			add(new Sound(v));
+		}
 	}
 
 }

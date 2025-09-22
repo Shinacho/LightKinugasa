@@ -25,7 +25,7 @@
 
 package kinugasa.game;
 
-import kinugasa.resource.NameNotFoundException;
+import kinugasa.resource.IDNotFoundException;
 
 /**
  * I18NReader.<br>
@@ -36,5 +36,5 @@ import kinugasa.resource.NameNotFoundException;
 @FunctionalInterface
 public interface I18NReader {
 
-	public String getValue(String key) throws NameNotFoundException;
+	public String getValue(String key) throws IDNotFoundException;
 }

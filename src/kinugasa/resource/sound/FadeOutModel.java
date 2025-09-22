@@ -27,7 +27,7 @@ package kinugasa.resource.sound;
 
 import java.util.Objects;
 import kinugasa.object.CloneableObject;
-import kinugasa.resource.Updateable;
+import kinugasa.object.Updateable;
 
 /**
  * これが設定された瞬間から適用される、音量の調整スライダー機能です。 音量がになったとき、サウンドは停止されキューから削除されます。

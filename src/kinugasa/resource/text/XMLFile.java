@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.text;
 
 import java.io.File;
@@ -37,19 +35,16 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import kinugasa.game.GameLog;
 import kinugasa.game.system.GameSystem;
+import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
-import kinugasa.resource.Input;
-import kinugasa.resource.InputStatus;
-import kinugasa.resource.Output;
-import kinugasa.resource.OutputResult;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.object.ID;
 import kinugasa.resource.FileIOException;
 
 /**
  * XMLファイルの展開とデータの管理を行います.
  * <br>
  * XMLデータはXMLElementクラスを使用し、木構造で表現されます。 ロードされたXMLReaderが持つノードは、ルートの1つのみです。<br>
+ * XMLは現状、Saveableではありません。これは必要ないのでまだ作っていないだけです。
  * <br>
  *
  * @version 1.0.0 - 2013/03/15_11:48:01.<br>
@@ -57,30 +52,16 @@ import kinugasa.resource.FileIOException;
  * <a href="mailto:d0211@live.jp">d0211@live.jp</a>&nbsp;).<br>
  * <br>
  */
-public final class XMLFile implements Input<XMLFile>, Output, Iterable<XMLElement>, ID {
+public final class XMLFile extends FileObject implements Iterable<XMLElement> {
 
 	private File file;
 
-	public XMLFile(File file) throws FileNotFoundException {
-		this.file = file;
+	public XMLFile(File file) {
+		super(file);
 	}
 
-	public XMLFile(String filePath) throws FileNotFoundException {
+	public XMLFile(String filePath) {
 		this(new File(filePath));
-	}
-
-	@Override
-	public File getFile() {
-		return file;
-	}
-
-	public void setFile(File file) {
-		this.file = file;
-	}
-
-	@Override
-	public String getId() {
-		return file.getName();
 	}
 
 	private static DocumentBuilderFactory openBuilderFactory() {
@@ -92,9 +73,13 @@ public final class XMLFile implements Input<XMLFile>, Output, Iterable<XMLElemen
 	}
 
 	private List<XMLElement> data;
+	private boolean loaded = false;
 
 	@Override
 	public XMLFile load() throws IllegalXMLFormatException, FileNotFoundException, FileIOException {
+		if (!exists()) {
+			throw new FileNotFoundException(getFile());
+		}
 		data = new ArrayList<>();
 		DocumentBuilderFactory builderFactory = openBuilderFactory();
 
@@ -113,43 +98,20 @@ public final class XMLFile implements Input<XMLFile>, Output, Iterable<XMLElemen
 		assert document != null : "document is null";
 
 		data.add(XMLParserUtil.createElement(document.getLastChild()));
-		if (GameSystem.isDebugMode()) {
-			GameLog.print("XMLFile [" + file.getName() + "] is loaded");
-		}
+		GameLog.print(getFile().getName() + " is loaded");
+		loaded = true;
 		return this;
 	}
 
 	@Override
-	public void dispose() {
+	public boolean isLoaded() {
+		return loaded;
+	}
+
+	@Override
+	public void free() {
 		data.clear();
-		data = null;
-	}
-
-	@Override
-	public InputStatus getInputStatus() {
-		return data == null ? InputStatus.NOT_LOADED : InputStatus.LOADED;
-	}
-
-	@Override
-	public OutputResult save() throws FileIOException {
-		//　XML出力はまだできません。
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	@Override
-	public OutputResult saveTo(File f) throws FileIOException {
-		//　XML出力はまだできません。
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-	}
-
-	public XMLFile add(XMLElement... e) {
-		data.addAll(Arrays.asList(e));
-		return this;
-	}
-
-	public XMLFile remove(XMLElement... e) {
-		data.removeAll(Arrays.asList(e));
-		return this;
+		loaded = false;
 	}
 
 	public boolean contains(XMLElement e) {
@@ -161,7 +123,7 @@ public final class XMLFile implements Input<XMLFile>, Output, Iterable<XMLElemen
 	}
 
 	public XMLElement getFirst() {
-		if (getInputStatus() != InputStatus.LOADED) {
+		if (!isLoaded()) {
 			throw new IllegalStateException("this file is not loaded : " + getId());
 		}
 		return data.get(0);
@@ -172,13 +134,9 @@ public final class XMLFile implements Input<XMLFile>, Output, Iterable<XMLElemen
 		return data.iterator();
 	}
 
-	public boolean exists() {
-		return file.exists();
-	}
-
 	@Override
 	public String toString() {
-		return "XMLFile{" + "file=" + file.getName() + '}';
+		return "XMLFile{" + file.getName() + '}';
 	}
 
 }

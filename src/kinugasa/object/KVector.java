@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,13 +20,12 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.object;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import kinugasa.game.field4.D2Idx;
 import kinugasa.util.MathUtil;
 
 /**
@@ -109,6 +108,10 @@ public class KVector extends CloneableObject {
 		v.setAngle(p1, p2);
 		this.angle = v.getAngle();
 		this.speed = v.getSpeed();
+	}
+
+	public KVector(D2Idx i1, D2Idx i2) {
+		this(i1.asPoint(), i2.asPoint());
 	}
 
 	public KVector(Point location) {

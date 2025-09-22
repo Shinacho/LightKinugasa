@@ -25,17 +25,17 @@
 
 package kinugasa.game;
 
+import kinugasa.graphics.GraphicsContext;
 import kinugasa.game.input.InputState;
 import kinugasa.object.Drawable;
-import kinugasa.resource.Disposable;
-import kinugasa.object.ID;
+import kinugasa.resource.ID;
 
 /**
  *
  * @vesion 1.0.0 - 2021/11/24_4:35:02<br>
  * @author Shinacho<br>
  */
-public abstract class GameLogic implements ID, Disposable, Drawable {
+public abstract class GameLogic implements ID,  Drawable {
 
 	protected final String name;
 	protected final GameManager gm;
@@ -53,8 +53,7 @@ public abstract class GameLogic implements ID, Disposable, Drawable {
 
 	public abstract void load();
 
-	@Override
-	public abstract void dispose();
+	public abstract void free();
 
 	public abstract void update(GameTimeManager gtm, InputState is);
 

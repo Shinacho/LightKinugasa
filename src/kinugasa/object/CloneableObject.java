@@ -25,8 +25,8 @@
 
 package kinugasa.object;
 
-import kinugasa.game.RequiresReturnTypeChange;
-import kinugasa.game.Virtual;
+import kinugasa.game.annotation.RequiresReturnTypeChange;
+import kinugasa.game.annotation.Virtual;
 
 /**
  *

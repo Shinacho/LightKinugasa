@@ -1,0 +1,49 @@
+# NPC
+# VisibleNameIDInjector
+
+PI={
+	speakerImage=data/image/faceImage.png
+	named=false
+
+	waTime = 6
+	sprite=data/image/npc001.png
+
+	moveModel = ROUND,1,1f
+}
+
+TOUCH={
+#
+#	openMessageWindow("T007").byMe();
+#
+#	nextTextAsChoice("T004", "YES", "NO");
+#	
+#	IF( lastSelectedChoiceIdxIs("0") )
+#		nextText("T005");
+#	ENDIF
+#	
+#	IF( lastSelectedChoiceIdxIs("1") )
+#		nextText("T006");
+#	ENDIF
+#	
+#	closeMessageWindow();
+}
+
+TALK={
+
+	openMessageWindow("T001").byMe();
+
+
+	nextText("T002");
+	nextText("T003");
+	nextTextAsChoice("T004", "YES", "NO");
+	
+	IF( lastSelectedChoiceIdxIs("0") )
+		nextText("T005");
+	ENDIF
+	
+	IF( lastSelectedChoiceIdxIs("1") )
+		nextText("T006");
+	ENDIF
+	
+	closeMessageWindow();
+}

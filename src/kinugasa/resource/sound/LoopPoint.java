@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,12 +20,10 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource.sound;
 
-import kinugasa.game.Nullable;
+import kinugasa.game.annotation.Nullable;
 
 /**
  *
@@ -63,9 +61,13 @@ public class LoopPoint {
 	public static Builder from(FramePosition from) {
 		return new Builder(from);
 	}
-	
-	public static LoopPoint nonUse(){
+
+	public static LoopPoint nonUse() {
 		return null;
+	}
+
+	public static LoopPoint eofToStart() {
+		return from(FramePosition.eof()).to(FramePosition.start());
 	}
 
 	public FramePosition getFrom() {

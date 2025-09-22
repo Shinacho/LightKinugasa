@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,20 +20,18 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game.ui;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.NoLoopCall;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.annotation.NoLoopCall;
 import kinugasa.graphics.ARGBColor;
 import kinugasa.graphics.ImageUtil;
 import kinugasa.graphics.RenderingQuality;
-import kinugasa.object.BasicSprite;
+import kinugasa.object.Sprite;
 
 /**
  * 1行テキスト表示用のスプライトです.
@@ -43,7 +41,7 @@ import kinugasa.object.BasicSprite;
  * @author Shinacho<br>
  * <br>
  */
-public class TextLabelSprite extends BasicSprite {
+public class TextLabelSprite extends Sprite {
 
 	private String text;
 	private TextLabelModel labelModel;
@@ -58,6 +56,10 @@ public class TextLabelSprite extends BasicSprite {
 		super(x, y, w, h);
 		this.text = text;
 		this.labelModel = labelModel;
+	}
+
+	public TextLabelSprite trim() {
+		return trimWSize().trimHSize();
 	}
 
 	@NoLoopCall("its heavy")
@@ -89,7 +91,7 @@ public class TextLabelSprite extends BasicSprite {
 
 	@NoLoopCall("its heavy")
 	public TextLabelSprite trimHSize() {
-		BufferedImage image = ImageUtil.newImage(2048, labelModel.getFontSize()*2);
+		BufferedImage image = ImageUtil.newImage(2048, labelModel.getFontSize() * 2);
 		Graphics2D g = ImageUtil.createGraphics2D(image, RenderingQuality.SPEED);
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, (int) getWidth(), (int) getHeight());
@@ -100,8 +102,8 @@ public class TextLabelSprite extends BasicSprite {
 
 		//テキストサイズの探索
 		int[][] pix = ImageUtil.getPixel2D(image);
-		for (int y = pix.length -1; y >= 0 ; y--) {
-			for (int x = 0; x < pix[y].length; x ++ ) {
+		for (int y = pix.length - 1; y >= 0; y--) {
+			for (int x = 0; x < pix[y].length; x++) {
 				if (ARGBColor.getRed(pix[y][x]) == 255) {
 					setHeight(y);
 					return this;
@@ -141,4 +143,12 @@ public class TextLabelSprite extends BasicSprite {
 			model.draw(g, this);
 		}
 	}
+
+	@Override
+	public TextLabelSprite clone() {
+		var r = (TextLabelSprite) super.clone();
+		r.labelModel = this.labelModel.clone();
+		return r;
+	}
+
 }

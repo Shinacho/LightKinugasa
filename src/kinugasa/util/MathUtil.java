@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,11 +20,11 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.util;
 
+import java.awt.geom.Point2D;
+import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.system.GameSystem;
 
 /**
@@ -137,4 +137,11 @@ public final class MathUtil {
 		}
 		return cos(angle < 0 ? angle + 360 : angle - 360);
 	}
+
+	@NewInstance
+	public static Point2D.Float clipOnCircle(Point2D.Float p) {
+		float v = (float) Math.hypot(p.x, p.y);
+		return new Point2D.Float(p.x / v, p.y / v);
+	}
+
 }

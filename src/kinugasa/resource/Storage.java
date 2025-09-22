@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,12 +20,9 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.resource;
 
-import kinugasa.object.ID;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,10 +40,10 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import kinugasa.game.CopyCtor;
+import kinugasa.game.annotation.CopyCtor;
 import kinugasa.game.GameLog;
-import kinugasa.game.NewInstance;
-import kinugasa.game.NotNewInstance;
+import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.system.GameSystem;
 import kinugasa.object.CloneableObject;
 import kinugasa.util.Random;
@@ -103,17 +100,17 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 	/**
 	 * 指定した名前のオブジェクトを取得します.
 	 *
-	 * @param key 取得するオブジェクトの名前を指定します。<br>
+	 * @param id 取得するオブジェクトの名前を指定します。<br>
 	 *
 	 * @return 指定した名前を持つオブジェクトを返します。<br>
 	 *
-	 * @throws NameNotFoundException 存在しない名前を指定した場合に投げられます。<br>
+	 * @throws IDNotFoundException 存在しない名前を指定した場合に投げられます。<br>
 	 */
-	public T get(String key) throws NameNotFoundException {
-		if (!contains(key)) {
-			throw new NameNotFoundException("! > Storage(" + getClass() + ") : get : not found : key=[" + key + "]");
+	public T get(String id) throws IDNotFoundException {
+		if (!contains(id)) {
+			throw new IDNotFoundException("! > Storage(" + getClass() + ") : get : not found : key=[" + id + "] / " + map.keySet());
 		}
-		return map.get(key);
+		return map.get(id);
 	}
 
 	public List<T> filter(Predicate<? super T> p) {
@@ -155,13 +152,20 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 		return map.get(key);
 	}
 
+	public T getOr(String key, T value) {
+		if (map.containsKey(key)) {
+			return map.get(key);
+		}
+		return value;
+	}
+
 	/**
 	 * このストレージに追加されているオブジェクトをすべて取得します. このメソッドの戻り値は参照ではありません。新しく作成されたリストです。<br>
 	 *
 	 * @return 保管されているすべてのオブジェクトのリストを返します。リストに格納される順番は ストレージに追加された順番と一致しません。<br>
 	 */
 	public List<T> asList() {
-		return new ArrayList<T>(getAll());
+		return new ArrayList<>(map.values());
 	}
 
 	/**
@@ -277,7 +281,7 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 			throw new NullPointerException("null : " + this + "/" + getClass());
 		}
 		if (val.getId() == null) {
-			throw new NameNotFoundException("null key : " + this);
+			throw new IDNotFoundException("null key : " + this);
 		}
 		if (getDirect().containsKey(val.getId())) {
 			throw new DuplicateNameException("! > Storage : add : duplicate name : name=[" + val.getId() + "] : ");
@@ -326,7 +330,7 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 	 */
 	public void put(T val) {
 		if (val == null) {
-			throw new NameNotFoundException("null : " + this);
+			throw new IDNotFoundException("null : " + this);
 		}
 		map.put(val.getId(), val);
 	}
@@ -367,7 +371,7 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 	 */
 	public void remove(T val) {
 		if (val == null) {
-			throw new NameNotFoundException("null : " + this);
+			throw new IDNotFoundException("null : " + this);
 		}
 		remove(val.getId());
 	}

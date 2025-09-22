@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
 import java.awt.Toolkit;
@@ -100,8 +98,6 @@ public final class PlayerConstants {
 
 	private boolean usingGamePad;
 
-	private int width, height;
-
 	/**
 	 * ゲーム開始時の設定によってキーボードが 使用できる状態であるかを調べます.
 	 *
@@ -144,19 +140,6 @@ public final class PlayerConstants {
 
 	public boolean isUsingGamePad() {
 		return usingGamePad;
-	}
-
-	void setSize(int w, int h) {
-		this.width = w;
-		this.height = h;
-	}
-
-	public int getWidth() {
-		return width;
-	}
-
-	public int getHeight() {
-		return height;
 	}
 
 }

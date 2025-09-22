@@ -28,15 +28,15 @@ package kinugasa.game.ui;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import kinugasa.game.GameTimeManager;
-import kinugasa.game.GraphicsContext;
-import kinugasa.object.BasicSprite;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.object.Sprite;
 
 /**
  *
  * @vesion 1.0.0 - 2021/11/29_16:52:17<br>
  * @author Shinacho<br>
  */
-public class FPSLabel extends BasicSprite {
+public class FPSLabel extends Sprite {
 
 	private GameTimeManager gtm;
 

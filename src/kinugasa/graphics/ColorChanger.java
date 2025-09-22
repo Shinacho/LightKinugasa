@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.graphics;
 
 import java.awt.Color;
@@ -42,6 +40,17 @@ import kinugasa.util.StringUtil;
  * @author Shinacho<br>
  */
 public class ColorChanger extends CloneableObject implements Statable {
+
+	public static ColorChanger monochrome(Color baseColor, int value, int speed) {
+		if (value < 0 || value > 255) {
+			throw new IllegalArgumentException("ColorChanger : color value is out of range : " + value);
+		}
+		int r = ARGBColor.getRed(ARGBColor.toARGB(baseColor));
+		int g = ARGBColor.getGreen(ARGBColor.toARGB(baseColor));
+		int b = ARGBColor.getBlue(ARGBColor.toARGB(baseColor));
+		
+		return new ColorChanger(new FadeCounter(r, speed), new FadeCounter(g, speed), new FadeCounter(b, speed), new FadeCounter(value, speed));
+	}
 
 	/**
 	 * 赤の遷移アルゴリズムです.

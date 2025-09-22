@@ -27,11 +27,11 @@ package kinugasa.game;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 
 /**
  *
@@ -120,6 +120,8 @@ public interface GameWindow {
 	public Rectangle getInternalBounds();
 
 	public Rectangle getVisibleBounds();
+	
+	public Point2D.Float getVisibleBoundsCenter();
 
 	/**
 	 * ウインドウの枠の幅を返します.

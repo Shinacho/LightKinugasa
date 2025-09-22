@@ -44,13 +44,13 @@ import org.w3c.dom.NodeList;
 public final class XMLParserUtil {
 
 	/**
-	 * ユーティリティうクラスです.
+	 * ユーティリティクラスです.
 	 */
 	private XMLParserUtil() {
 	}
 
 	/**
-	 * DOMノードインターフェースXMLElementクラスに変換します.
+	 * DOMをXMLElementクラスに変換します.
 	 * このメソッドは再帰的に処理されます。あるノードが持つ子ノードは
 	 * 以下のように展開されます。<br>
 	 * <br>
@@ -62,7 +62,7 @@ public final class XMLParserUtil {
 	 *
 	 * @param node 変換するノードを指定します。通常はルートノード(DOMドキュメントのLastChild)です。<br>
 	 *
-	 * @return DOMノードがから構築されたXMLElemtnクラスを返します。<br>
+	 * @return DOMノードから構築されたXMLElemtnクラスを返します。<br>
 	 */
 	public static XMLElement createElement(Node node) {
 		String nodeName = node.getNodeName();

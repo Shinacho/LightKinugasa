@@ -25,8 +25,8 @@
 
 package kinugasa.object;
 
-import kinugasa.game.GraphicsContext;
-import kinugasa.game.LoopCall;
+import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.annotation.LoopCall;
 
 /**
  * 画像を描画する方法をカプセル化します.

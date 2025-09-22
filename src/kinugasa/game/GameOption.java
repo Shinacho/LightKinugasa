@@ -1,4 +1,4 @@
- /*
+/*
   * MIT License
   *
   * Copyright (c) 2025 しなちょ
@@ -20,9 +20,7 @@
   * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE.
-  */
-
-
+ */
 package kinugasa.game;
 
 import kinugasa.graphics.RenderingQuality;
@@ -33,10 +31,7 @@ import java.awt.Point;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Locale;
 import javax.swing.ImageIcon;
-import kinugasa.graphics.GraphicsUtil;
-import kinugasa.resource.text.IniFile;
 
 /**
  * ゲーム起動時の画面サイズなどの設定です。ゲーム起動後にこのクラスを変更しても、反映されません。
@@ -44,147 +39,45 @@ import kinugasa.resource.text.IniFile;
  * @vesion 1.0.0 - 2021/08/17_5:42:55<br>
  * @author Shinacho<br>
  */
-public class GameOption {
+public class GameOption implements GameOptionValue {
 
-	private String title;
+	public enum Keys {
+
+	}
+	private final String title;
 	private Color backColor = new Color(0, 132, 116);
-	private Dimension windowSize;
-	private Point windowLocation;
-	private float drawSize;
-	private boolean useMouse;
-	private boolean useKeyboard;
-	private boolean useGamePad;
-	private boolean useLog;
-	private String logPath;
-	private int fps;
-	private RenderingQuality rq;
-	private String i18nFileName;
-	private boolean updateIfNotActive;
-	private String[] args = new String[]{};
-	private boolean debugMode = false;
+	private Point windowLocation = new Point(0, 0);
+	private Dimension windowSize = new Dimension(720, 480);
+	private float drawSize = 1f;
+	private boolean useMouse = true;
+	private boolean useKeyboard = true;
+	private boolean useGamePad = false;
 
+	private boolean useLog = true;
+	private String logPath = "./";
 	private String logName = "log_" + new SimpleDateFormat("yyyyMMddHHmmssSSS")
 			.format(Date.from(Instant.now())) + ".log";
+
+	private int fps = 60;
+	private RenderingQuality rq = RenderingQuality.SPEED;
+	private I18NReader i18nReader = null;
+
+	private boolean updateIfNotActive = false;
+
+	private String[] args = new String[]{};
+	private boolean debugMode = false;
+	private boolean useLock = false;
+
 	private ImageIcon icon = new ImageIcon(getClass().getResource("icon.png"));
+
 	private CloseEvent closeEvent = null;
 
-	public static final class Key {
-
-		public static final String TITLE = "TITLE";
-		public static final String BG_COLOR = "BG_COLOR";
-		public static final String SIZE = "SIZE";
-		public static final String LOCATION = "LOCATION";
-		public static final String DRAWSIZE = "DRAWSIZE";
-		public static final String LOCK = "LOCK";
-		public static final String MOUSE = "MOUSE";
-		public static final String KEY = "KEY";
-		public static final String GAMEPAD = "GAMEPAD";
-		public static final String LOG = "LOG";
-		public static final String LOG_PATH = "LOG_PATH";
-		public static final String FPS = "FPS";
-		public static final String RENDERING_Q = "RENDERING_Q";
-		public static final String RENDERING_M = "RENDERING_M";
-		public static final String LANG = "LANG";
-		public static final String UPDATE_IF_NOT_ACTIVE = "UPDATE_IF_NOT_ACTIVE";
-	}
-
-	public static GameOption fromIni(String filename) {
-		IniFile ini = new IniFile(filename).load();
-		GameOption go = new GameOption(ini.get(Key.TITLE).get().value());
-		go.backColor = GraphicsUtil.createColor(ini.get(Key.BG_COLOR).get().asCsv());
-		{
-			int w = ini.get(Key.SIZE).get().asCsvOf(0).asInt();
-			int h = ini.get(Key.SIZE).get().asCsvOf(1).asInt();
-			go.windowSize = new Dimension(w, h);
-		}
-		{
-
-			int x = ini.get(Key.LOCATION).get().asCsvOf(0).asInt();
-			int y = ini.get(Key.LOCATION).get().asCsvOf(1).asInt();
-			go.windowLocation = new Point(x, y);
-		}
-		go.drawSize = ini.get(Key.DRAWSIZE).get().asFloat();
-
-		go.useMouse = ini.get(Key.MOUSE).get().isTrue();
-		go.useKeyboard = ini.get(Key.KEY).get().isTrue();
-		go.useGamePad = ini.get(Key.GAMEPAD).get().isTrue();
-
-		go.useLog = ini.get(Key.LOG).get().isTrue();
-
-		go.logPath = ini.get(Key.LOG_PATH).get().value();
-		go.fps = ini.get(Key.FPS).get().asInt();
-		go.rq = RenderingQuality.valueOf(ini.get(Key.RENDERING_Q).get().value());
-		go.i18nFileName = ini.get(Key.LANG).get().value();
-		go.updateIfNotActive = ini.get(Key.UPDATE_IF_NOT_ACTIVE).get().isTrue();
-
-		return go;
-	}
-
-	public static GameOption defaultOption() {
-		return fromIni("default.ini");
+	public GameOption() {
+		this("My Game");
 	}
 
 	public GameOption(String name) {
-		if (INSTANCE != null) {
-			throw new IllegalStateException("GameOption is already exist, use getInstance()");
-		}
 		this.title = name;
-		setWindowLocation(new Point(0, 0));
-		setWindowSize(new Dimension(640, 480));
-		fps = 60;
-		setBackColor(new Color(0, 133, 116));
-		drawSize = 1f;
-		useKeyboard = useMouse = true;
-		INSTANCE = this;
-	}
-
-	private static GameOption INSTANCE;
-
-	public static GameOption getInstance() {
-		return INSTANCE;
-	}
-
-	public GameOption setTitle(String title) {
-		this.title = title;
-		return this;
-	}
-
-	public String[] getArgs() {
-		return args;
-	}
-
-	public GameOption setArgs(String[] args) {
-		this.args = args;
-		return this;
-	}
-
-	public GameOption setBackColor(Color backColor) {
-		this.backColor = backColor;
-		return this;
-	}
-
-	public GameOption setDebugMode(boolean debugMode) {
-		this.debugMode = debugMode;
-		return this;
-	}
-
-	public boolean isDebugMode() {
-		return debugMode;
-	}
-
-	public GameOption setWindowSize(Dimension windowSize) {
-		this.windowSize = windowSize;
-		return this;
-	}
-
-	public GameOption setWindowLocation(Point windowLocation) {
-		this.windowLocation = windowLocation;
-		return this;
-	}
-
-	public GameOption setDrawSize(float s) {
-		this.drawSize = s;
-		return this;
 	}
 
 	public GameOption setCenterOfScreen() {
@@ -197,6 +90,26 @@ public class GameOption {
 		if (windowLocation.y < 0) {
 			windowLocation.y = 0;
 		}
+		return this;
+	}
+
+	public GameOption setBackColor(Color backColor) {
+		this.backColor = backColor;
+		return this;
+	}
+
+	public GameOption setWindowLocation(Point windowLocation) {
+		this.windowLocation = windowLocation;
+		return this;
+	}
+
+	public GameOption setWindowSize(Dimension windowSize) {
+		this.windowSize = windowSize;
+		return this;
+	}
+
+	public GameOption setDrawSize(float drawSize) {
+		this.drawSize = drawSize;
 		return this;
 	}
 
@@ -225,6 +138,11 @@ public class GameOption {
 		return this;
 	}
 
+	public GameOption setLogName(String logName) {
+		this.logName = logName;
+		return this;
+	}
+
 	public GameOption setFps(int fps) {
 		this.fps = fps;
 		return this;
@@ -235,18 +153,34 @@ public class GameOption {
 		return this;
 	}
 
-	public GameOption setI18NFileName(Locale l) {
-		this.i18nFileName = l.getLanguage();
+	public GameOption setI18nReader(I18NReader i18nReader) {
+		this.i18nReader = i18nReader;
 		return this;
 	}
 
-	public GameOption setLogName(String logName) {
-		this.logName = logName;
+	public GameOption setUpdateIfNotActive(boolean updateIfNotActive) {
+		this.updateIfNotActive = updateIfNotActive;
 		return this;
 	}
 
-	public void setIcon(ImageIcon icon) {
+	public GameOption setArgs(String[] args) {
+		this.args = args;
+		return this;
+	}
+
+	public GameOption setDebugMode(boolean debugMode) {
+		this.debugMode = debugMode;
+		return this;
+	}
+
+	public GameOption setUseLock(boolean useLock) {
+		this.useLock = useLock;
+		return this;
+	}
+
+	public GameOption setIcon(ImageIcon icon) {
 		this.icon = icon;
+		return this;
 	}
 
 	public GameOption setCloseEvent(CloseEvent closeEvent) {
@@ -254,77 +188,109 @@ public class GameOption {
 		return this;
 	}
 
+	@Override
 	public String getTitle() {
 		return title;
 	}
 
+	@Override
 	public Color getBackColor() {
 		return backColor;
 	}
 
-	public Dimension getWindowSize() {
-		return windowSize;
-	}
-
+	@Override
 	public Point getWindowLocation() {
 		return windowLocation;
 	}
 
-	public boolean isUseMouse() {
-		return useMouse;
+	@Override
+	public Dimension getWindowSize() {
+		return windowSize;
 	}
 
-	public boolean isUseKeyboard() {
-		return useKeyboard;
-	}
-
-	public boolean isUseGamePad() {
-		return useGamePad;
-	}
-
-	public boolean isUseLog() {
-		return useLog;
-	}
-
-	public String getLogPath() {
-		return logPath;
-	}
-
-	public int getFps() {
-		return fps;
-	}
-
+	@Override
 	public float getDrawSize() {
 		return drawSize;
 	}
 
-	public RenderingQuality getRenderingQuality() {
-		return rq;
+	@Override
+	public boolean isUseMouse() {
+		return useMouse;
 	}
 
-	public String getI18NFileName() {
-		return i18nFileName;
+	@Override
+	public boolean isUseKeyboard() {
+		return useKeyboard;
 	}
 
+	@Override
+	public boolean isUseGamePad() {
+		return useGamePad;
+	}
+
+	@Override
+	public boolean isUseLog() {
+		return useLog;
+	}
+
+	@Override
+	public String getLogPath() {
+		return logPath;
+	}
+
+	@Override
 	public String getLogName() {
 		return logName;
 	}
 
-	public ImageIcon getIcon() {
-		return icon;
+	@Override
+	public int getFps() {
+		return fps;
 	}
 
-	public CloseEvent getCloseEvent() {
-		return closeEvent;
+	@Override
+	public RenderingQuality getRenderingQuality() {
+		return rq;
 	}
 
-	boolean isUpdateIfNotActive() {
+	@Override
+	public I18NReader getI18nReader() {
+		return i18nReader;
+	}
+
+	@Override
+	public boolean isUpdateIfNotActive() {
 		return updateIfNotActive;
 	}
 
 	@Override
+	public String[] getArgs() {
+		return args;
+	}
+
+	@Override
+	public boolean isDebugMode() {
+		return debugMode;
+	}
+
+	@Override
+	public boolean isUseLock() {
+		return useLock;
+	}
+
+	@Override
+	public ImageIcon getIcon() {
+		return icon;
+	}
+
+	@Override
+	public CloseEvent getCloseEvent() {
+		return closeEvent;
+	}
+
+	@Override
 	public String toString() {
-		return "GameOption{" + "title=" + title + ", backColor=" + backColor + ", windowSize=" + windowSize + ", windowLocation=" + windowLocation + ", useMouse=" + useMouse + ", useKeyboard=" + useKeyboard + ", useGamePad=" + useGamePad + ", useLog=" + useLog + ", logPath=" + logPath + ", fps=" + fps + ", rq=" + rq + ", lang=" + i18nFileName + ", updateIfNotActive=" + updateIfNotActive + ", logName=" + logName + ", icon=" + icon + ", closeEvent=" + closeEvent + '}';
+		return "GameOption{" + "title=" + title + ", backColor=" + backColor + ", windowLocation=" + windowLocation + ", windowSize=" + windowSize + ", drawSize=" + drawSize + ", useMouse=" + useMouse + ", useKeyboard=" + useKeyboard + ", useGamePad=" + useGamePad + ", useLog=" + useLog + ", logPath=" + logPath + ", logName=" + logName + ", fps=" + fps + ", rq=" + rq + ", i18nReader=" + i18nReader + ", updateIfNotActive=" + updateIfNotActive + ", args=" + args + ", debugMode=" + debugMode + ", useLock=" + useLock + ", icon=" + icon + ", closeEvent=" + closeEvent + '}';
 	}
 
 }
