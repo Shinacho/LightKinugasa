@@ -294,7 +294,7 @@ field4とは、正方形のタイルを並べてフィールドマップを形�
 * chipSet<br>
 　これはチップセットを定義するための情報で、画像本体とDataFile形式の定義ファイルを記述します。<br>
 　定義ファイルには、画像と切り出しサイズ、そして切り出した1枚1枚のインデックスに対するMapChipAttributeを定義します。<br>
-　インデックスは6桁で、YYYXXX形式です。これは、[platinumマップエディタ](http://www.hyperdevice.org)のType1CSVを、FieldMapResourceUtilクラスを使って変換できます。<br>
+　インデックスは6桁で、YYYXXX形式です。つまり、指定した画像の最も左上の指定したサイズのタイルは、000000、その右は000001、その下は001001です。これは、[platinumマップエディタ](http://www.hyperdevice.org)のType1CSVを、FieldMapResourceUtilクラスを使って変換できます。<br>
 * フィールドマップフォルダ<br>
 　・まず、フォルダ名はFieldMap自体のIDです。<br>
 　・内部はDataFile形式のFieldMap定義ファイルと、npc/フォルダがあります。npcフォルダには、そのマップで使うNPCとその一覧を入れます。<br>
