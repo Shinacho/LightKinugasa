@@ -385,8 +385,8 @@ TOUCHでは、以下のコードを実行しています。
 	openMessageWindow("T007").byMe();
 	closeMessageWindow();
 ```
-ScriptSystem#openMessageWindowは、会話を開始する指示で、引数で指定したIDのI18Nテキストを表示します。続くbyMeはこのNPCによる発言として名前と立ち絵をセットする任意の処理です。
-ScriptSystem#closeMessageWindowは会話を終了してメッセージウインドウを閉じる処理です。
+ScriptAccessObject#openMessageWindowは、会話を開始する指示で、引数で指定したIDのI18Nテキストを表示します。続くbyMeはこのNPCによる発言として名前と立ち絵をセットする任意の処理です。
+ScriptAccessObject#closeMessageWindowは会話を終了してメッセージウインドウを閉じる処理です。
 openMessageWindowとcloseMsssageWindowは会話の開始と終了に必須です。これらが片方だけ定義されている場合、スクリプトのロード時にエラーとなります。
 つまり必ずセットで使用する必要があります。
 
@@ -410,10 +410,10 @@ openMessageWindowとcloseMsssageWindowは会話の開始と終了に必須です
 	
 	closeMessageWindow();
 ```
-ScriptSystem#nextTextは現在すでに表示されているメッセージウインドウに別のテキストを設定するものです。ここでも、byMeのような立ち絵表示が起動できます。
+ScriptAccessObject#nextTextは現在すでに表示されているメッセージウインドウに別のテキストを設定するものです。ここでも、byMeのような立ち絵表示が起動できます。
 
-ScriptSystem#nextTextAsChoiceは選択肢を表示するもので、最初の引数が問いかけ文、その後に最大5個の選択肢を表示できます。いずれもI18NTextです。
-ScriptSystem#lastSelectedChoiceIdxIsは直前に実行されたnextTextAsChoiceで、何番目の選択肢が選ばれたかを調べるメソッドで、引数がintと解釈され、0から始まる選択肢のそれが選ばれていた場合にtrueになります。
+ScriptAccessObject#nextTextAsChoiceは選択肢を表示するもので、最初の引数が問いかけ文、その後に最大5個の選択肢を表示できます。いずれもI18NTextです。
+ScriptAccessObject#lastSelectedChoiceIdxIsは直前に実行されたnextTextAsChoiceで、何番目の選択肢が選ばれたかを調べるメソッドで、引数がintと解釈され、0から始まる選択肢のそれが選ばれていた場合にtrueになります。
 これをIFの条件として利用して、該当する場合だけ特定のnextTextを実行することで、表示される文章を切り替えています。
 
 このような仕掛けて、フラグのセットなどもできます。
