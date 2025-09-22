@@ -55,7 +55,7 @@ GameManagerを継承したクラスの解説をしましょう。
 ここでは、あなたのゲーム制作に役立つ機能を紹介しましょう。
 
 ### Sprite
-[Sprite](src/kinugasa/object/Sprite.java)は画面に描画する物体の個体です。
+Spriteは画面に描画する物体の個体です。
 様々な派生クラスがあり、どれも共通して描画が可能です。
 
 ### ImageSprite
