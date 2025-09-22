@@ -187,12 +187,70 @@ Kinusagaのイベントスクリプトは、ScriptSystemというクラスを介
 * TOUCH：これはNPCが持つイベントで、自キャラがNPCに衝突したときに発動するものです。シンボルエンカウント用です。
 * TALK：これはNPCが持つイベントで、自キャラがNPCの方向を向いてプレイヤーが話すボタンを押したときに発動するものです。
 * MANUAL：これは上記以外の場合に使用できる、手動実行を想定したブロックです。
+* PARAM：このブロックはScriptBlockTypeに書いてありません。ここにはPARAMを定義します。書くのは1行に1つの名前だけです。名前は、ほかのブロックで識別子として利用でき、ファイルコールした場合の引数がその順の通りに設定されます。
 戦闘システムや店、宿などブロックがないため、今後追加される予定です。
 
 ### stdスクリプト
 stdスクリプトとは、data/scriptフォルダーに入っているスクリプトで、標準ライブラリのようなものです。
+マップ遷移やBGM再生を定義してあります。
 
-### 
+
+例として、std_ChangeMapNoSoundスクリプトを見て見ましょう。
+'''
+# std_FieldMapChange
+# 指定されたパラメータに基づいて、フィールドマップ間の移動を行います。
+
+PARAM={
+	nextID # fieldMap.id
+	x # int
+	y #int 
+	dir #FourDirection
+	tooltip #I18NText
+	
+}
+
+
+#------------------------------------------------
+
+MAIN={
+
+}
+
+
+STEP_ON={
+	#set tooltip
+	setNode(nextID, x, y, dir, tooltip);
+	
+}
+
+STEP_DOWN={
+	#unset tooltip
+	unsetNode();
+
+}
+
+TOUCH={
+
+}
+
+APPROACH={
+
+
+}
+
+LEAVE={
+}
+
+
+TALK={
+}
+
+MANUAL={
+
+}
+
+
+'''
 
 ## field4
 field4とは、正方形のタイルを並べてフィールドマップを形成するシステムのことです。
