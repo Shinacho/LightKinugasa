@@ -204,7 +204,7 @@ stdスクリプトとは、data/scriptフォルダーに入っているスクリ
 例として、std_ChangeMapNoSoundスクリプトを見て見ましょう。これはフィールドマップのタイル上のある座標から起動することで、別のフィールドマップに移動できるものです。
 
 ```
-# std_FieldMapChange
+# std_ChangeMapNoSound.ks
 # 指定されたパラメータに基づいて、フィールドマップ間の移動を行います。
 
 PARAM={
