@@ -16,7 +16,7 @@ NPC={
 }
 
 EVENT={
-	32, 30 = @std_ChangeMapNoSound("M002", "6", "16", "NORTH", "M002")
+	32, 30 = @std_ChangeMapNoSound("M002", "6", "17", "NORTH", "M002")
 	
 }
 

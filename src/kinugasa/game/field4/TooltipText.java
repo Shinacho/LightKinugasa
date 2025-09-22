@@ -53,7 +53,7 @@ public class TooltipText implements Drawable {
 		float y = GameManager.getInstance().getOption().getWindowSize().height / 2;
 
 		x -= sprite.getWidth() / 2;
-		y -= sprite.getHeight() *2;
+		y -= sprite.getHeight() * 6;
 		sprite.setLocation(x, y);
 
 		shadow = sprite.clone();

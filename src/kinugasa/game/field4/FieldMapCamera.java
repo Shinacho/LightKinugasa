@@ -397,22 +397,33 @@ public class FieldMapCamera {
 	}
 
 	private void debugDraw(GraphicsContext g) {
-
 		//中心レティクル
 		{
 			Point2D.Float p1 = new Point2D.Float(0, 0);
 			Point2D.Float p2 = new Point2D.Float(GameManager.getInstance().getOption().getWindowSize().width,
 					GameManager.getInstance().getOption().getWindowSize().height);
-			g.setColor(new Color(Color.YELLOW.getRed(), Color.YELLOW.getGreen(), Color.YELLOW.getBlue(), 128));
+			g.setColor(new Color(128, 128, 128, 128));
 			g.drawLine(p1, p2);
 			g.drawLine(p2.x, p1.y, p1.x, p2.y);
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.WHITE);
 			String v = (int) windowArea.getCenterX() + "," + (int) windowArea.getCenterY();
-			g.drawString("SCREEN_CENTER:" + v, 4, 54);
+			g.drawString("SCREEN_CENTER:" + v, 4, 66);
+		}
+		//ベースレイヤー範囲
+		{
+			Rectangle2D.Float r = fm.getNomalLayerSprite().get(0).getBounds();
+			g.setColor(Color.GREEN);
+			g.fillOval(r.x - 9, r.y - 9, 18, 18);
+			g.fillOval(r.x + r.width - 9, r.y - 9, 18, 18);
+			g.fillOval(r.x - 9, r.y + r.height - 9, 18, 18);
+			g.fillOval(r.x + r.width - 9, r.y + r.height - 9, 18, 18);
+			g.drawRect((int) r.x + 3, (int) r.y + 3, (int) r.width - 6, (int) r.height - 6);
+			String v = (int) layer0.getX() + "," + (int) layer0.getY() + "," + (int) layer0.getWidth() + "," + (int) layer0.getHeight();
+			g.drawString("LAYER[0]:" + v, 4, 42);
 		}
 		//Rimmed
 		{
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.PINK);
 			RimInfo i = isRimArea();
 			List<String> v = new ArrayList<>();
 			if (i.north) {
@@ -427,7 +438,7 @@ public class FieldMapCamera {
 			if (i.west) {
 				v.add("W");
 			}
-			g.drawString("RIM:" + (v.isEmpty() ? "-" : String.join(",", v)), 4, 42);
+			g.drawString("RIM:" + (v.isEmpty() ? "-" : String.join(",", v)), 4, 54);
 
 			//RIMMED AREA
 			g.drawRect((int) layer0.getX(), (int) layer0.getY(), (int) layer0MoveArea.getWidth(), (int) layer0MoveArea.getHeight());
@@ -477,7 +488,7 @@ public class FieldMapCamera {
 			int y = 130;
 			//base
 			{
-				g.setColor(Color.YELLOW);
+				g.setColor(Color.WHITE);
 				g.drawString("AREA", 4, 114);
 				g.drawImage(debugMapImage, x, y);
 				g.drawRect(x, y, debugMapImage.getWidth() - 1, debugMapImage.getHeight() - 1);
@@ -491,7 +502,7 @@ public class FieldMapCamera {
 			}
 			//PC IDX
 			{
-				g.setColor(Color.YELLOW);
+				g.setColor(Color.RED);
 				g.fillRect(x + pcIDXOnTile.x, y + pcIDXOnTile.y, 1, 1);
 			}
 			//CAMERA
@@ -514,20 +525,16 @@ public class FieldMapCamera {
 			x += pcIDXOnTile.x * chipSize;
 			y += pcIDXOnTile.y * chipSize;
 
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.RED);
 			g.drawRect((int) x, (int) y, chipSize, chipSize);
 			String miniMapLabel = fm.getMiniMapLabelStorage().contains(pcIDXOnTile.getId())
 					? " \"" + fm.getMiniMapLabelStorage().get(pcIDXOnTile.getId()).getText().toString() + "\""
 					: "";
-			String event = fm.getEventScriptMap().has(pcIDXOnTile)
-					? fm.getEventScriptMap().get(pcIDXOnTile).getOriginal()
-					: "";
-
-			g.drawString("PC_IDX_ON_TILE:" + fm.getTile(pcIDXOnTile) + " " + miniMapLabel + " " + event, 4, 18);
+			g.drawString("PC_IDX_ON_TILE:" + fm.getTile(pcIDXOnTile) + miniMapLabel, 4, 18);
 		}
 		//PC LOCATION ON LAYER
 		{
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.ORANGE);
 			Point2D.Float p = pcLocationOnScreen.getCenter();
 			g.drawLine(p.x - chipSize, p.y, p.x + chipSize, p.y);
 			g.drawLine(p.x, p.y - chipSize, p.x, p.y + chipSize);
@@ -536,7 +543,7 @@ public class FieldMapCamera {
 		}
 		//PC_LIST
 		{
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.MAGENTA);
 			var pcList = GameSystem.getInstance().getPcList();
 			for (int i = 0; i < pcList.size(); i++) {
 				Sprite s = pcList.get(i).getSprite();
@@ -545,34 +552,40 @@ public class FieldMapCamera {
 			}
 
 		}
-		//ベースレイヤー範囲
-		{
-			Rectangle2D.Float r = fm.getNomalLayerSprite().get(0).getBounds();
-			g.setColor(Color.YELLOW);
-			g.fillOval(r.x - 9, r.y - 9, 18, 18);
-			g.fillOval(r.x + r.width - 9, r.y - 9, 18, 18);
-			g.fillOval(r.x - 9, r.y + r.height - 9, 18, 18);
-			g.fillOval(r.x + r.width - 9, r.y + r.height - 9, 18, 18);
-			g.drawRect((int) r.x + 3, (int) r.y + 3, (int) r.width - 6, (int) r.height - 6);
-			String v = (int) layer0.getX() + "," + (int) layer0.getY() + "," + (int) layer0.getWidth() + "," + (int) layer0.getHeight();
-			g.drawString("LAYER[0]:" + v, 4, 66);
-		}
 		//IGNORE VHICLE
 		{
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.WHITE);
 			g.drawString("IGNORE_VHICLE:" + ignoreVhicle, 4, 78);
 		}
 		//CHIP_SIZE
 		{
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.WHITE);
 			g.drawString("CHIP_SIZE:" + chipSize, 4, 90);
 
 		}
 		//SMALL_MAP
 		{
-			g.setColor(Color.YELLOW);
+			g.setColor(Color.WHITE);
 			g.drawString("SMALL_MAP:" + isSmallMapX + "," + isSmallMapY, 4, 102);
 
+		}
+		//NPC
+		{
+			g.setColor(Color.CYAN);
+			for (var v : fm.getNPCMap()) {
+				float x = fm.getNomalLayerSprite().get(0).getX();
+				x += (v.getSprite().getMoveModel().getInitialLocation().x * chipSize);
+				x += v.getSprite().getWidth() / 2;
+				float y = fm.getNomalLayerSprite().get(0).getY();
+				y += (v.getSprite().getMoveModel().getInitialLocation().y * chipSize);
+				y += v.getSprite().getHeight() / 2;
+
+				Point2D.Float c = v.getSprite().getCenter();
+				g.drawLine(x, y, c.x, c.y);
+
+				g.drawString(v.getId() + ":" + v.getSprite().getMoveModel().toString(), (int) v.getSprite().getX(), (int) v.getSprite().getY());
+				g.drawRect(v.getSprite());
+			}
 		}
 		//EVENT
 		{
@@ -588,24 +601,6 @@ public class FieldMapCamera {
 
 				g.drawRect((int) x, (int) y, chipSize, chipSize);
 				g.drawString(sc.getScriptName(), (int) x, (int) y);
-			}
-		}
-		//NPC
-		{
-			g.setColor(Color.YELLOW);
-			for (var v : fm.getNPCMap()) {
-				float x = fm.getNomalLayerSprite().get(0).getX();
-				x += (v.getSprite().getMoveModel().getInitialLocation().x * chipSize);
-				x += v.getSprite().getWidth() / 2;
-				float y = fm.getNomalLayerSprite().get(0).getY();
-				y += (v.getSprite().getMoveModel().getInitialLocation().y * chipSize);
-				y += v.getSprite().getHeight() / 2;
-
-				Point2D.Float c = v.getSprite().getCenter();
-				g.drawLine(x, y, c.x, c.y);
-
-				g.drawString(v.getId() + ":" + v.getSprite().getMoveModel().toString(), (int) v.getSprite().getX(), (int) v.getSprite().getY());
-				g.drawRect(v.getSprite());
 			}
 		}
 
