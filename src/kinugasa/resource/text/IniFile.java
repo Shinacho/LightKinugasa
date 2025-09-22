@@ -147,7 +147,7 @@ public final class IniFile extends FileObject implements Saveable<IniFile>, Iter
 		try {
 			List<String> list = new ArrayList<>();
 			data.forEach(p -> list.add(p.toString()));
-			Files.write(getPath(), list, charset, StandardOpenOption.CREATE_NEW, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(getPath(), list, charset, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			GameLog.print(this + " is saved");
 		} catch (IOException ex) {
 			throw new FileIOException(ex);

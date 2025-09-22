@@ -39,7 +39,7 @@ public class IDImpl implements ID {
 
 	@Override
 	public String toString() {
-		return "IDImpl{" + "id=" + id + '}';
+		return id;
 	}
 
 	@Override

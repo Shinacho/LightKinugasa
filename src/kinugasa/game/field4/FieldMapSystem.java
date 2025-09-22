@@ -350,6 +350,7 @@ public final class FieldMapSystem implements Drawable {
 		for (var v : fieldMap.getNPCMap()) {
 			npcList.put(v.getSprite().getMoveModel().getInitialLocation().toString(), v.asUniversalValue());
 		}
+		npcList.save();
 
 		if (fieldMap != null) {
 			fieldMap.free();
