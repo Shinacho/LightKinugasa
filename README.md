@@ -41,7 +41,7 @@ GameManagerを継承したクラスの解説をしましょう。
 この継承クラスに必要なのは、最低6つのメソッドです。
 1. main：通常のメインメソッドですが、そのクラスをインスタンス化してgameStart()をコールしてください。また、このフレームワークにはゲームの二重起動を防止する仕掛けが入っているので、それを無効化するために、開発中は最初にロックファイル削除を実行しておくとよいでしょう。具体例は上記のサンプルを見てください。
 2. コンストラクタ：コンストラクタではsuper(GameOption)を実行します。[GameOption](src/kinugasa/game/GameOption.java)は普通にインスタンスを作ってもよいですし、INIFileなどを使ってGameOptionValueのインスタンスを生成すれば、ファイルからも読めるでしょう。ゲームパッドを使いたい場合はここでsetUseGamePad(true)を実行してください。
-3. startUpの実装：このメソッドはgameStartが実行されると1回だけ実行されるものです。この時点ではウインドウが表示されていません。なので、例えばBGMのロード再生といった初期化処理を書きます。ウインドウが表示されていないので、ウインドウのサイズなどをとれない点に注意してください。サイズはstartUpの処理が終わると、getWindow().getInsets()で取れます。
+3. startUpの実装：このメソッドはgameStartが実行されると1回だけ実行されるものです。この時点ではウインドウが表示されていません。なので、例えばBGMのロード再生といった初期化処理を書きます。ウインドウが表示されていないので、ウインドウのサイズなどをとれない点に注意してください。サイズはstartUpの処理が終わると、GameManager#getWindow()で取れます。
 4. disposeの実装：このメソッドは、gameExitが実行されると1回だけ実行されるものです。gameExitは明示的に実行してもいいですし、デフォルトではウインドウが閉じられると実行されます。したがって、ここにはファイルを解放したりセーブする処理を記述します。
 5. updateの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GameTimeManager](src/kinugasa/game/GameTimeManager.java)通称gtmと、[InputState](src/kinugasa/game/input/InputState.java)通称isがあります。gtmからはFPSや総経過時間を取得でき、isではキーやマウス、コントローラーの入力を検知できます。
 6. drawの実装：このメソッドは、GameOptionで指定したFPSの周期でループ実行されます。引数は[GraphicsContext](src/kinugasa/graphics/GraphicsContext.java)で、ゲーム内オブジェクトを描画する処理を記述します。drawの順序に注意してください。あとに書いたものが上に表示されます。上書きされるということです。下に書いたものは見えなくなります。
