@@ -45,6 +45,10 @@ public class LayeredTile {
 	public boolean has(MapChipAttribute a) {
 		return attr.contains(a);
 	}
+	
+	public boolean canStep(Vehicle v){
+		return v.canStep(this);
+	}
 
 	@Override
 	public String toString() {

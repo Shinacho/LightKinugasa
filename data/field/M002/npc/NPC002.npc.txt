@@ -8,31 +8,19 @@ PI={
 	waTime = 6
 	sprite=data/image/npc001.png
 
-	moveModel = ROUND,1,1f
+	moveModel = TRIP, 0.5f, 1f, 17, 17
 }
 
-TOUCH={
+TOUCH (FieldScriptAccessObject) ={
 
 	openMessageWindow("T007").byMe();
 	closeMessageWindow();
 }
 
-TALK={
+TALK (FieldScriptAccessObject) ={
 
 	openMessageWindow("T001").byMe();
 
 
-	nextText("T002");
-	nextText("T003");
-	nextTextAsChoice("T004", "YES", "NO");
-	
-	IF( lastSelectedChoiceIdxIs("0") )
-		nextText("T005");
-	ENDIF
-	
-	IF( lastSelectedChoiceIdxIs("1") )
-		nextText("T006");
-	ENDIF
-	
 	closeMessageWindow();
 }

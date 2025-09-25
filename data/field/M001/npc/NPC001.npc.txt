@@ -8,10 +8,10 @@ PI={
 	waTime = 6
 	sprite=data/image/npc001.png
 
-	moveModel = ROUND,1,1f
+	moveModel = PROWL, 1, 1f
 }
 
-TOUCH={
+TOUCH (FieldScriptAccessObject) ={
 #
 #	openMessageWindow("T007").byMe();
 #
@@ -28,7 +28,7 @@ TOUCH={
 #	closeMessageWindow();
 }
 
-TALK={
+TALK (FieldScriptAccessObject) ={
 
 	openMessageWindow("T001").byMe();
 

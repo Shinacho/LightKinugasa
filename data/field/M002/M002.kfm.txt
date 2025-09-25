@@ -6,13 +6,15 @@ debugMode = true
 
 
 LOAD_SCRIPT={
-	@std_BgmChange(054_かろうじて人類が住んでいる地)
+	@std_BgmChange("054_かろうじて人類が住んでいる地")
 }
 
 
 
 
 EVENT={
+	# cloneToRim = 6,17
+
 	6,17 = @std_ChangeMapNoSound("M001", "32", "30", "SOUTH", "M001")
 	
 }
@@ -56,7 +58,7 @@ NOMAL_LAYER={ #1
 	chipSet= data/field/chipset/Outer16.txt
 	drawSize=1f
 
-	above = false
+	above = true
 
 	DATA==
 000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014,000014

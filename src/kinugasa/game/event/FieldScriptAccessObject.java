@@ -30,8 +30,14 @@ import kinugasa.game.system.FlagSystem;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.PlayableChara;
 import kinugasa.game.system.UniversalValue;
+import kinugasa.game.system.actor.CharaSprite;
+import kinugasa.game.system.actor.FieldMapNPCMoveModel;
 import kinugasa.game.system.actor.Follower;
 import kinugasa.game.system.actor.NPC;
+import kinugasa.game.system.actor.npcMove.FollowNPCMove;
+import kinugasa.game.system.actor.npcMove.LockedNPCMove;
+import kinugasa.game.system.actor.npcMove.ProwlNPCMove;
+import kinugasa.game.system.actor.npcMove.TripNPCMove;
 import kinugasa.game.ui.Choice;
 import kinugasa.game.ui.MessageWindow;
 import kinugasa.game.ui.Text;
@@ -50,20 +56,21 @@ import kinugasa.object.FourDirection;
  * @author Shinacho.<br>
  */
 @Singleton
-public class ScriptAccessObject {
+public class FieldScriptAccessObject {
 
-	private static final ScriptAccessObject INSTANCE = new ScriptAccessObject();
+	private static final FieldScriptAccessObject INSTANCE = new FieldScriptAccessObject();
 
-	public static ScriptAccessObject getInstance() {
+	public static FieldScriptAccessObject getInstance() {
 		return INSTANCE;
 	}
 
-	private ScriptAccessObject() {
+	private FieldScriptAccessObject() {
 	}
 
 	//------------------------------------common-------------------------------
 	@ScriptAccessMethod
 	public ScriptResultType end() {
+		ScriptSystem.getInstance().end();
 		return ScriptResultType.END;
 	}
 
@@ -90,6 +97,21 @@ public class ScriptAccessObject {
 	@ScriptAccessMethod
 	public void printLogI18N(UniversalValue val) {
 		GameLog.print(val.asI18N());
+	}
+
+	@ScriptAccessMethod
+	public void setPauseMode(UniversalValue v) {
+		ScriptSystem.getInstance().setPauseMode(v.asBoolean());
+	}
+
+	@ScriptAccessMethod
+	public void setManualIdxMode(UniversalValue v) {
+		ScriptSystem.getInstance().setManualIdxMode(v.asBoolean());
+	}
+
+	@ScriptAccessMethod
+	public void nextStep() {
+		ScriptSystem.getInstance().nextStep();
 	}
 
 	//------------------------------------game system--------------------------
@@ -187,7 +209,23 @@ public class ScriptAccessObject {
 
 	@ScriptAccessMethod
 	public void changeVehicle(UniversalValue v) {
-		FieldMapSystem.getInstance().setVehicle(v.of(Vehicle.class));
+		Vehicle vc = v.of(Vehicle.class);
+		FieldMapSystem.getInstance().setVehicle(vc);
+		for (var p : GameSystem.getInstance().getPcList()) {
+			p.getSprite().setVehicle(vc);
+		}
+	}
+
+	@ScriptAccessMethod
+	public NPC getNpc(UniversalValue id) {
+		return FieldMapSystem.getInstance().getCurrent().getNPCMap().get(id.asD2IdxCSV());
+	}
+
+	@ScriptAccessMethod
+	public void addNPCToCurrentFieldMap(UniversalValue npcFile, UniversalValue x, UniversalValue y) {
+		D2Idx i = new D2Idx(x.asInt(), y.asInt());
+		NPC n = new NPC(npcFile.asFile(), i);
+		FieldMapSystem.getInstance().getCurrent().getNPCMap().add(n);
 	}
 
 	//------------------------------------ui-------------------------------------
@@ -345,13 +383,13 @@ public class ScriptAccessObject {
 
 	@ScriptAccessMethod
 	public void followerPartyIn(UniversalValue actorFile) {
-		Follower f = actorFile.asFollowerFile();
+		Follower f = actorFile.asFollower();
 		GameSystem.getInstance().getPcList().add(f);
 		FieldMapSystem.getInstance().resetFollowerLocation();
 	}
 
 	@ScriptAccessMethod
-	public void followerPPartyOutIfExists(UniversalValue id) {
+	public void followerPartyOutIfExists(UniversalValue id) {
 		var pcList = GameSystem.getInstance().getPcList();
 		int i = 0;
 		boolean remove = false;

@@ -20,7 +20,7 @@ import java.io.File;
 import kinugasa.game.event.ScriptFile;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.field4.FieldMap;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.game.field4.FieldMapSystem;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
 import kinugasa.resource.text.DataFile;
@@ -37,8 +37,12 @@ public class NPC extends Actor {
 	private FieldMap fm;
 	private D2Idx idx;
 
+	public NPC(File f, D2Idx i) {
+		this(f, FieldMapSystem.getInstance().getCurrent(), i);
+	}
+
 	public NPC(File f, FieldMap fm, D2Idx idx) {
-		super(f);
+		super(f, fm, idx);
 		this.fm = fm;
 		this.idx = idx;
 	}
@@ -59,36 +63,14 @@ public class NPC extends Actor {
 	}
 
 	@Override
-	protected void loadPI(DataFile.Element pi) {
-		//NPC MoveModel
-		{
-			if (pi.has("moveModel")) {
-				UniversalValue moveModel = pi.get("moveModel").getValue();
-				switch (moveModel.trim().safeSplit(",")[0]) {
-					case "ROUND" -> {
-						int d = moveModel.trim().safeSplitUV(",")[1].asInt();
-						float wt = moveModel.trim().safeSplitUV(",")[2].asFloat();
-						StandardFieldMapNPCMoveModel.round(d, wt, getSprite(), fm).set();
-					}
-					case "LOCKED" -> {
-						StandardFieldMapNPCMoveModel.locked(getSprite(), fm).set();
-					}
-					default -> {
-						throw new FileFormatException("Actor : undefined move model : " + moveModel);
-					}
-				}
-			} else {
-				StandardFieldMapNPCMoveModel.locked(getSprite(), fm).set();
-			}
-		}
-	}
-
-	@Override
 	public NPC load() throws FileNotFoundException, FileFormatException, ContentsIOException {
 		if (isLoaded()) {
 			return this;
 		}
 		super.load();
+		if (getSprite().getMoveModel() == null) {
+			throw new FileFormatException("NPC moveModel is null : " + getId());
+		}
 		return this;
 	}
 

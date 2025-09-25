@@ -34,6 +34,7 @@ import kinugasa.game.annotation.NotNull;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.event.ScriptCall;
 import kinugasa.game.field4.D2Idx;
+import kinugasa.game.field4.FieldMapSystem;
 import kinugasa.game.field4.MapChipSet;
 import kinugasa.game.system.actor.Actor;
 import kinugasa.game.system.actor.Follower;
@@ -140,7 +141,7 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 			return new String[]{};
 		}
 		if (value.contains(sep)) {
-			return value.split(sep);
+			return StringUtil.safeSplit(value.trim(), sep);
 		}
 		if (value.isEmpty()) {
 			return new String[]{};
@@ -215,15 +216,15 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 	}
 
 	public int asInt() {
-		return Integer.parseInt(value);
+		return Integer.parseInt(value.trim());
 	}
 
 	public long asLong() {
-		return Long.parseLong(value);
+		return Long.parseLong(value.trim());
 	}
 
 	public float asFloat() {
-		return Float.parseFloat(value);
+		return Float.parseFloat(value.trim());
 	}
 
 	public boolean is(String v) {
@@ -231,7 +232,7 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 	}
 
 	public boolean isTrue() {
-		return Boolean.parseBoolean(value.toLowerCase());
+		return Boolean.parseBoolean(value.trim().toLowerCase());
 	}
 
 	public boolean asBoolean() {
@@ -310,12 +311,23 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 		return FlagSystem.getInstance().get(value);
 	}
 
-	public Follower asFollowerFile() {
+	public Actor asActor() {
+		if (value.endsWith(".npc.txt")) {
+			return asNPCCSV();
+		}
+		if (value.endsWith(".flw.txt")) {
+			return asFollower();
+		}
+		return new Actor(asFile());
+	}
+
+	public Follower asFollower() {
 		return new Follower(asFile());
 	}
 
-	public Actor asActorFile() {
-		return new Actor(asFile());
+	public NPC asNPCCSV() {
+		UniversalValue[] v = safeSplitUV(",");
+		return new NPC(v[0].asFile(), new D2Idx(v[1].asInt(), v[2].asInt()));
 	}
 
 	@Override

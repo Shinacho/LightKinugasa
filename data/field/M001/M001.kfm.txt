@@ -6,7 +6,7 @@ debugMode = true
 
 
 LOAD_SCRIPT={
-	@std_BgmChange(005_空想の世界)
+	@std_BgmChange("005_空想の世界")
 }
 
 

@@ -30,6 +30,7 @@ import kinugasa.game.event.ScriptCall;
 import kinugasa.game.field4.layer.FMNomalLayerSprite;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.actor.NPC;
+import kinugasa.game.system.actor.npcMove.TripNPCMove;
 import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.GraphicsUtil;
 import kinugasa.graphics.KImage;
@@ -147,6 +148,7 @@ public class FieldMapCamera {
 					NPC n = v.getValue();
 					float nx = gap.x + (i.x * chipSize);
 					float ny = gap.y + (i.y * chipSize);
+					n.getSprite().setCurrentLocationOnMap(i);
 					n.getSprite().setLocation(nx, ny);
 				}
 
@@ -190,6 +192,7 @@ public class FieldMapCamera {
 					NPC n = v.getValue();
 					float nx = gap.x + (i.x * chipSize);
 					float ny = gap.y + (i.y * chipSize);
+					n.getSprite().setCurrentLocationOnMap(i);
 					n.getSprite().setLocation(nx, ny);
 				}
 
@@ -244,6 +247,7 @@ public class FieldMapCamera {
 					NPC n = v.getValue();
 					float nx = gap.x + (i.x * chipSize);
 					float ny = gap.y + (i.y * chipSize);
+					n.getSprite().setCurrentLocationOnMap(i);
 					n.getSprite().setLocation(nx, ny);
 				}
 
@@ -402,13 +406,11 @@ public class FieldMapCamera {
 	private void debugDraw(GraphicsContext g) {
 		//中心レティクル
 		{
-			Point2D.Float p1 = new Point2D.Float(0, 0);
-			Point2D.Float p2 = new Point2D.Float(GameManager.getInstance().getOption().getWindowSize().width,
-					GameManager.getInstance().getOption().getWindowSize().height);
-			g.setColor(new Color(128, 128, 128, 128));
-			g.drawLine(p1, p2);
-			g.drawLine(p2.x, p1.y, p1.x, p2.y);
 			g.setColor(Color.WHITE);
+			int x = (int) (windowArea.getCenterX() - chipSize / 2);
+			int y = (int) (windowArea.getCenterY() - chipSize / 2);
+			g.drawOval(x, y, chipSize, chipSize);
+
 			String v = (int) windowArea.getCenterX() + "," + (int) windowArea.getCenterY();
 			g.drawString("SCREEN_CENTER:" + v, 4, 66);
 		}
@@ -422,7 +424,7 @@ public class FieldMapCamera {
 			g.fillOval(r.x + r.width - 9, r.y + r.height - 9, 18, 18);
 			g.drawRect((int) r.x + 3, (int) r.y + 3, (int) r.width - 6, (int) r.height - 6);
 			String v = (int) layer0.getX() + "," + (int) layer0.getY() + "," + (int) layer0.getWidth() + "," + (int) layer0.getHeight();
-			g.drawString("LAYER[0]:" + v, 4, 42);
+			g.drawString("LAYER[0]:" + v + " - " + "W=" + layer0.getDataWidth() + ", H=" + layer0.getDataHeight(), 4, 42);
 		}
 		//Rimmed
 		{
@@ -551,7 +553,11 @@ public class FieldMapCamera {
 			for (int i = 0; i < pcList.size(); i++) {
 				Sprite s = pcList.get(i).getSprite();
 				g.drawRect(s);
-				g.drawString(pcList.get(i).getId(), (int) s.getX(), (int) s.getY());
+				String name = pcList.get(i).getVisibleName().toString();
+				if (name != null && !name.isEmpty()) {
+					name = "\"" + name + "\"";
+				}
+				g.drawString(pcList.get(i).getId() + name, (int) s.getX(), (int) s.getY());
 			}
 
 		}
@@ -569,25 +575,52 @@ public class FieldMapCamera {
 		//SMALL_MAP
 		{
 			g.setColor(Color.WHITE);
-			g.drawString("SMALL_MAP:" + isSmallMapX + "," + isSmallMapY, 4, 102);
+			g.drawString("SMALL_MAP:" + (isSmallMapX ? "X" : "-") + "," + (isSmallMapY ? "Y" : "-"), 4, 102);
 
 		}
 		//NPC
 		{
-			g.setColor(Color.CYAN);
 			for (var v : fm.getNPCMap()) {
-				float x = fm.getNomalLayerSprite().get(0).getX();
-				x += (v.getSprite().getMoveModel().getInitialLocation().x * chipSize);
-				x += v.getSprite().getWidth() / 2;
-				float y = fm.getNomalLayerSprite().get(0).getY();
-				y += (v.getSprite().getMoveModel().getInitialLocation().y * chipSize);
-				y += v.getSprite().getHeight() / 2;
+				g.setColor(Color.LIGHT_GRAY);
 
-				Point2D.Float c = v.getSprite().getCenter();
-				g.drawLine(x, y, c.x, c.y);
-
-				g.drawString(v.getId() + ":" + v.getSprite().getMoveModel().toString(), (int) v.getSprite().getX(), (int) v.getSprite().getY());
+				String name = v.getVisibleName().toString();
+				if (name != null && !name.isEmpty()) {
+					name = "\"" + name + "\"";
+				}
+				g.drawString(v.getId() + name + ":" + v.getSprite().getMoveModel().toString(), (int) v.getSprite().getX(), (int) v.getSprite().getY());
 				g.drawRect(v.getSprite());
+				if (v.getSprite().getMoveModel() instanceof TripNPCMove m) {
+					var route = m.getRoute();
+					if (route == null || route.isEmpty()) {
+						continue;
+					}
+					Point2D.Float prev = layer0.getLocation();
+					prev.x += (route.get(0).x * fm.getLayer0ChipSize());
+					prev.x += fm.getLayer0ChipSize() / 2;
+					prev.y += (route.get(0).y * fm.getLayer0ChipSize());
+					prev.y += fm.getLayer0ChipSize() / 2;
+					for (int i = 1; i < route.size(); i++) {
+						var r = route.get(i);
+						Point2D.Float p = layer0.getLocation();
+						p.x += (r.x * fm.getLayer0ChipSize());
+						p.x += fm.getLayer0ChipSize() / 2;
+						p.y += (r.y * fm.getLayer0ChipSize());
+						p.y += fm.getLayer0ChipSize() / 2;
+
+						g.drawLine(prev, p);
+						prev = (Point2D.Float) p.clone();
+					}
+				} else {
+					float x = fm.getNomalLayerSprite().get(0).getX();
+					x += (v.getSprite().getMoveModel().getInitialLocation().x * chipSize);
+					x += v.getSprite().getWidth() / 2;
+					float y = fm.getNomalLayerSprite().get(0).getY();
+					y += (v.getSprite().getMoveModel().getInitialLocation().y * chipSize);
+					y += v.getSprite().getHeight() / 2;
+
+					Point2D.Float c = v.getSprite().getCenter();
+					g.drawLine(x, y, c.x, c.y);
+				}
 			}
 		}
 		//EVENT

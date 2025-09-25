@@ -124,7 +124,7 @@ public class ScriptLine {
 	private void parse(String line, List<List<String>> ifStack) throws EventScriptException {
 		//ifStackの処理
 		{
-			Class<?> o = ScriptAccessObject.class;
+			Class<?> o = block.getSao().getClass();
 			for (var and : ifStack) {
 				List<List<Value>> val1 = new ArrayList<>();
 				for (var or : and) {
@@ -157,7 +157,7 @@ public class ScriptLine {
 					if (o != boolean.class) {
 						throw new EventScriptFormatException("SL : if content is not boolean method : " + or);
 					}
-					o = ScriptAccessObject.class;
+					o = block.getSao().getClass();
 				}
 				this.ifBlock.add(val1);
 			}
@@ -169,7 +169,7 @@ public class ScriptLine {
 		}
 		//Methodモード
 		{
-			Class<?> o = ScriptAccessObject.class;
+			Class<?> o = block.getSao().getClass();
 			for (var v : StringUtil.safeSplit(line, ".")) {
 				if (o == Void.class) {
 					throw new EventScriptNameException("SL : void method : " + line);
@@ -240,7 +240,7 @@ public class ScriptLine {
 	public Result exec(ScriptArgs args) throws EventScriptException {
 		//IF BLOCK判定
 		if (!ifBlock.isEmpty()) {
-			Object o = ScriptAccessObject.getInstance();
+			Object o = block.getSao();
 			boolean and = true;
 			for (var v : ifBlock) {
 				boolean or = false;
@@ -253,7 +253,7 @@ public class ScriptLine {
 					}
 					boolean res = Boolean.parseBoolean(o.toString());
 					or |= res;
-					o = ScriptAccessObject.getInstance();
+					o =block.getSao();
 					if (or) {
 						break;
 					}
@@ -297,7 +297,7 @@ public class ScriptLine {
 			return r;
 		}
 		//SAOモード
-		Object o = ScriptAccessObject.getInstance();
+		Object o = block.getSao();
 		for (var v : data) {
 			if (o.getClass() == Void.class) {
 				throw new EventScriptRuntimeException("SL : void method : " + v);

@@ -17,15 +17,17 @@
 package kinugasa.game.field4.layer;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.field4.D2Idx;
-import kinugasa.game.field4.FieldMapStorage;
 import kinugasa.game.field4.MapChip;
 import kinugasa.game.field4.MapChipSet;
 import kinugasa.graphics.GraphicsContext;
 import kinugasa.graphics.KImage;
+import kinugasa.object.EmptySprite;
 import kinugasa.object.ImageSprite;
 import kinugasa.resource.text.FileFormatException;
 
@@ -156,6 +158,13 @@ public class FMNomalLayerSprite extends ImageSprite {
 	@NotNewInstance
 	public MapChip[][] getData() {
 		return data;
+	}
+
+	public EmptySprite locationOf(D2Idx i) throws IndexOutOfBoundsException {
+		Point2D.Float p = getLocation();
+		p.x += (i.x * getChipDrawSize());
+		p.y += (i.y * getChipDrawSize());
+		return new EmptySprite(p, new Dimension(chipDrawSize, chipDrawSize));
 	}
 
 	@Override

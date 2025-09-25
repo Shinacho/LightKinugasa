@@ -234,6 +234,7 @@ public final class ScriptSystem {
 		currentParam = null;
 		lastResultType = null;
 		currentBlockIdx = 0;
+		FieldMapSystem.getInstance().unsetTalk();
 		pauseMode = false;
 	}
 
@@ -244,7 +245,20 @@ public final class ScriptSystem {
 	private ScriptResultType lastResultType = null;
 	private int currentBlockIdx = 0;
 	private boolean pauseMode = false;
+	private boolean manualIdxMode = false;
 	//---------------------------------------------------------------------------
+
+	public void setManualIdxMode(boolean manualIdxMode) {
+		this.manualIdxMode = manualIdxMode;
+	}
+
+	public boolean isManualIdxMode() {
+		return manualIdxMode;
+	}
+
+	public void setPauseMode(boolean pauseMode) {
+		this.pauseMode = pauseMode;
+	}
 
 	boolean isPauseMode() {
 		return pauseMode;
@@ -343,7 +357,6 @@ public final class ScriptSystem {
 			Dimension s = new Dimension(w, h);
 			this.messageWindow = new MessageWindow(p.x, p.y, s.width, s.height);
 		}
-		FieldMapSystem.getInstance().setTalking(true);
 		this.messageWindow.setVisible(true);
 	}
 

@@ -13,40 +13,16 @@ PARAM={
 
 #------------------------------------------------
 
-MAIN={
-
-}
 
 
-STEP_ON={
+STEP_ON (FieldScriptAccessObject) ={
 	#set tooltip
 	setNode(nextID, x, y, dir, tooltip);
 	
 }
 
-STEP_DOWN={
+STEP_DOWN ( FieldScriptAccessObject ) ={
 	#unset tooltip
 	unsetNode();
 
 }
-
-TOUCH={
-
-}
-
-APPROACH={
-
-
-}
-
-LEAVE={
-}
-
-
-TALK={
-}
-
-MANUAL={
-
-}
-

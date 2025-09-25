@@ -41,10 +41,6 @@ public abstract class FieldMapNPCMoveModel {
 		this.fm = fm;
 	}
 
-	public final void set() {
-		sprite.setMoveModel(this);
-	}
-
 	public abstract void setNext();
 
 	@LoopCall
@@ -70,5 +66,7 @@ public abstract class FieldMapNPCMoveModel {
 	public abstract void lockLocation();
 
 	public abstract void unlockLocation();
+	
+	public abstract boolean isEnded();
 
 }

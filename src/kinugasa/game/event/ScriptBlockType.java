@@ -30,6 +30,15 @@ public enum ScriptBlockType {
 	LEAVE,
 	TOUCH,
 	TALK,
-	MANUAL
+	MANUAL;
+
+	public static boolean has(String n) {
+		for (var v : values()) {
+			if (n.toUpperCase().equals(v.toString())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

@@ -103,10 +103,6 @@ public class CharaSprite extends AnimationSprite {
 		setVector(prev);
 	}
 
-	public void setFollow(FieldMap fm, D2Idx tgtIdx) {
-		this.moveModel = StandardFieldMapNPCMoveModel.follow(this, fm, tgtIdx);
-	}
-
 	@Override
 	public String toString() {
 		return "CharaSprite{" + "walkAnimtion=" + walkAnimtion + '}';

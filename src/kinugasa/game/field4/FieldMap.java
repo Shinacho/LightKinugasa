@@ -29,6 +29,7 @@ import kinugasa.game.I18NText;
 import kinugasa.game.UpdateLogicInjector;
 import kinugasa.game.VisibleNameIDInjector;
 import kinugasa.game.annotation.NewInstance;
+import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.event.ScriptCall;
 import kinugasa.game.event.ScriptSystem;
@@ -247,9 +248,28 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		{
 			if (f.has("EVENT") && f.get("EVENT").getElements() != null) {
 				for (var v : f.get("EVENT").getElements()) {
+					if (v.getKey().is("cloneToRim")) {
+						continue;
+					}
 					D2Idx idx = v.getKey().asD2IdxCSV();
 					ScriptCall sc = v.getValue().asScriptCall();
 					this.eventScriptMap.add(idx, sc);
+				}
+				//CLONE RIM
+				if (f.get("EVENT").has("cloneToRim")) {
+					D2Idx tgt = f.get("EVENT").get("cloneToRim").getValue().asD2IdxCSV();
+					if (!this.eventScriptMap.has(tgt)) {
+						throw new FileFormatException("FM : cloneToRim, but tgt event not found : " + tgt);
+					}
+					ScriptCall sc = this.eventScriptMap.get(tgt);
+					int w = nomalLayerSprite.get(0).getDataWidth() - 1;
+					int h = nomalLayerSprite.get(0).getDataHeight() - 1;
+					for (int i = 0; i < nomalLayerSprite.get(0).getDataWidth(); i++) {
+						this.eventScriptMap.add(new D2Idx(0, i), sc);
+						this.eventScriptMap.add(new D2Idx(i, 0), sc);
+						this.eventScriptMap.add(new D2Idx(w, i), sc);
+						this.eventScriptMap.add(new D2Idx(i, h), sc);
+					}
 				}
 			}
 		}
@@ -263,7 +283,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 					//ファイルパス
 					File file = new File(getDir() + "npc/" + v.getValue().trim().value() + ".npc.txt");
 					NPC npc = new NPC(file, this, idx).load();
-					//初期座標はカメラで。
+					npc.asScript().load();
 
 					this.npcMap.add(idx, npc);
 				}
@@ -359,6 +379,11 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 	}
 
 	public LayeredTile getTile(D2Idx i) {
+		//iが領域外の場合、CLOSEで終わる
+		if (i.x < 0 || i.y < 0 || i.x >= nomalLayerSprite.get(0).getDataWidth() || i.y >= nomalLayerSprite.get(0).getDataHeight()) {
+			return new LayeredTile(i, List.of(MapChipAttribute.CLOSE));
+		}
+
 		List<MapChipAttribute> c = new ArrayList<>();
 		for (var v : nomalLayerSprite) {
 			if (v.isInArea(i)) {
@@ -378,15 +403,22 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		return nomalLayerSprite.get(0).getChipDrawSize();
 	}
 
+	@NotNewInstance
+	public FMNomalLayerSprite getLayer0() {
+		return nomalLayerSprite.get(0);
+	}
+
 	@NewInstance
 	public Point2D.Float getLayer0Location() {
 		return nomalLayerSprite.get(0).getLocation();
 	}
 
+	@NotNewInstance
 	public FieldEventScriptMap getEventScriptMap() {
 		return eventScriptMap;
 	}
 
+	@NotNewInstance
 	public FieldNPCMap getNPCMap() {
 		return npcMap;
 	}

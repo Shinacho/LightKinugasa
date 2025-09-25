@@ -7,5 +7,5 @@ PI={
 	waTime = 8
 	sprite=data/image/npc001.png
 
-	moveModel = follow
+	moveModel = FOLLOW
 }

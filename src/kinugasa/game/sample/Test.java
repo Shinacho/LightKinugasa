@@ -35,7 +35,7 @@ import kinugasa.game.input.Keys;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.actor.Actor;
 import kinugasa.game.system.actor.Follower;
-import kinugasa.game.system.actor.StandardFieldMapNPCMoveModel;
+import kinugasa.game.system.actor.FieldMapNPCMoveModelSetter;
 import kinugasa.game.ui.Dialog;
 import kinugasa.game.ui.MessageWindow;
 import kinugasa.graphics.GraphicsContext;
@@ -72,7 +72,6 @@ public class Test extends GameManager {
 		//デバッグ用
 		FieldMapCamera.setIgnoreVhicle(true);
 		GameSystem.setDebugMode(true);
-		StandardFieldMapNPCMoveModel.DEBUG_MOVE_CHANCE = 0.9f;
 
 		SoundSystem.getInstance().init(new File("data/sound/"));
 		ScriptSystem.getInstance().init(new File("data/"));
@@ -90,15 +89,15 @@ public class Test extends GameManager {
 			GameSystem.getInstance().getPcList().add(a);
 		}
 		{
-			Follower a = new Follower(new File("data/pc/PC002.pc.txt")).load();
+			Follower a = new Follower(new File("data/pc/PC002.flw.txt")).load();
 			GameSystem.getInstance().getPcList().add(a);
 		}
 		{
-			Follower a = new Follower(new File("data/pc/PC003.pc.txt")).load();
+			Follower a = new Follower(new File("data/pc/PC003.flw.txt")).load();
 			GameSystem.getInstance().getPcList().add(a);
 		}
 		{
-			Follower a = new Follower(new File("data/pc/PC004.pc.txt")).load();
+			Follower a = new Follower(new File("data/pc/PC004.flw.txt")).load();
 			GameSystem.getInstance().getPcList().add(a);
 		}
 		fms.resetFollowerLocation();

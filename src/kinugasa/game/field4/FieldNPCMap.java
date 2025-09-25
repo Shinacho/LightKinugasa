@@ -35,7 +35,7 @@ import kinugasa.game.system.actor.NPC;
  */
 public class FieldNPCMap implements Iterable<NPC> {
 
-	private Map<D2Idx, NPC> npcMap;
+	private final Map<D2Idx, NPC> npcMap;
 
 	public FieldNPCMap() {
 		npcMap = new HashMap<>();
@@ -68,6 +68,10 @@ public class FieldNPCMap implements Iterable<NPC> {
 		npcMap.put(i, e);
 	}
 
+	public void add(NPC n) {
+		add(n.getSprite().getCurrentLocationOnMap(), n);
+	}
+
 	public NPC get(D2Idx i) {
 		return npcMap.get(i);
 	}
@@ -83,6 +87,7 @@ public class FieldNPCMap implements Iterable<NPC> {
 	}
 
 	void free() {
+		npcMap.values().forEach(p -> p.asScript().free());
 		npcMap.values().forEach(p -> p.free());
 		npcMap.clear();
 	}

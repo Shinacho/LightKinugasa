@@ -1,0 +1,34 @@
+# NPC
+# VisibleNameIDInjector
+
+PI={
+	speakerImage=data/image/faceImage.png
+	named=false
+
+	waTime = 6
+	sprite=data/image/npc001.png
+
+	moveModel = PROWL, 3, 0.25f
+}
+
+APPROACH (FieldScriptAccessObject) ={
+
+	openMessageWindow("T008").byMe();
+	closeMessageWindow();
+}
+
+LEAVE (FieldScriptAccessObject) ={
+
+	openMessageWindow("T009").byMe();
+
+
+	closeMessageWindow();
+}
+
+TALK (FieldScriptAccessObject) ={
+
+	openMessageWindow("T001").byMe();
+
+
+	closeMessageWindow();
+}

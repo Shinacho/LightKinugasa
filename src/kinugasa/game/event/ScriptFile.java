@@ -19,10 +19,12 @@ package kinugasa.game.event;
 import kinugasa.game.event.exception.EventScriptException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.Nullable;
+import kinugasa.game.event.exception.EventScriptFormatException;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.UniversalValue;
@@ -32,6 +34,7 @@ import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
 import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
+import kinugasa.util.StringUtil;
 
 /**
  * ScriptFile.<br>
@@ -69,6 +72,15 @@ public class ScriptFile extends FileObject {
 		return res;
 	}
 
+	private Object getSao(String name) {
+		return switch (name.toLowerCase()) {
+			case "fieldscriptaccessobject" ->
+				FieldScriptAccessObject.getInstance();
+			default ->
+				throw new EventScriptFormatException("SF : undefined SAO type : " + name);
+		};
+	}
+
 	@Override
 	public ScriptFile load() throws FileNotFoundException, FileFormatException, ContentsIOException {
 		if (isLoaded) {
@@ -102,9 +114,29 @@ public class ScriptFile extends FileObject {
 		}
 
 		//events
-		blocks = new EnumMap<>(ScriptBlockType.class);
+		this.blocks = new EnumMap<>(ScriptBlockType.class);
 		for (var v : ScriptBlockType.values()) {
-			blocks.put(v, new ScriptBlock(v, this, f.has(v.toString()) ? f.get(v.toString()).getElements() : List.of()));
+			blocks.put(v, new ScriptBlock(v, null, this, List.of()));
+		}
+		for (var v : f.getData()) {
+			String k = v.getKey().value();
+			var ele = v.getElements();
+			if (ele == null || ele.isEmpty()) {
+				continue;
+			}
+			k = k.replaceAll(" ", "").replaceAll("\t", "").trim();
+			String[] kk = StringUtil.safeSplit(k, "(");
+			if (!ScriptBlockType.has(kk[0])) {
+				continue;
+			}
+			if (kk.length != 2) {
+				throw new EventScriptFormatException("SF : block SAO not found : " + v);
+			}
+			ScriptBlockType type = ScriptBlockType.valueOf(kk[0].trim());
+			Object sao = getSao(kk[1].replaceAll("[)]", "").trim());
+
+			blocks.put(type, new ScriptBlock(type, sao, this, ele));
+
 		}
 		if (GameSystem.isDebugMode()) {
 			GameLog.removeIndent();

@@ -16,15 +16,11 @@
  */
 package kinugasa.game.system.actor;
 
-import java.awt.geom.Point2D;
 import java.io.File;
-import kinugasa.game.event.ScriptFile;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.field4.FieldMap;
-import kinugasa.game.system.UniversalValue;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
 
 /**
@@ -41,6 +37,10 @@ public class Follower extends Actor {
 		super(f);
 	}
 
+	public Follower(File f, FieldMap fm, D2Idx initial) {
+		super(f, fm, initial);
+	}
+
 	@Override
 	public Follower load() throws FileNotFoundException, FileFormatException, ContentsIOException {
 		if (isLoaded()) {
@@ -53,7 +53,7 @@ public class Follower extends Actor {
 	public void setFollowTgt(FieldMap fm, D2Idx tgtIdx) {
 		if (currentTgt == null || !tgtIdx.equals(currentTgt)) {
 			currentTgt = tgtIdx;
-			getSprite().setMoveModel(StandardFieldMapNPCMoveModel.follow(getSprite(), fm, tgtIdx));
+			new FieldMapNPCMoveModelSetter(this).follow(tgtIdx);
 		}
 	}
 }

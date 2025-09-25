@@ -283,6 +283,10 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 		return data.iterator();
 	}
 
+	public Element get(Enum<?> e) throws IDNotFoundException {
+		return get(e.toString());
+	}
+
 	public Element get(String id) throws IDNotFoundException {
 		for (var v : data) {
 			if (v.key.value().equals(id)) {
@@ -290,6 +294,10 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 			}
 		}
 		throw new IDNotFoundException(id + " not found");
+	}
+
+	public boolean has(Enum<?> e) {
+		return has(e.toString());
 	}
 
 	public boolean has(String id) {

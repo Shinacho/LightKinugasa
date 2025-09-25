@@ -16,16 +16,16 @@
  */
 package kinugasa.game.system.actor;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Iterator;
-import kinugasa.game.I18N;
 import kinugasa.game.I18NText;
-import kinugasa.game.VisibleNameIDInjector;
 import kinugasa.game.VisibleNameSupport;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.annotation.RequiresReturnTypeChange;
 import kinugasa.game.annotation.Virtual;
+import kinugasa.game.field4.D2Idx;
+import kinugasa.game.field4.FieldMap;
+import kinugasa.game.field4.FieldMapSystem;
 import kinugasa.game.system.BagItem;
 import kinugasa.game.system.UniversalValue;
 import kinugasa.game.system.actor.book.Book;
@@ -62,10 +62,18 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 
 	//------------------------------------------------
 	public Actor(File f) {
+		this(f, FieldMapSystem.getInstance().getCurrent(), FieldMapSystem.getInstance().getCamera().getPcLocation());
+	}
+
+	public Actor(File f, FieldMap fm, D2Idx initial) {
 		super(f);
+		this.fieldMap = fm;
+		this.initialIdx = initial;
 	}
 
 	//------------------------------------------------
+	private D2Idx initialIdx;
+	//
 	private Status status;
 	private CharaSprite sprite;
 	private Bag<Item> itemBag;
@@ -76,6 +84,8 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 	private boolean named = false;
 	//
 	private boolean isLoaded = false;
+	//
+	private FieldMap fieldMap;
 
 	public Status getStatus() {
 		return status;
@@ -91,6 +101,14 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 
 	public CharaSprite getSprite() {
 		return sprite;
+	}
+
+	public FieldMap getFieldMap() {
+		return fieldMap;
+	}
+
+	public void setFieldMap(FieldMap fieldMap) {
+		this.fieldMap = fieldMap;
 	}
 
 	//------------------------------------------------
@@ -111,6 +129,7 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 			this.sprite = loadSprite(pi);
 			this.sprite.setId(getId());
 			this.sprite.setSizeByImage();
+			this.sprite.setCurrentLocationOnMap(initialIdx);
 		}
 		//speaker
 		{
@@ -119,6 +138,52 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 			}
 			if (pi.has("named")) {
 				this.named = pi.get("named").getValue().asBoolean();
+			}
+		}
+		//NPC MoveModel
+		{
+			if (pi.has("moveModel")) {
+				UniversalValue moveModel = pi.get("moveModel").getValue();
+				switch (moveModel.trim().safeSplit(",")[0].toUpperCase()) {
+					case "LOCKED" -> {
+						new FieldMapNPCMoveModelSetter(this).locked();
+					}
+					case "PROWL" -> {
+						int d = moveModel.trim().safeSplitUV(",")[1].asInt();
+						float wt = moveModel.trim().safeSplitUV(",")[2].asFloat();
+						new FieldMapNPCMoveModelSetter(this).prowl(d, wt);
+					}
+					case "TRIP" -> {
+						UniversalValue[] val = moveModel.safeSplitUV(",");
+						float tt = val[1].asFloat();
+						float ti = val[2].asFloat();
+						int sx = val[3].asInt();
+						int sy = val[4].asInt();
+						new FieldMapNPCMoveModelSetter(this).trip(tt, ti, new D2Idx(sx, sy));
+					}
+					case "PATROL" -> {
+
+					}
+					case "RANDOM_TGT" -> {
+						UniversalValue[] val = moveModel.safeSplitUV(",");
+						float w1 = val[1].asFloat();
+						float w2 = val[2].asFloat();
+						new FieldMapNPCMoveModelSetter(this).randomTgt(w1, w2);
+					}
+					case "GOTO_AND_STOP" -> {
+						UniversalValue[] val = moveModel.safeSplitUV(",");
+						float w = val[1].asFloat();
+						int x = val[2].asInt();
+						int y = val[3].asInt();
+						new FieldMapNPCMoveModelSetter(this).gotoAndStop(w, new D2Idx(x, y));
+					}
+					case "FOLLOW" -> {
+						new FieldMapNPCMoveModelSetter(this).follow(this.sprite.getCurrentLocationOnMap());
+					}
+					default -> {
+						throw new FileFormatException("Actor : undefined move model : " + moveModel);
+					}
+				}
 			}
 		}
 		loadPI(pi);
@@ -179,6 +244,10 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 	@Nullable
 	public I18NText getMWSpeakerName() {
 		return getVisibleName();
+	}
+
+	public FieldMapNPCMoveModelSetter setMoveModelTo() {
+		return new FieldMapNPCMoveModelSetter(this);
 	}
 
 }

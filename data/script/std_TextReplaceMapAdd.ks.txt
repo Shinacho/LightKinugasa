@@ -9,7 +9,7 @@ PARAM={
 
 #------------------------------------------------
 
-MAIN={
+MAIN( FieldScriptAccessObject )={
 	addTextReplaceMapI18N(key, value)
 }
 

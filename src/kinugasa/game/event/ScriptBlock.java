@@ -16,15 +16,12 @@
  */
 package kinugasa.game.event;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import kinugasa.game.GameLog;
 import static kinugasa.game.event.ScriptResultType.PAUSE;
 import kinugasa.game.event.exception.EventScriptException;
@@ -46,12 +43,14 @@ public class ScriptBlock {
 	private final ScriptBlockType type;
 	private final ScriptFile script;
 	private final List<ScriptLine> cmds;
+	private Object sao;
 	private int currentIdx = 0;
 
-	ScriptBlock(ScriptBlockType type, ScriptFile script, List<DataFile.Element> e) throws EventScriptException {
+	ScriptBlock(ScriptBlockType type, Object sao, ScriptFile script, List<DataFile.Element> e) throws EventScriptException {
 		this.type = type;
 		this.script = script;
 		this.cmds = new ArrayList<>();
+		this.sao = sao;
 		parse(e);
 	}
 
@@ -98,6 +97,14 @@ public class ScriptBlock {
 
 		checkOpenMW();
 
+	}
+
+	Object getSao() {
+		return sao;
+	}
+
+	public boolean isEmpty() {
+		return cmds == null || cmds.isEmpty();
 	}
 
 	public class Result {
@@ -247,6 +254,10 @@ public class ScriptBlock {
 					ScriptSystem.getInstance().setCurrentArgs(null);
 					return new Result(cmdResult, last);
 				}
+			}
+			//マニュアルIDXモードでは1つしか動かない。
+			if (ScriptSystem.getInstance().isManualIdxMode()) {
+				return new Result(cmdResult, last);
 			}
 		}
 		if (GameSystem.isDebugMode()) {

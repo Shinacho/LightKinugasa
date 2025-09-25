@@ -116,13 +116,15 @@ public final class FieldMapSystem implements Drawable {
 		//currentにいなくてprevにいるNPCのLEAVE実行
 		for (var v : prevNPCs) {
 			if (!currentNPCs.contains(v)) {
-				v.asScript().load().getBlockOf(ScriptBlockType.LEAVE).exec().free();
+				leave(v);
+				v.asScript().free();
 			}
 		}
 		//currentnに入ったNPCのAPPROACH実行。ただしprevにいる場合は実行しない。
 		for (var v : currentNPCs) {
 			if (!prevNPCs.contains(v)) {
-				v.asScript().load().getBlockOf(ScriptBlockType.APPROACH).exec();
+				approach(v);
+				v.asScript().free();
 			}
 		}
 	}
@@ -139,46 +141,79 @@ public final class FieldMapSystem implements Drawable {
 	private NPC talkingNPC = null;
 
 	public boolean talk() {
+		//すでにイベントが開始されている場合は何もしない
+		if (talkingNPC != null) {
+			return false;
+		}
 		FourDirection dir = GameSystem.getInstance().getPcList().get(0).getSprite().getWalkAnimtion().getCurrentDir();
 		D2Idx i = getCamera().getPcLocation().clone().add(dir, 1);
 		if (getCurrent().getNPCMap().has(i)) {
-			talkingNPC = getCurrent().getNPCMap().get(i);
+			if (!getCurrent().getNPCMap().get(i).asScript().load().getBlockOf(ScriptBlockType.TALK).isEmpty()) {
+				//currentNPC設定
+				ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
+				talkingNPC = getCurrent().getNPCMap().get(i);
 
-			talkingNPC.getSprite().getMoveModel().lockLocation();
-			talkingNPC.getSprite().to(dir.reverse());
+				talkingNPC.getSprite().getMoveModel().lockLocation();
+				talkingNPC.getSprite().to(dir.reverse());
 
-			//currentNPC設定
-			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
-
-			//TALKイベント実行
-			if (!talkingNPC.asScript().getBlockOf(ScriptBlockType.TALK).getCmds().isEmpty()) {
-				talkingNPC.asScript().load().getBlockOf(ScriptBlockType.TALK).resetIdx();
-				talkingNPC.asScript().getBlockOf(ScriptBlockType.TALK).exec();
-				return talking = true;
+				//TALKイベント実行
+				talkingNPC.asScript().getBlockOf(ScriptBlockType.TALK).resetIdx();
+				talkingNPC.asScript().getBlockOf(ScriptBlockType.TALK).exec().free();
+				return this.talking = true;
 			}
 		}
 		return talking = false;
 	}
 
 	public void touch(NPC n) {
-		talking = false;
-		if (!n.asScript().getBlockOf(ScriptBlockType.TOUCH).getCmds().isEmpty()) {
+		if (talkingNPC != null) {
+			return;
+		}
+		if (!n.asScript().load().getBlockOf(ScriptBlockType.TOUCH).isEmpty()) {
+			//currentNPC設定
+			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 			talkingNPC = n;
 
 			talkingNPC.getSprite().getMoveModel().lockLocation();
 
-			//currentNPC設定
-			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
-
-			talkingNPC.asScript().load().getBlockOf(ScriptBlockType.TOUCH).resetIdx();
-			talkingNPC.asScript().getBlockOf(ScriptBlockType.TOUCH).exec();
-			return;
+			talkingNPC.asScript().getBlockOf(ScriptBlockType.TOUCH).resetIdx();
+			talkingNPC.asScript().getBlockOf(ScriptBlockType.TOUCH).exec().free();
+			this.talking = true;
 		}
-		return;
 	}
 
-	public void setTalking(boolean talking) {
-		this.talking = talking;
+	public void approach(NPC n) {
+		if (talkingNPC != null) {
+			return;
+		}
+		if (!n.asScript().load().getBlockOf(ScriptBlockType.APPROACH).isEmpty()) {
+			//currentNPC設定
+			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
+			talkingNPC = n;
+
+			talkingNPC.getSprite().getMoveModel().lockLocation();
+
+			talkingNPC.asScript().getBlockOf(ScriptBlockType.APPROACH).resetIdx();
+			talkingNPC.asScript().getBlockOf(ScriptBlockType.APPROACH).exec().free();
+			this.talking = true;
+		}
+	}
+
+	public void leave(NPC n) {
+		if (talkingNPC != null) {
+			return;
+		}
+		if (!n.asScript().load().getBlockOf(ScriptBlockType.LEAVE).isEmpty()) {
+			//currentNPC設定
+			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
+			talkingNPC = n;
+
+			talkingNPC.getSprite().getMoveModel().lockLocation();
+
+			talkingNPC.asScript().getBlockOf(ScriptBlockType.LEAVE).resetIdx();
+			talkingNPC.asScript().getBlockOf(ScriptBlockType.LEAVE).exec().free();
+			this.talking = true;
+		}
 	}
 
 	public boolean isTalking() {
@@ -234,6 +269,9 @@ public final class FieldMapSystem implements Drawable {
 			if (v instanceof Follower f) {
 				f.setFollowTgt(fieldMap, v.getSprite().getCurrentLocationOnMap());
 			}
+			if (v.getSprite().getVehicle() == null) {
+				v.getSprite().setVehicle(FieldMapSystem.getInstance().getCurrentVehicle());
+			}
 		}
 	}
 
@@ -287,7 +325,7 @@ public final class FieldMapSystem implements Drawable {
 		}
 		//PC0の向いている方向に話せるNPCがいる場合
 		D2Idx tgtIdx = camera.getPcLocation().add(GameSystem.getInstance().getPcList().get(0).getSprite().getWalkAnimtion().getCurrentDir(), 1);
-		if (fieldMap.getNPCMap().has(tgtIdx)) {
+		if (fieldMap.getNPCMap().has(tgtIdx) && !fieldMap.getNPCMap().get(tgtIdx).asScript().load().getBlockOf(ScriptBlockType.TALK).isEmpty()) {
 			//すでに話すがある場合
 			if (tooltipText.getText().contains(I18NConst.TALK.get().toString())) {
 				return;
@@ -363,6 +401,13 @@ public final class FieldMapSystem implements Drawable {
 		FieldMap next = FieldMapStorage.getInstance().get(currentNode.getNextFieldMapID());
 		fieldMap = next;
 		fieldMap.load();
+		//PCの所属マップと位置を設定する
+		for (var v : GameSystem.getInstance().getPcList()) {
+			v.setFieldMap(fieldMap);
+			v.getSprite().setCurrentLocationOnMap(currentNode.getNextFieldMapIdx());
+			v.getSprite().setAutoImageUpdate(false);
+		}
+
 		camera.set(fieldMap);
 		setLocation(currentNode.getNextFieldMapIdx());
 		resetFollowerLocation();
