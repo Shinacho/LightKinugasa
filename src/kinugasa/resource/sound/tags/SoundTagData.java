@@ -21,7 +21,7 @@ import java.time.Year;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 
 /**
  * SoundTagData.<br>

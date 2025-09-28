@@ -26,7 +26,7 @@
 package kinugasa.object;
 
 import kinugasa.resource.ID;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.graphics.Animation;
 
 /**

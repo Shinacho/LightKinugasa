@@ -32,7 +32,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 
 /**
  * 複数のスプライトをまとめて描画したり、ソートできるクラスです.

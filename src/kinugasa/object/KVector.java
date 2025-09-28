@@ -25,7 +25,7 @@ package kinugasa.object;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
-import kinugasa.game.field4.D2Idx;
+import kinugasa.field4.D2Idx;
 import kinugasa.util.MathUtil;
 
 /**

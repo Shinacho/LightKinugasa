@@ -28,7 +28,7 @@ package kinugasa.object;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.List;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.game.annotation.UnneedTranslate;
 import kinugasa.resource.Storage;
 import kinugasa.graphics.KImage;

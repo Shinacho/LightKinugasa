@@ -26,7 +26,7 @@
 package kinugasa.resource.text;
 
 import kinugasa.game.annotation.Immutable;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 import kinugasa.resource.ID;
 
 /**

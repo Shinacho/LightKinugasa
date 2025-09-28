@@ -34,7 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import kinugasa.game.GameLog;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;

@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import kinugasa.game.GameLog;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 import kinugasa.object.FileObject;
 import kinugasa.util.StringUtil;
 import kinugasa.object.Saveable;

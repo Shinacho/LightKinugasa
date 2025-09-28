@@ -36,7 +36,7 @@ import kinugasa.game.GameWindow;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.RequiresReturnTypeChange;
 import kinugasa.game.annotation.Virtual;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.graphics.ImageUtil;
 import kinugasa.graphics.KImage;
 import kinugasa.graphics.RenderingQuality;

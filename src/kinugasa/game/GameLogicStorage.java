@@ -25,7 +25,7 @@
 
 package kinugasa.game;
 
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 import kinugasa.resource.IDNotFoundException;
 import kinugasa.resource.Storage;
 

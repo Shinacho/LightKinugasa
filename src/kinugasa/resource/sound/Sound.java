@@ -39,7 +39,7 @@ import kinugasa.game.annotation.NotNull;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.annotation.UnneedTranslate;
 import kinugasa.game.VisibleNameIDInjector;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 import kinugasa.object.FileObject;
 import kinugasa.resource.FileIOException;
 import kinugasa.object.Updateable;

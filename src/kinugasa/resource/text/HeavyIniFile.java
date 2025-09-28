@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import kinugasa.game.annotation.Nullable;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ID;
 import kinugasa.util.StringUtil;

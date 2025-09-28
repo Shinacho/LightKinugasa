@@ -27,7 +27,7 @@ import java.util.List;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.annotation.Nullable;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileIOException;

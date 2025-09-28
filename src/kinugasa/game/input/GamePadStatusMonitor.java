@@ -28,11 +28,11 @@ package kinugasa.game.input;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import javax.swing.ImageIcon;
-import kinugasa.graphics.GraphicsContext;
-import kinugasa.game.ui.FontModel;
-import kinugasa.game.ui.SimpleTextLabelModel;
-import kinugasa.game.ui.TextLabelModel;
-import kinugasa.game.ui.TextLabelSprite;
+import kinugasa.game.GraphicsContext;
+import kinugasa.ui.FontModel;
+import kinugasa.ui.SimpleTextLabelModel;
+import kinugasa.ui.TextLabelModel;
+import kinugasa.ui.TextLabelSprite;
 import kinugasa.object.Sprite;
 
 /**

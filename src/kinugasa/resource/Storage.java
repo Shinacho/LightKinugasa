@@ -44,7 +44,7 @@ import kinugasa.game.annotation.CopyCtor;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.NotNewInstance;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 import kinugasa.object.CloneableObject;
 import kinugasa.util.Random;
 

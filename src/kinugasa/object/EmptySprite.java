@@ -27,7 +27,7 @@ package kinugasa.object;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 
 /**
  * 空のスプライトです。何も表示しません。座標計算などで使うダミーのスプライトの実装です。

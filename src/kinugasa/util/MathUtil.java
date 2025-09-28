@@ -25,7 +25,7 @@ package kinugasa.util;
 
 import java.awt.geom.Point2D;
 import kinugasa.game.annotation.NewInstance;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 
 /**
  * 数学ユーティリティです.

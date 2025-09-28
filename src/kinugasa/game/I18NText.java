@@ -28,8 +28,8 @@ import kinugasa.game.annotation.Immutable;
 import kinugasa.game.annotation.Virtual;
 import kinugasa.game.annotation.NewInstance;
 import java.util.Objects;
-import kinugasa.game.ui.Choice;
-import kinugasa.game.ui.Text;
+import kinugasa.ui.Choice;
+import kinugasa.ui.Text;
 import kinugasa.resource.ID;
 
 /**

@@ -30,10 +30,10 @@ import java.awt.datatransfer.StringSelection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import kinugasa.game.input.InputState;
-import kinugasa.game.system.GameSystem;
-import kinugasa.game.ui.Dialog;
-import kinugasa.game.ui.DialogIcon;
-import kinugasa.game.ui.DialogOption;
+import kinugasa.system.GameSystem;
+import kinugasa.ui.Dialog;
+import kinugasa.ui.DialogIcon;
+import kinugasa.ui.DialogOption;
 
 /**
  * ゲームの進行を行うスレッドの実装です.

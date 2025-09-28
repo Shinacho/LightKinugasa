@@ -23,7 +23,6 @@
  */
 package kinugasa.game;
 
-import kinugasa.graphics.GraphicsContext;
 import kinugasa.game.annotation.LoopCall;
 import kinugasa.game.annotation.OneceTime;
 import java.awt.Component;
@@ -55,7 +54,7 @@ import kinugasa.game.input.GamePadConnection;
 import kinugasa.game.input.InputState;
 import kinugasa.game.input.KeyConnection;
 import kinugasa.game.input.MouseConnection;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 import kinugasa.graphics.ImageUtil;
 import kinugasa.graphics.RenderingQuality;
 import kinugasa.resource.TempFileStorage;

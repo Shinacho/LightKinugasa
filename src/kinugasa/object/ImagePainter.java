@@ -25,7 +25,7 @@
 
 package kinugasa.object;
 
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.game.annotation.LoopCall;
 
 /**

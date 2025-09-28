@@ -50,7 +50,7 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
 import kinugasa.game.GameLog;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
 import kinugasa.util.StopWatch;

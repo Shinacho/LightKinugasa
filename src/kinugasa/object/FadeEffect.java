@@ -25,7 +25,7 @@ package kinugasa.object;
 
 import java.awt.Color;
 import kinugasa.graphics.ARGBColor;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.graphics.ColorChanger;
 import kinugasa.graphics.ColorTransitionModel;
 import kinugasa.graphics.FadeCounter;

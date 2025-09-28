@@ -26,7 +26,7 @@ package kinugasa.object;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.util.List;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.graphics.KImage;
 

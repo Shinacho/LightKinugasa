@@ -23,6 +23,7 @@
  */
 package kinugasa.graphics;
 
+import kinugasa.game.GraphicsContext;
 import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Dimension;

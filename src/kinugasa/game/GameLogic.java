@@ -25,7 +25,6 @@
 
 package kinugasa.game;
 
-import kinugasa.graphics.GraphicsContext;
 import kinugasa.game.input.InputState;
 import kinugasa.object.Drawable;
 import kinugasa.resource.ID;

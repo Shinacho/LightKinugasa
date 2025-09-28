@@ -28,8 +28,8 @@ import kinugasa.game.annotation.OneceTime;
 import kinugasa.game.annotation.NoLoopCall;
 import java.util.HashSet;
 import java.util.Set;
-import kinugasa.game.event.ScriptFileCall;
-import kinugasa.game.event.ScriptSystem;
+import kinugasa.script.ScriptFileCall;
+import kinugasa.script.ScriptSystem;
 
 /**
  *

@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import kinugasa.game.GameLog;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 import kinugasa.object.FileObject;
 import kinugasa.object.Saveable;
 import kinugasa.resource.ContentsIOException;

@@ -29,10 +29,10 @@ module kinugasa {
 	requires transitive java.desktop;
 	requires transitive java.logging;
 	
-	exports kinugasa.game.field4;
+	exports kinugasa.field4;
 	exports kinugasa.game.input;
-	exports kinugasa.game.system;
-	exports kinugasa.game.ui;
+	exports kinugasa.system;
+	exports kinugasa.ui;
 	exports kinugasa.game;
 	exports kinugasa.graphics;
 	exports kinugasa.object;

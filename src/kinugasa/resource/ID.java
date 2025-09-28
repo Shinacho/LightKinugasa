@@ -24,7 +24,7 @@
 package kinugasa.resource;
 
 import java.util.Comparator;
-import kinugasa.game.system.UniversalValue;
+import kinugasa.system.UniversalValue;
 
 /**
  *

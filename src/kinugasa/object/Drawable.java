@@ -24,7 +24,7 @@
 package kinugasa.object;
 
 import java.awt.Graphics2D;
-import kinugasa.graphics.GraphicsContext;
+import kinugasa.game.GraphicsContext;
 import kinugasa.game.annotation.LoopCall;
 import kinugasa.graphics.KImage;
 

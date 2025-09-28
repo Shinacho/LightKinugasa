@@ -28,7 +28,7 @@ package kinugasa.resource;
 import java.io.File;
 import java.io.IOException;
 import kinugasa.game.GameLog;
-import kinugasa.game.system.GameSystem;
+import kinugasa.system.GameSystem;
 
 /**
  * 一時ファイルです.
