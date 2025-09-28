@@ -569,7 +569,7 @@ public class FieldMapCamera {
 		//CHIP_SIZE
 		{
 			g.setColor(Color.WHITE);
-			g.drawString("CHIP_SIZE:" + chipSize, 4, 90);
+			g.drawString("CHIP_SIZE:" + chipSize + ", DRAW_SIZE:" + GameManager.getInstance().getOption().getDrawSize(), 4, 90);
 
 		}
 		//SMALL_MAP

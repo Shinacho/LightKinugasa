@@ -212,7 +212,7 @@ public class SimpleMessageWindowModel extends MessageWindowModel {
 			if (charaImage == null) {
 				charaImage = mw.getText().getSpeaker().getMWSpeakerImage();
 				if (mw.getText().getSpeaker().getMWSpeakerImage().getWidth() != CHARA_IMAGE_W || mw.getText().getSpeaker().getMWSpeakerImage().getHeight() != CHARA_IMAGE_H) {
-					charaImage = charaImage.resizeTo(
+					charaImage = charaImage.resize(
 							(CHARA_IMAGE_W / charaImage.getWidth()),
 							(CHARA_IMAGE_H / charaImage.getHeight()));
 				}

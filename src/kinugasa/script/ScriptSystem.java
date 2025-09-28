@@ -123,8 +123,8 @@ public final class ScriptSystem {
 	public ScriptFile of(String name) throws IDNotFoundException {
 		return data.get(name);
 	}
-	
-	public boolean has(String name){
+
+	public boolean has(String name) {
 		return data.contains(name);
 	}
 
@@ -202,12 +202,13 @@ public final class ScriptSystem {
 	private boolean manualIdxMode = false;
 	//---------------------------------------------------------------------------
 
-	void unsetScript(){
+	void unsetScript() {
 		setCurrentExecFile(null);
 		setCurrentExecBlock(null);
 		setCurrentArgs(null);
 		setCurrentArgsValMap(null);
 	}
+
 	public ScriptFile getCurrentExecFile() {
 		return currentExecFile;
 	}

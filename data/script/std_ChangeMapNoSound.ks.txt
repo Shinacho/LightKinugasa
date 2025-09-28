@@ -15,14 +15,16 @@ PARAM={
 
 
 
-STEP_ON (FieldScriptAccessObject) ={
-	#set tooltip
+STEP_ON( FieldScriptAccessObject )={
 	setNode(nextID, x, y, dir, tooltip);
 	
 }
 
-STEP_DOWN ( FieldScriptAccessObject ) ={
-	#unset tooltip
+STEP_DOWN( FieldScriptAccessObject )={
 	unsetNode();
 
+}
+
+MANUAL( FieldScriptAccessObject )={
+	changeMap();
 }

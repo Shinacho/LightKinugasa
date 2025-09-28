@@ -171,7 +171,7 @@ public class SpriteSheet {
 	 * @throws GraphicsException 画像の範囲外にアクセスしたときに投げられる.<br>
 	 */
 	public SpriteSheet rows(int y, int width, int height) throws GraphicsException {
-		subImages.addAll(baseImage.splitRows(y, width, height));
+		subImages.addAll(baseImage.splitX(y, width, height));
 		return this;
 	}
 
@@ -187,7 +187,7 @@ public class SpriteSheet {
 	 * @throws GraphicsException 画像の範囲外にアクセスしたときに投げられる.<br>
 	 */
 	public SpriteSheet columns(int x, int width, int height) throws GraphicsException {
-		subImages.addAll(baseImage.splitColumns(x, width, height));
+		subImages.addAll(baseImage.splitY(x, width, height));
 		return this;
 	}
 

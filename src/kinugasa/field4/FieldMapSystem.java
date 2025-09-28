@@ -320,6 +320,26 @@ public final class FieldMapSystem implements Drawable {
 		return currentNode != null;
 	}
 
+	public boolean hasEvent() {
+		if (currentNode != null) {
+			return true;
+		}
+
+		return talk();
+	}
+
+	public void execEvent() {
+		if (!hasEvent()) {
+			return;
+		}
+		if (talking) {
+			return;
+		}
+		if (currentNode != null) {
+			currentScript.exec(ScriptBlockType.MANUAL);
+		}
+	}
+
 	private void updateTooltip() {
 		if (tooltipText == null) {
 			tooltipText = new TooltipText();
@@ -386,7 +406,6 @@ public final class FieldMapSystem implements Drawable {
 			nodeLock = true;
 			currentScript.exec(ScriptBlockType.STEP_DOWN);
 			nodeLock = false;
-			currentScript.getScriptFile().free();
 		}
 		currentScript = null;
 

@@ -78,140 +78,6 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 
 	public final class KRaster implements Iterable<KImage.KRaster.KColor> {
 
-		private KColor[][] data;
-
-		private KRaster() {
-		}
-
-		private void setData(KColor[][] data) {
-			this.data = data;
-		}
-
-		public KColor of(int x, int y) throws GraphicsException {
-			return data[y][x];
-		}
-
-		@NotNewInstance
-		@Deprecated
-		public KColor[][] all() {
-			return data;
-		}
-
-		@NewInstance
-		public KRaster set(UnaryOperator<KColor> u) {
-			KColor[][] res = new KColor[getHeight()][];
-			KRaster r = new KRaster();
-			for (int y = 0; y < getHeight(); y++) {
-				res[y] = new KColor[getWidth()];
-				for (int x = 0; x < getWidth(); x++) {
-					res[y][x] = u.apply(this.data[y][x]);
-				}
-			}
-			r.setData(res);
-			return r;
-		}
-
-		@NewInstance
-		public KRaster fill(Supplier<KColor> s) {
-			KColor[][] res = new KColor[getHeight()][];
-			KRaster r = new KRaster();
-			for (int y = 0; y < getHeight(); y++) {
-				for (int x = 0; x < getWidth(); x++) {
-					res[y][x] = s.get();
-				}
-			}
-			r.setData(res);
-			return r;
-		}
-
-		@NotNewInstance
-		public KImage updateImage() {
-			return KImage.this.updateImage(this);
-		}
-
-		@NewInstance
-		public KImage newImage() {
-			return KImage.this.clone().updateImage(this);
-		}
-
-		public KRaster rotate(float angle) {
-			while (angle >= 360.0f) {
-				angle -= 360.0f;
-			}
-			while (angle < 0.0f) {
-				angle += 360.0f;
-			}
-			if (angle == 0f) {
-				return this;
-			}
-
-			if (angle % 90 == 0) {
-				for (int i = 0; i < (int) (angle / 90); i++) {
-					data = rotate(data);
-				}
-				return this;
-			} else {
-				this.data = KImage.this.rotate(angle).asRaster().data;
-				return this;
-			}
-
-		}
-
-		private static KColor[][] rotate(KColor[][] p) {
-			int n = p.length;
-			int m = p[0].length;
-			KColor[][] res = new KColor[m][n];
-
-			for (int i = 0; i < n; i++) {
-				for (int j = 0; j < m; j++) {
-					res[j][n - 1 - i] = p[i][j];
-				}
-			}
-			return res;
-		}
-
-		public Stream<KColor> stream() {
-			return Arrays.stream(data).flatMap(Arrays::stream);
-		}
-
-		@Override
-		public Iterator<KColor> iterator() {
-			return Arrays.stream(data).flatMap(Arrays::stream).toList().iterator();
-		}
-
-		private int[][] getPixel2D() {
-			int[][] res = new int[data.length][];
-			for (int y = 0; y < data.length; y++) {
-				res[y] = new int[data[y].length];
-				for (int x = 0; x < data[y].length; x++) {
-					res[y][x] = data[y][x].value;
-				}
-			}
-			return res;
-		}
-
-		@Override
-		public int hashCode() {
-			int hash = 5;
-			hash = 29 * hash + Arrays.deepHashCode(this.data);
-			return hash;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (getClass() != obj.getClass()) {
-				return false;
-			}
-			final KRaster other = (KRaster) obj;
-			return Arrays.deepEquals(this.data, other.data);
-		}
-
 		public final class KColor {
 
 			private int value;
@@ -433,6 +299,139 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 			}
 
 		}
+		private KColor[][] data;
+
+		private KRaster() {
+		}
+
+		private void setData(KColor[][] data) {
+			this.data = data;
+		}
+
+		public KColor of(int x, int y) throws GraphicsException {
+			return data[y][x];
+		}
+
+		@NotNewInstance
+		@Deprecated
+		public KColor[][] all() {
+			return data;
+		}
+
+		@NewInstance
+		public KRaster set(UnaryOperator<KColor> u) {
+			KColor[][] res = new KColor[getHeight()][];
+			KRaster r = new KRaster();
+			for (int y = 0; y < getHeight(); y++) {
+				res[y] = new KColor[getWidth()];
+				for (int x = 0; x < getWidth(); x++) {
+					res[y][x] = u.apply(this.data[y][x]);
+				}
+			}
+			r.setData(res);
+			return r;
+		}
+
+		@NewInstance
+		public KRaster fill(Supplier<KColor> s) {
+			KColor[][] res = new KColor[getHeight()][];
+			KRaster r = new KRaster();
+			for (int y = 0; y < getHeight(); y++) {
+				for (int x = 0; x < getWidth(); x++) {
+					res[y][x] = s.get();
+				}
+			}
+			r.setData(res);
+			return r;
+		}
+
+		@NotNewInstance
+		public KImage updateImage() {
+			return KImage.this.updateImage(this);
+		}
+
+		@NewInstance
+		public KImage newImage() {
+			return KImage.this.clone().updateImage(this);
+		}
+
+		public KRaster rotate(float angle) {
+			while (angle >= 360.0f) {
+				angle -= 360.0f;
+			}
+			while (angle < 0.0f) {
+				angle += 360.0f;
+			}
+			if (angle == 0f) {
+				return this;
+			}
+
+			if (angle % 90 == 0) {
+				for (int i = 0; i < (int) (angle / 90); i++) {
+					data = rotate(data);
+				}
+				return this;
+			} else {
+				this.data = KImage.this.rotate(angle).asRaster().data;
+				return this;
+			}
+
+		}
+
+		private static KColor[][] rotate(KColor[][] p) {
+			int n = p.length;
+			int m = p[0].length;
+			KColor[][] res = new KColor[m][n];
+
+			for (int i = 0; i < n; i++) {
+				for (int j = 0; j < m; j++) {
+					res[j][n - 1 - i] = p[i][j];
+				}
+			}
+			return res;
+		}
+
+		public Stream<KColor> stream() {
+			return Arrays.stream(data).flatMap(Arrays::stream);
+		}
+
+		@Override
+		public Iterator<KColor> iterator() {
+			return Arrays.stream(data).flatMap(Arrays::stream).toList().iterator();
+		}
+
+		private int[][] getPixel2D() {
+			int[][] res = new int[data.length][];
+			for (int y = 0; y < data.length; y++) {
+				res[y] = new int[data[y].length];
+				for (int x = 0; x < data[y].length; x++) {
+					res[y][x] = data[y][x].value;
+				}
+			}
+			return res;
+		}
+
+		@Override
+		public int hashCode() {
+			int hash = 5;
+			hash = 29 * hash + Arrays.deepHashCode(this.data);
+			return hash;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final KRaster other = (KRaster) obj;
+			return Arrays.deepEquals(this.data, other.data);
+		}
 
 	}
 
@@ -645,7 +644,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	}
 
 	@NewInstance
-	public List<KImage> splitRows(int y, int w, int h) throws GraphicsException {
+	public List<KImage> splitX(int y, int w, int h) throws GraphicsException {
 		try {
 			BufferedImage[] dst = new BufferedImage[image.getWidth() / w];
 			for (int i = 0, x = 0; i < dst.length; i++, x += w) {
@@ -658,7 +657,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	}
 
 	@NewInstance
-	public List<KImage> splitColumns(int x, int w, int h) throws GraphicsException {
+	public List<KImage> splitY(int x, int w, int h) throws GraphicsException {
 		try {
 			BufferedImage[] dst = new BufferedImage[image.getHeight() / h];
 			for (int i = 0, y = 0; i < dst.length; i++, y += h) {
@@ -672,14 +671,14 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 
 	@NewInstance
 	public List<KImage> splitX(int w, int h) throws GraphicsException {
-		return splitColumns(0, w, h);
+		return splitY(0, w, h);
 	}
 
 	@NewInstance
 	public List<List<KImage>> split2D(int w, int h) throws GraphicsException {
 		List<List<KImage>> result = new ArrayList<>();
 		for (int i = 0, y = 0; i < image.getHeight() / h; i++, y += h) {
-			result.add(new ArrayList<>(splitRows(y, w, h)));
+			result.add(new ArrayList<>(splitX(y, w, h)));
 		}
 		return result;
 	}
@@ -1078,36 +1077,36 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	}
 
 	@NewInstance
-	public KImage resizeTo(float scale) {
+	public KImage resize(float scale) {
 		int w = (int) (getWidth() * scale);
 		int h = (int) (getHeight() * scale);
-		return resizeTo(w, h);
+		return resize(w, h);
 	}
 
 	@NewInstance
-	public KImage resizeTo(float wScale, float hScale) {
+	public KImage resize(float wScale, float hScale) {
 		int w = (int) (getWidth() * wScale);
 		int h = (int) (getHeight() * hScale);
-		return resizeTo(w, h);
+		return resize(w, h);
 	}
 
 	@NewInstance
-	public KImage resizeTo(Dimension2D d) {
-		return resizeTo((int) d.getWidth(), (int) d.getHeight());
+	public KImage resize(Dimension2D d) {
+		return resize((int) d.getWidth(), (int) d.getHeight());
 	}
 
 	@NewInstance
-	public KImage resizeTo(Sprite s) {
-		return resizeTo(s.getSize());
+	public KImage resize(Sprite s) {
+		return resize(s.getSize());
 	}
 
 	@NewInstance
-	public KImage resizeTo(KImage i) {
-		return resizeTo(i.getWidth(), i.getHeight());
+	public KImage resize(KImage i) {
+		return resize(i.getWidth(), i.getHeight());
 	}
 
 	@NewInstance
-	public KImage resizeTo(int w, int h) {
+	public KImage resize(int w, int h) {
 		if (w == 0 || h == 0) {
 			throw new IllegalArgumentException("resize image : size is 0");
 		}
@@ -1140,7 +1139,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	public static List<KImage> resizeAll(float wScale, float hScale, List<KImage> images) {
 		List<KImage> res = new ArrayList<>();
 		for (var v : images) {
-			res.add(v.resizeTo(wScale, hScale));
+			res.add(v.resize(wScale, hScale));
 		}
 		return res;
 	}
@@ -1174,7 +1173,7 @@ public sealed class KImage extends CloneableObject permits KImage.MaskedArea {
 	public static List<KImage> resizeAll(int w, int h, List<KImage> images) {
 		List<KImage> res = new ArrayList<>();
 		for (var v : images) {
-			res.add(v.resizeTo(w, h));
+			res.add(v.resize(w, h));
 		}
 		return res;
 	}

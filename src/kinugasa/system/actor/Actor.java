@@ -197,10 +197,10 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 	protected CharaSprite loadSprite(DataFile.Element pi) {
 		int waTime = pi.get("waTime").getValue().asInt();
 		KImage image = pi.get("sprite").getValue().asKImageFile();
-		Animation south = new Animation(new FrameTimeCounter(waTime), image.splitRows(0, 16, 16));
-		Animation north = new Animation(new FrameTimeCounter(waTime), image.splitRows(16, 16, 16));
-		Animation east = new Animation(new FrameTimeCounter(waTime), image.splitRows(32, 16, 16));
-		Animation west = new Animation(new FrameTimeCounter(waTime), image.splitRows(48, 16, 16));
+		Animation south = new Animation(new FrameTimeCounter(waTime), image.splitX(0, 16, 16));
+		Animation north = new Animation(new FrameTimeCounter(waTime), image.splitX(16, 16, 16));
+		Animation east = new Animation(new FrameTimeCounter(waTime), image.splitX(32, 16, 16));
+		Animation west = new Animation(new FrameTimeCounter(waTime), image.splitX(48, 16, 16));
 		WalkAnimation wa = new WalkAnimation(north, south, east, west);
 		return new CharaSprite(wa);
 	}

@@ -114,7 +114,7 @@ public class Test extends GameManager {
 
 		fms.update();
 		ss.update();
-
+		
 		if (fms.isChangeMap()) {
 			return;
 		}
@@ -160,14 +160,8 @@ public class Test extends GameManager {
 		}
 
 		if (is.isPressed(Keys.SPACE, InputType.SINGLE)) {
-			//話す
-			if (fms.talk()) {
-				return;
-			}
-
-			//入る
-			if (fms.hasNode()) {
-				fms.changeMapStart();
+			if (fms.hasEvent()) {
+				fms.execEvent();
 				return;
 			}
 		}

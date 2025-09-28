@@ -200,6 +200,11 @@ public class FieldScriptAccessObject implements ScriptAccessObject {
 	public void unsetNode() {
 		FieldMapSystem.getInstance().unsetNode();
 	}
+	
+	@ScriptAccessMethod
+	public void changeMap(){
+		FieldMapSystem.getInstance().changeMapStart();
+	}
 
 	@ScriptAccessMethod
 	public void changeVehicle(UniversalValue v) {

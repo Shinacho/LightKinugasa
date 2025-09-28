@@ -147,8 +147,9 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 			}
 		}
 
-		if (f.has("MINIMAL_LABEL") && f.get("MINIMAP_LABEL").getElements() != null) {
-			for (var v : f.get("MINIMAP_LABEL").getElements()) {
+		//MINIMAP_LABEL
+		if (f.has("MINIMAP_LABEL") && f.get("MINIMAP_LABEL").getElements() != null) {
+			for (var v : f.get("MINIMAP_LABEL")) {
 				D2Idx i = v.getKey().asD2IdxCSV();
 				I18NText t = v.getValue().asI18N();
 				miniMapLabelStorage.add(new MiniMapLabel(i, t));
@@ -161,7 +162,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 			if (f.get("BACK_LAYER").has("cutW")) {
 				int w = f.get("BACK_LAYER").get("cutW").getValue().asInt();
 				int h = f.get("BACK_LAYER").get("cutH").getValue().asInt();
-				image = f.get("BACK_LAYER").get("image").getValue().asKImageFile().splitRows(0, w, h);
+				image = f.get("BACK_LAYER").get("image").getValue().asKImageFile().splitX(0, w, h);
 			} else {
 				image = List.of(f.get("BACK_LAYER").get("image").getValue().asKImageFile());
 			}
@@ -209,13 +210,13 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 				if (f.get("ANIMATION_LAYER").has("cutW")) {
 					int w = f.get("ANIMATION_LAYER").get("cutW").getValue().asInt();
 					int h = f.get("ANIMATION_LAYER").get("cutH").getValue().asInt();
-					image = f.get("ANIMATION_LAYER").get("image").getValue().asKImageFile().splitRows(0, w, h);
+					image = f.get("ANIMATION_LAYER").get("image").getValue().asKImageFile().splitX(0, w, h);
 				} else {
 					image = List.of(f.get("ANIMATION_LAYER").get("image").getValue().asKImageFile());
 				}
 				FrameTimeCounter tc = v.get("frame").getValue().asFrameTimeCounterCSV();
 				if (v.has("drawSize")) {
-					image = image.stream().map(p -> p.resizeTo(v.get("drawSize").getValue().asFloat())).toList();
+					image = image.stream().map(p -> p.resize(v.get("drawSize").getValue().asFloat())).toList();
 				}
 				Animation a = new Animation(tc, image);
 				animationLayerSprite.add(new FMAnimationLayerSprite(nomalLayerSprite.get(0).getChipDrawSize(), idx, a));
@@ -228,7 +229,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 			if (f.get("FRONT_LAYER").has("cutW")) {
 				int w = f.get("FRONT_LAYER").get("cutW").getValue().asInt();
 				int h = f.get("FRONT_LAYER").get("cutH").getValue().asInt();
-				image = f.get("FRONT_LAYER").get("image").getValue().asKImageFile().splitRows(0, w, h);
+				image = f.get("FRONT_LAYER").get("image").getValue().asKImageFile().splitX(0, w, h);
 			} else {
 				image = List.of(f.get("FRONT_LAYER").get("image").getValue().asKImageFile());
 			}
@@ -454,7 +455,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		//resize
 		float ws = w / res.getWidth();
 		float hs = h / res.getHeight();
-		res = res.resizeTo(ws, hs);
+		res = res.resize(ws, hs);
 
 		//label
 		if (label) {
