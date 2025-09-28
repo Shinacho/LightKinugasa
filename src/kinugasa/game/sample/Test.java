@@ -39,6 +39,7 @@ import kinugasa.game.system.actor.FieldMapNPCMoveModelSetter;
 import kinugasa.game.ui.Dialog;
 import kinugasa.game.ui.MessageWindow;
 import kinugasa.graphics.GraphicsContext;
+import kinugasa.resource.sound.SoundStorage;
 import kinugasa.resource.sound.SoundSystem;
 import kinugasa.util.MathUtil;
 

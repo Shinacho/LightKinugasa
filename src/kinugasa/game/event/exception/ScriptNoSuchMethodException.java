@@ -14,34 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package kinugasa.game.event.exception;
 
 /**
- * EventScriptParamException.<br>
- *
- * @vesion 1.0.0 - 2025/07/31_22:15:17<br>
+ * ScritNoSuchMethodException.<br>
+ * @vesion 1.0.0 - 2025/09/27_22:26:43<br>
  * @author Shinacho.<br>
  */
-public class EventScriptParamException extends EventScriptException {
+public class ScriptNoSuchMethodException extends ScriptException {
 
-	/**
-	 * Creates a new instance of <code>EventScriptParamException</code> without
-	 * detail message.
-	 */
-	public EventScriptParamException() {
-	}
+    /**
+     * Creates a new instance of <code>ScritNoSuchMethodException</code> without detail message.
+     */
+    public ScriptNoSuchMethodException() {
+    }
 
-	/**
-	 * Constructs an instance of <code>EventScriptParamException</code> with the
-	 * specified detail message.
-	 *
-	 * @param msg the detail message.
-	 */
-	public EventScriptParamException(String msg) {
-		super(msg);
-	}
 
-	public EventScriptParamException(Exception ex) {
-		super(ex);
-	}
+    /**
+     * Constructs an instance of <code>ScritNoSuchMethodException</code> with the specified detail message.
+     * @param msg the detail message.
+     */
+    public ScriptNoSuchMethodException(String msg) {
+        super(msg);
+    }
+
+    public ScriptNoSuchMethodException(Exception ex){
+        super(ex);
+    }
 }

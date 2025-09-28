@@ -35,7 +35,7 @@ import kinugasa.util.TimeCounter;
 import kinugasa.resource.ID;
 import kinugasa.game.I18NText;
 import kinugasa.game.event.ScriptBlock;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 import kinugasa.util.TimeCounterState;
 
 /**
@@ -95,7 +95,7 @@ public sealed class Text implements ID permits Choice {
 	private MWSpeaker speaker;
 	//このテキストが次に送られるときまたはChoiceの場合は選択されたときに実行されるAUTO属性イベント
 	@Nullable
-	private ScriptCall script;
+	private ScriptFileCall script;
 
 	public static final Text LINE_SEP = new Text("LINE_SEP");
 
@@ -465,11 +465,11 @@ public sealed class Text implements ID permits Choice {
 		this.nextId = nextId;
 	}
 
-	public void setScript(ScriptCall script) {
+	public void setScript(ScriptFileCall script) {
 		this.script = script;
 	}
 
-	public ScriptCall getScript() {
+	public ScriptFileCall getScript() {
 		return script;
 	}
 

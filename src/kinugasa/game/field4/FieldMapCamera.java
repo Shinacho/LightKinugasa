@@ -26,7 +26,7 @@ import kinugasa.game.GameManager;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.annotation.Singleton;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 import kinugasa.game.field4.layer.FMNomalLayerSprite;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.actor.NPC;
@@ -424,7 +424,7 @@ public class FieldMapCamera {
 			g.fillOval(r.x + r.width - 9, r.y + r.height - 9, 18, 18);
 			g.drawRect((int) r.x + 3, (int) r.y + 3, (int) r.width - 6, (int) r.height - 6);
 			String v = (int) layer0.getX() + "," + (int) layer0.getY() + "," + (int) layer0.getWidth() + "," + (int) layer0.getHeight();
-			g.drawString("LAYER[0]:" + v + " - " + "W=" + layer0.getDataWidth() + ", H=" + layer0.getDataHeight(), 4, 42);
+			g.drawString("LAYER[0]:" + v + " / " + "dataW=" + layer0.getDataWidth() + ", dataH=" + layer0.getDataHeight(), 4, 42);
 		}
 		//Rimmed
 		{
@@ -628,7 +628,7 @@ public class FieldMapCamera {
 			g.setColor(Color.YELLOW);
 			for (var v : fm.getEventScriptMap().all().entrySet()) {
 				D2Idx i = v.getKey();
-				ScriptCall sc = v.getValue();
+				ScriptFileCall sc = v.getValue();
 
 				float x = fm.getNomalLayerSprite().get(0).getX();
 				x += (i.x * chipSize);

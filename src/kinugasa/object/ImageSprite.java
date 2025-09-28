@@ -226,13 +226,14 @@ public class ImageSprite extends Sprite {
 		return image;
 	}
 
-	public void setSizeByImage() {
+	public ImageSprite setSizeByImage() {
 		if (image == null) {
-			return;
+			return this;
 		}
 		int w = getImageWidth();
 		int h = getImageHeight();
 		setSize(w, h);
+		return this;
 	}
 
 	/**

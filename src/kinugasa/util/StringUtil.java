@@ -16,6 +16,10 @@
  */
 package kinugasa.util;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Stream;
 import kinugasa.game.I18NText;
 
 /**
@@ -180,11 +184,76 @@ public final class StringUtil {
 		return safeSplit(val.toString(), sep);
 	}
 
+	public static int count(String v, char c) {
+		return (int) v.chars().filter(p -> (char) p == c).count();
+	}
+
 	public static int count(String v, String tgt) {
 		if (!v.contains(tgt)) {
 			return 0;
 		}
 		return safeSplit(v, tgt).length - 1;
+	}
+
+	//escape
+	public static String[] safeSplitBlock(String v, char sep, char blockCh, boolean trim) {
+		List<String> r = new ArrayList<>();
+
+		//ブロック文字が偶数個であることを確認
+		StringBuilder sb = new StringBuilder();
+		boolean start = false;
+		boolean inValue = false;
+		boolean escape = false;
+		for (char c : v.toCharArray()) {
+			if (c == '\\') {
+				if (escape) {
+					sb.append(c);
+					escape = false;
+					continue;
+				}
+				//エスケープ。次の文字はブロック区切りではなく、追加する必要がある。
+				escape = true;
+				continue;
+			}
+			if (c == blockCh) {
+				if (escape) {
+					sb.append(c);
+					escape = false;
+					continue;
+				}
+				if (!start) {
+					sb.append(c);
+					start = true;
+					inValue = true;
+					continue;
+				}
+				if (start) {
+					sb.append(c);
+					start = false;
+					inValue = false;
+					continue;
+				}
+			}
+			if (c == sep) {
+				if (inValue) {
+					//無視して追加
+					sb.append(c);
+					continue;
+				} else {
+					//区切り文字なので次へ
+					r.add(trim ? sb.toString().trim() : sb.toString());
+					sb = new StringBuilder();
+					continue;
+				}
+			}
+			sb.append(c);
+
+		}
+		if (!sb.isEmpty()) {
+			r.add(trim ? sb.toString().trim() : sb.toString());
+		}
+
+		return r.toArray(String[]::new);
 	}
 
 }

@@ -56,7 +56,7 @@ import kinugasa.object.FourDirection;
  * @author Shinacho.<br>
  */
 @Singleton
-public class FieldScriptAccessObject {
+public class FieldScriptAccessObject implements ScriptAccessObject {
 
 	private static final FieldScriptAccessObject INSTANCE = new FieldScriptAccessObject();
 
@@ -86,7 +86,7 @@ public class FieldScriptAccessObject {
 
 	@ScriptAccessMethod
 	public boolean paramIs(UniversalValue name, UniversalValue v) {
-		return ScriptSystem.getInstance().getCurrentArgs().getMap().get(name.value()).equals(v);
+		return ScriptSystem.getInstance().getCurrentArgsValMap().get(name.value()).equals(v);
 	}
 
 	@ScriptAccessMethod
@@ -342,6 +342,14 @@ public class FieldScriptAccessObject {
 	@ScriptAccessMethod
 	public SpeakerOption nextTextAsChoice(UniversalValue v, UniversalValue o1, UniversalValue o2, UniversalValue o3, UniversalValue o4, UniversalValue o5) {
 		Choice c = v.asI18N().toText().toChoice(List.of(o1.asI18N().toText(), o2.asI18N().toText(), o3.asI18N().toText(), o4.asI18N().toText(), o5.asI18N().toText()));
+		ScriptSystem.getInstance().getMessageWindow().setText(c);
+		ScriptSystem.getInstance().setLastText(c);
+		return SpeakerOption.getInstance();
+	}
+
+	@ScriptAccessMethod
+	public SpeakerOption nextTextAsChoice(UniversalValue v, UniversalValue o1, UniversalValue o2, UniversalValue o3, UniversalValue o4, UniversalValue o5, UniversalValue o6) {
+		Choice c = v.asI18N().toText().toChoice(List.of(o1.asI18N().toText(), o2.asI18N().toText(), o3.asI18N().toText(), o4.asI18N().toText(), o5.asI18N().toText(), o6.asI18N().toText()));
 		ScriptSystem.getInstance().getMessageWindow().setText(c);
 		ScriptSystem.getInstance().setLastText(c);
 		return SpeakerOption.getInstance();

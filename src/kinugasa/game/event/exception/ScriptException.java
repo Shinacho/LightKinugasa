@@ -14,32 +14,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package kinugasa.game.event.exception;
 
+import kinugasa.game.event.ScriptResult;
+
 /**
- * EventScriptFileException.<br>
- * @vesion 1.0.0 - 2025/07/31_22:08:30<br>
+ * ScriptException.<br>
+ *
+ * @vesion 1.0.0 - 2025/09/27_22:27:08<br>
  * @author Shinacho.<br>
  */
-public class EventScriptFileException extends EventScriptException {
+public class ScriptException extends RuntimeException {
 
-    /**
-     * Creates a new instance of <code>EventScriptFileException</code> without detail message.
-     */
-    public EventScriptFileException() {
-    }
+	/**
+	 * Creates a new instance of <code>ScriptException</code> without detail
+	 * message.
+	 */
+	public ScriptException() {
+	}
 
+	/**
+	 * Constructs an instance of <code>ScriptException</code> with the specified
+	 * detail message.
+	 *
+	 * @param msg the detail message.
+	 */
+	public ScriptException(String msg) {
+		super(msg);
+	}
 
-    /**
-     * Constructs an instance of <code>EventScriptFileException</code> with the specified detail message.
-     * @param msg the detail message.
-     */
-    public EventScriptFileException(String msg) {
-        super(msg);
-    }
-
-    public EventScriptFileException(Exception ex){
-        super(ex);
-    }
+	public ScriptException(Exception ex) {
+		super(ex);
+	}
 }

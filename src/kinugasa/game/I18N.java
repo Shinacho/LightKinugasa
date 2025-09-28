@@ -28,7 +28,7 @@ import kinugasa.game.annotation.OneceTime;
 import kinugasa.game.annotation.NoLoopCall;
 import java.util.HashSet;
 import java.util.Set;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 import kinugasa.game.event.ScriptSystem;
 
 /**
@@ -125,7 +125,7 @@ public class I18N {
 				} else {
 					//callモード
 					var r = ScriptSystem.getInstance().instantCall(inner);
-					sb.append(r.resultObject.toString());
+					sb.append(r.lastResultObject().toString());
 					i = end;
 				}
 			} else {

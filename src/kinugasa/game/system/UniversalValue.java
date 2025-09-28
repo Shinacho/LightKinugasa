@@ -32,7 +32,7 @@ import kinugasa.game.annotation.Immutable;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.NotNull;
 import kinugasa.game.annotation.Nullable;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.field4.FieldMapSystem;
 import kinugasa.game.field4.MapChipSet;
@@ -63,6 +63,7 @@ import kinugasa.util.TimeCounter;
 @Immutable
 public sealed class UniversalValue implements ID permits XMLAttribute {
 
+	public static final UniversalValue EMPTY = new UniversalValue("");
 	private final String value;
 
 	public <T extends Enum<T>> UniversalValue(T value) {
@@ -84,6 +85,11 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 	@NewInstance
 	public UniversalValue trim() {
 		return new UniversalValue(value.trim());
+	}
+
+	@NewInstance
+	public UniversalValue replaceAll(String v1, String v2) {
+		return new UniversalValue(value.replaceAll(v1, v2));
 	}
 
 	@Override
@@ -302,8 +308,8 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 		return new MapChipSet(asFile());
 	}
 
-	public ScriptCall asScriptCall() {
-		return new ScriptCall(value);
+	public ScriptFileCall asScriptCall() {
+		return new ScriptFileCall(value);
 	}
 
 	@Nullable

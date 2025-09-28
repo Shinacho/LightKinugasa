@@ -16,18 +16,16 @@
  */
 package kinugasa.game.event;
 
-import kinugasa.game.event.exception.EventScriptException;
+import kinugasa.game.event.exception.ScriptSyntaxException;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.Nullable;
-import kinugasa.game.event.exception.EventScriptFormatException;
+import kinugasa.game.event.exception.ScriptException;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.system.GameSystem;
-import kinugasa.game.system.UniversalValue;
 import kinugasa.game.system.actor.CharaSprite;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
@@ -50,7 +48,7 @@ public class ScriptFile extends FileObject {
 	private CharaSprite charaSprite;
 
 	// PARAM
-	private List<ScriptParam> param;
+	private List<String> paramNames;
 
 	// EVENT
 	private EnumMap<ScriptBlockType, ScriptBlock> blocks;
@@ -72,17 +70,8 @@ public class ScriptFile extends FileObject {
 		return res;
 	}
 
-	private Object getSao(String name) {
-		return switch (name.toLowerCase()) {
-			case "fieldscriptaccessobject" ->
-				FieldScriptAccessObject.getInstance();
-			default ->
-				throw new EventScriptFormatException("SF : undefined SAO type : " + name);
-		};
-	}
-
 	@Override
-	public ScriptFile load() throws FileNotFoundException, FileFormatException, ContentsIOException {
+	public ScriptFile load() throws FileNotFoundException, FileFormatException, ContentsIOException, ScriptException {
 		if (isLoaded) {
 			return this;
 		}
@@ -93,32 +82,19 @@ public class ScriptFile extends FileObject {
 		DataFile f = asDataFile().load();
 
 		//PARAM
-		this.param = new ArrayList<>();
+		this.paramNames = new ArrayList<>();
 		if (f.has("PARAM")) {
-			boolean optionalMode = false;
-			for (int i = 0, size = f.get("PARAM").getElements().size(); i < size; i++) {
-				var v = f.get("PARAM").getElements().get(i);
-				String name = v.getKey().value();
-				ScriptParam p = new ScriptParam(name);
-				UniversalValue val = v.getValue();
-				if (val == null || val.isEmpty()) {
-					if (optionalMode) {
-						throw new FileFormatException("ES [" + getName() + "] . PARAM optional missmatch" + v);
-					}
-				} else {
-					p.setDefaultValue(val);
-					optionalMode = true;
-				}
-				param.add(p);
+			for (var v : f.get("PARAM")) {
+				paramNames.add(v.getKey().value());
 			}
 		}
 
-		//events
+		//block - sl
 		this.blocks = new EnumMap<>(ScriptBlockType.class);
 		for (var v : ScriptBlockType.values()) {
 			blocks.put(v, new ScriptBlock(v, null, this, List.of()));
 		}
-		for (var v : f.getData()) {
+		for (var v : f.getData()) { //block
 			String k = v.getKey().value();
 			var ele = v.getElements();
 			if (ele == null || ele.isEmpty()) {
@@ -130,10 +106,15 @@ public class ScriptFile extends FileObject {
 				continue;
 			}
 			if (kk.length != 2) {
-				throw new EventScriptFormatException("SF : block SAO not found : " + v);
+				throw new ScriptSyntaxException("SF : block SAO not found : " + v);
 			}
 			ScriptBlockType type = ScriptBlockType.valueOf(kk[0].trim());
-			Object sao = getSao(kk[1].replaceAll("[)]", "").trim());
+
+			String saoName = kk[1].replaceAll("[)]", "").trim().toUpperCase();
+			if (!ScriptAccessObjects.has(saoName)) {
+				throw new ScriptSyntaxException("SF : block SAO not found : " + v);
+			}
+			ScriptAccessObject sao = ScriptAccessObjects.valueOf(saoName).getSAO();
 
 			blocks.put(type, new ScriptBlock(type, sao, this, ele));
 
@@ -154,7 +135,7 @@ public class ScriptFile extends FileObject {
 			return;
 		}
 		isLoaded = false;
-		param = null;
+		paramNames = null;
 		if (blocks != null) {
 			blocks.clear();
 		}
@@ -166,7 +147,7 @@ public class ScriptFile extends FileObject {
 		return isLoaded;
 	}
 
-	public ScriptFile test() throws EventScriptException {
+	public ScriptFile test() throws ScriptSyntaxException {
 		load();
 		free();
 		return this;
@@ -180,8 +161,8 @@ public class ScriptFile extends FileObject {
 		return charaSprite;
 	}
 
-	public List<ScriptParam> getParam() {
-		return param;
+	public List<String> getParam() {
+		return paramNames;
 	}
 
 	public ScriptBlock getBlockOf(ScriptBlockType tgt) {
@@ -194,7 +175,7 @@ public class ScriptFile extends FileObject {
 		sb.append("ScriptFile{");
 		sb.append("location=").append(location);
 		sb.append(", charaSprite=").append(charaSprite);
-		sb.append(", param=").append(param);
+		sb.append(", param=").append(paramNames);
 		for (var v : ScriptBlockType.values()) {
 			sb.append(", ").append(v).append("=").append(v);
 		}

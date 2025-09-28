@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 import kinugasa.game.GameLog;
 import static kinugasa.game.event.ScriptResultType.PAUSE;
-import kinugasa.game.event.exception.EventScriptException;
-import kinugasa.game.event.exception.EventScriptFormatException;
-import kinugasa.game.event.exception.EventScriptRuntimeException;
+import kinugasa.game.event.exception.ScriptSyntaxException;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.UniversalValue;
 import kinugasa.resource.text.DataFile;
@@ -42,35 +40,42 @@ public class ScriptBlock {
 
 	private final ScriptBlockType type;
 	private final ScriptFile script;
-	private final List<ScriptLine> cmds;
-	private Object sao;
+	private final List<ScriptLine> lines;
+	private ScriptAccessObject sao;
 	private int currentIdx = 0;
 
-	ScriptBlock(ScriptBlockType type, Object sao, ScriptFile script, List<DataFile.Element> e) throws EventScriptException {
+	ScriptBlock(ScriptBlockType type, ScriptAccessObject sao, ScriptFile script, List<DataFile.Element> e) throws ScriptSyntaxException {
 		this.type = type;
 		this.script = script;
-		this.cmds = new ArrayList<>();
+		this.lines = new ArrayList<>();
 		this.sao = sao;
 		parse(e);
 	}
 
-	private void parse(List<DataFile.Element> e) throws EventScriptException {
-		if (e == null) {
+	private void parse(List<DataFile.Element> e) throws ScriptSyntaxException {
+		if (e == null || e.isEmpty()) {
 			return;
 		}
+		if (this.sao == null) {
+			throw new ScriptSyntaxException("SB : SAO is null : " + type);
+		}
 		//IF - ENDIFのチェック
-		for (var v : e) {
-			if (v.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF")) {
-				if (!v.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")) {
-					throw new EventScriptFormatException("SB : if '(' not found : " + this);
+		{
+			for (var v : e) {
+				if (v.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF")) {
+					if (!v.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")) {
+						throw new ScriptSyntaxException("SB : IF '(' not found : " + this);
+					}
 				}
 			}
+			int ifCount = e.stream().filter(p -> p.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")).toList().size();
+			int endIfCount = e.stream().filter(p -> p.original().trim().toUpperCase().replaceAll(" ", "").endsWith("ENDIF")).toList().size();
+			if (ifCount != endIfCount) {
+				throw new ScriptSyntaxException("SB : IF-ENDIF missmatch : " + this);
+			}
 		}
-		int ifCount = e.stream().filter(p -> p.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")).toList().size();
-		int endIfCount = e.stream().filter(p -> p.original().trim().toUpperCase().replaceAll(" ", "").endsWith("ENDIF")).toList().size();
-		if (ifCount != endIfCount) {
-			throw new EventScriptFormatException("SB : if-endif missmatch : " + this);
-		}
+
+		//IF-STACKの生成とブロック内値の追加
 		LinkedList<List<String>> ifStack = new LinkedList<>();//and/or [hoge().piyo()]
 		for (var v : e) {
 			String line = v.original().trim();
@@ -82,7 +87,7 @@ public class ScriptBlock {
 				String ifInner = line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")).trim();
 
 				if (ifInner.contains("&&")) {
-					throw new EventScriptFormatException("SB : cant use [&&], use nest if block : " + this);
+					throw new ScriptSyntaxException("SB : cant use [&&], use nest if block : " + this);
 				}
 				ifStack.add(Arrays.asList(StringUtil.safeSplit(ifInner, "||")).stream().map(p -> p.trim()).toList());
 				continue;
@@ -91,184 +96,130 @@ public class ScriptBlock {
 				ifStack.removeLast();
 				continue;
 			}
-			line = v.original().trim().replaceAll(" ", "").replaceAll("\t", "");
-			cmds.add(new ScriptLine(this, line, ifStack));
+			line = v.original().trim();
+			lines.add(new ScriptLine(this.sao, line, ifStack));
 		}
 
 		checkOpenMW();
 
-	}
-
-	Object getSao() {
-		return sao;
 	}
 
 	public boolean isEmpty() {
-		return cmds == null || cmds.isEmpty();
+		return lines == null || lines.isEmpty();
 	}
 
-	public class Result {
+	private void checkOpenMW() throws ScriptSyntaxException {
+		//openMessageWindow - closeのチェック
 
-		public final List<ScriptLine.Result> cmdResult;
-		public final ScriptResultType lastResult;
+		boolean open = lines.stream().flatMap(p -> p.getData().stream()).filter(p -> p.m.getName().contains("openMessageWindow")).count() > 0;
+		boolean close = lines.stream().flatMap(p -> p.getData().stream()).filter(p -> p.m.getName().contains("closeMessageWindow")).count() > 0;
 
-		public Result(List<ScriptLine.Result> cmdResult, ScriptResultType lastResult) {
-			this.cmdResult = cmdResult;
-			this.lastResult = lastResult;
-		}
-
-		public void free() {
-			ScriptBlock.this.script.free();
-		}
-
-		public Object lastResultObject() {
-			return cmdResult.get(cmdResult.size() - 1).resultObject;
+		if (open && !close || !open && close) {
+			throw new ScriptSyntaxException("SB : openMW-closeMW missMatch " + this.script.getName() + "." + this.type);
 		}
 
 	}
 
-	public ScriptArgs createArgs(List<UniversalValue> param) {
-		Map<String, UniversalValue> paramMap = new HashMap<>();
-
-		int expectParamCount = script.getParam().size();
-		int noOptionalParamCount = script.getParam().stream().filter(p -> !p.isOptional()).toList().size();
-		int actualParamCount = param.size();
-		if (expectParamCount != noOptionalParamCount) {
-			if (actualParamCount < noOptionalParamCount || actualParamCount > expectParamCount) {
-				throw new EventScriptRuntimeException("SB : param size missmatch : " + this);
-			}
-		}
-
-		for (kinugasa.game.event.ScriptParam v : script.getParam()) {
-			paramMap.put(v.getName(), v.getDefaultValue());
-		}
-		for (int i = 0, j = 0; i < script.getParam().size() && j < param.size(); i++) {
-			ScriptParam p = script.getParam().get(i);
-			String paramName = p.getName();
-			UniversalValue v = param.get(j);
-			if (v != null && !v.isEmpty()) {
-				paramMap.put(paramName, v);
-				j++;
-			}
-		}
-		//param nullチェック
-		for (var v : paramMap.entrySet()) {
-			if (v.getValue() == null || v.getValue().isEmpty()) {
-				GameLog.print("WARN : ScriptParam is empty : " + paramMap);
-			}
-		}
-
-		return new ScriptArgs(paramMap, param);
-	}
-
-	public Result exec() {
+	public ScriptResult exec() {
 		return exec(List.of());
 	}
 
-	public Result exec(List<UniversalValue> param) throws EventScriptException {
-		if (cmds == null || cmds.isEmpty()) {
-			if (GameSystem.isDebugMode()) {
-				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is start : param=" + param);
-				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is end [empty] : param=" + param);
-			}
-			return new Result(List.of(), ScriptResultType.END);
-		}
-		ScriptArgs args = createArgs(param);
-		return exec(args);
-	}
-
-	public void next() {
-		currentIdx++;
-
-	}
-
-	private void checkOpenMW() throws EventScriptFormatException {
-		//openMessageWindow - closeのチェック
-
-		boolean open = cmds.stream().flatMap(p -> p.getData().stream()).filter(p -> p.m.getName().endsWith("openMessageWindow")).count() > 0;
-		boolean close = cmds.stream().flatMap(p -> p.getData().stream()).filter(p -> p.m.getName().equals("closeMessageWindow")).count() > 0;
-
-		if (open && !close || !open && close) {
-			throw new EventScriptFormatException("SB : openMW, but close not found " + this.script.getName() + "." + this.type + ": open=" + open + " / close=" + close);
-		}
-
-	}
-
-	public Result exec(ScriptArgs args) {
-		checkOpenMW();
-		if (cmds == null || cmds.isEmpty()) {
+	public ScriptResult exec(List<UniversalValue> args) {
+		ScriptResult res = new ScriptResult(this);
+		if (lines == null || lines.isEmpty()) {
 			if (GameSystem.isDebugMode()) {
 				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is start : param=" + args);
 				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is end [empty] : param=" + args);
 			}
-			return new Result(List.of(), ScriptResultType.END);
+			return res.add(ScriptResultType.END);
 		}
+		if (currentIdx >= lines.size()) {
+			if (GameSystem.isDebugMode()) {
+				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is start : param=" + args);
+				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is end [current > content] : param=" + args);
+			}
+			return res.add(ScriptResultType.END);
+		}
+
 		if (GameSystem.isDebugMode()) {
 			GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is start : param=" + args);
 			GameLog.addIndent();
+		}
+
+		//名前-値のMap作成
+		Map<String, UniversalValue> argsValMap = new HashMap<>();
+		if (script.getParam() != null) {
+			if (args.size() != script.getParam().size()) {
+				throw new ScriptSyntaxException("SB : param count missmatch : expect=" + script.getParam() + " / actual=" + args);
+			}
+			for (int i = 0; i < script.getParam().size(); i++) {
+				String name = script.getParam().get(i);
+				UniversalValue value = args.get(i);
+				argsValMap.put(name, value);
+			}
 		}
 
 		//実行
 		ScriptSystem.getInstance().setCurrentExecFile(script);
 		ScriptSystem.getInstance().setCurrentExecBlock(this);
 		ScriptSystem.getInstance().setCurrentArgs(args);
+		ScriptSystem.getInstance().setCurrentArgsValMap(argsValMap);
 
-		List<ScriptLine.Result> cmdResult = new ArrayList<>();
-		ScriptResultType last = null;
+		ScriptResult.Value last = null;
+		ScriptSystem.getInstance().setLast(last);
 
-		for (int i = currentIdx; i < cmds.size(); i++, currentIdx = i) {
+		for (int i = currentIdx; i < lines.size(); i++, currentIdx = i) {
 			ScriptSystem.getInstance().setCurrentBlockIdx(currentIdx);
-			var v = cmds.get(i);
-			ScriptLine.Result r = v.exec(args);
-			cmdResult.add(r);
-			last = r.result;
-			if (last == ScriptResultType.RESET_SCRIPT) {
-				if (GameSystem.isDebugMode()) {
-					GameLog.removeIndent();
+			var v = lines.get(i);
+			last = v.exec(argsValMap);
+			res.add(last);
+			ScriptSystem.getInstance().setLast(last);
+
+			switch (last.type()) {
+				case CONTINUE -> {
+					//pauseModeの判定
+					if (ScriptSystem.getInstance().isPauseMode() && last.type() != ScriptResultType.MISSFIRE) {
+						if (GameSystem.isDebugMode()) {
+							GameLog.removeIndent();
+						}
+						return res;
+					}
+					//マニュアルIDXモードの判定
+					if (ScriptSystem.getInstance().isManualIdxMode()) {
+						if (GameSystem.isDebugMode()) {
+							GameLog.removeIndent();
+						}
+						return res;
+					}
+					//それ以外は次の処理へ
 				}
-				currentIdx = 0;
-				return exec(args.getOrigin());
-			}
-			ScriptSystem.getInstance().setLastResultType(last);
-			if (last == PAUSE) {
-				if (GameSystem.isDebugMode()) {
-					GameLog.removeIndent();
+				case MISSFIRE -> {
+					//次の処理へ
 				}
-				return new Result(cmdResult, last);
-			}
-			if (ScriptSystem.getInstance().isPauseMode() && r.result != ScriptResultType.MISFIRE) {
-				if (GameSystem.isDebugMode()) {
-					GameLog.removeIndent();
-				}
-				return new Result(cmdResult, last);
-			}
-			if (r.resultObject instanceof ScriptResultType t) {
-				last = t;
-				if (last != ScriptResultType.CONTINUE) {
+				case PAUSE -> {
 					if (GameSystem.isDebugMode()) {
 						GameLog.removeIndent();
-						GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is end : result=" + last);
 					}
-					ScriptSystem.getInstance().setCurrentExecFile(null);
-					ScriptSystem.getInstance().setCurrentExecBlock(null);
-					ScriptSystem.getInstance().setCurrentArgs(null);
-					return new Result(cmdResult, last);
+					return res;
 				}
-			}
-			//マニュアルIDXモードでは1つしか動かない。
-			if (ScriptSystem.getInstance().isManualIdxMode()) {
-				return new Result(cmdResult, last);
+				case END -> {
+					if (GameSystem.isDebugMode()) {
+						GameLog.removeIndent();
+					}
+					currentIdx = 0;
+					return res;
+				}
+				default ->
+					throw new AssertionError(last.type().name());
+
 			}
 		}
 		if (GameSystem.isDebugMode()) {
 			GameLog.removeIndent();
 			GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is ALL end : result=" + last);
 		}
-		ScriptSystem.getInstance().setCurrentExecFile(null);
-		ScriptSystem.getInstance().setCurrentExecBlock(null);
-		ScriptSystem.getInstance().setCurrentArgs(null);
-		ScriptSystem.getInstance().setCurrentBlockIdx(0);
-		return new Result(cmdResult, last);
+		ScriptSystem.getInstance().unset();
+		return res;
 	}
 
 	public void resetIdx() {
@@ -280,20 +231,28 @@ public class ScriptBlock {
 	}
 
 	public boolean hasNext() {
-		return currentIdx < cmds.size();
+		return currentIdx < lines.size();
+	}
+
+	public void next() {
+		currentIdx++;
 	}
 
 	public List<ScriptLine> getCmds() {
-		return cmds;
+		return lines;
 	}
 
 	public ScriptBlockType getType() {
 		return type;
 	}
 
+	public ScriptFile getScriptFile() {
+		return script;
+	}
+
 	@Override
 	public String toString() {
-		return "ScriptBlock{" + "type=" + type + ", cmds=" + cmds.size() + ", currentIdx=" + currentIdx + '}';
+		return "ScriptBlock{" + "type=" + type + ", cmds=" + lines.size() + ", currentIdx=" + currentIdx + '}';
 	}
 
 }

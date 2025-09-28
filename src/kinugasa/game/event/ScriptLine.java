@@ -22,15 +22,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.xml.transform.Result;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.annotation.Nullable;
-import kinugasa.game.event.exception.EventScriptException;
-import kinugasa.game.event.exception.EventScriptFormatException;
-import kinugasa.game.event.exception.EventScriptNameException;
-import kinugasa.game.event.exception.EventScriptParamException;
-import kinugasa.game.event.exception.EventScriptRuntimeException;
+import kinugasa.game.event.exception.ScriptNoSuchMethodException;
+import kinugasa.game.event.exception.ScriptRuntimeException;
+import kinugasa.game.event.exception.ScriptSyntaxException;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.UniversalValue;
 import kinugasa.util.StringUtil;
@@ -46,85 +48,59 @@ public class ScriptLine {
 	static class Value {
 
 		@Nullable
-		public final ScriptCall scriptCall;
+		public final ScriptFileCall scriptFileCall;
 		@Nullable
 		public final Method m;
 		@Nullable
-		public List<String> vName = null;
+		public List<UniversalValue> args = null;
 		public boolean ifNot = false;
 
-		public Value(ScriptCall sc) {
-			this.scriptCall = sc;
-			this.m = null;
+		private Value(ScriptFileCall scriptFileCall, Method m, List<UniversalValue> args) {
+			this.scriptFileCall = scriptFileCall;
+			this.m = m;
+			this.args = args;
 		}
 
-		public Value(Method m, List<String> paramName) {
-			this.scriptCall = null;
-			this.m = m;
-			this.vName = paramName;
+		public static Value scriptCall(ScriptFileCall scriptFileCall) {
+			return new Value(scriptFileCall, null, null);
+		}
+
+		public static Value methodCall(Method m, List<UniversalValue> args) {
+			return new Value(null, m, args);
 		}
 
 		@Override
 		public String toString() {
-			if (scriptCall != null) {
-				return scriptCall.toString();
+			if (scriptFileCall != null) {
+				return scriptFileCall.toString();
 			}
-			return m.getName() + "(" + String.join(",", vName) + ")";
-		}
-
-		@Override
-		public int hashCode() {
-			int hash = 7;
-			hash = 89 * hash + Objects.hashCode(this.scriptCall);
-			hash = 89 * hash + Objects.hashCode(this.m);
-			hash = 89 * hash + Objects.hashCode(this.vName);
-			hash = 89 * hash + (this.ifNot ? 1 : 0);
-			return hash;
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (getClass() != obj.getClass()) {
-				return false;
-			}
-			final Value other = (Value) obj;
-			if (this.ifNot != other.ifNot) {
-				return false;
-			}
-			if (!Objects.equals(this.scriptCall, other.scriptCall)) {
-				return false;
-			}
-			if (!Objects.equals(this.m, other.m)) {
-				return false;
-			}
-			return Objects.equals(this.vName, other.vName);
+			return m.getName() + "(" + String.join(",", args.stream().map(p -> p.value()).toList()) + ")";
 		}
 
 	}
 
-	private final ScriptBlock block;
+	private final Object sao;
 	private final String origin;
-	private List<Value> data;//getFieldMapSystem(), get("001"), load();
-	private List<List<List<Value>>> ifBlock;// and / or / hoge().piyo()=data
+	private final List<Value> data;//getFieldMapSystem(), get("001"), load();
+	private final List<List<List<Value>>> ifBlock;// and / or / hoge().piyo()=data
 
-	ScriptLine(ScriptBlock block, String line, List<List<String>> ifStack) {
-		this.block = block;
+	ScriptLine(ScriptAccessObject sao, String line, List<List<String>> ifStack) {
+		this.sao = sao;
 		this.origin = line;
 		this.data = new ArrayList<>();
 		this.ifBlock = new ArrayList<>();
 		parse(line, ifStack);
 	}
 
-	private void parse(String line, List<List<String>> ifStack) throws EventScriptException {
+	private void parse(String line, List<List<String>> ifStack) throws ScriptSyntaxException {
+		//SAOのアノテーションチェック
+		if (sao == null) {
+			throw new ScriptSyntaxException("SL SAO is null");
+		}
+
 		//ifStackの処理
 		{
-			Class<?> o = block.getSao().getClass();
+			Class<?> o = sao.getClass();
 			for (var and : ifStack) {
 				List<List<Value>> val1 = new ArrayList<>();
 				for (var or : and) {
@@ -138,16 +114,16 @@ public class ScriptLine {
 						if (v.endsWith("()")) {
 							String methodName = v.replaceAll("[()]", "").trim();
 							Method m = getMethod(o, methodName);
-							Value value = new Value(m, List.of());
+							Value value = Value.methodCall(m, List.of());
 							value.ifNot = ifNot;
 							val2.add(value);
 							o = m.getReturnType();
 						} else {
 							String methodName = v.split("[(]")[0];
-							String[] paramNames = StringUtil.safeSplit(v.substring(v.indexOf("(") + 1, v.lastIndexOf(")")), ",");
-							int paramCount = paramNames.length;
+							String[] param = StringUtil.safeSplitBlock(v.substring(v.indexOf("(") + 1, v.lastIndexOf(")")), ',', '"', true);
+							int paramCount = param.length;
 							Method m = getMethod(o, methodName, Collections.nCopies(paramCount, UniversalValue.class));
-							Value value = new Value(m, Arrays.asList(paramNames).stream().map(p -> p.trim()).toList());
+							Value value = Value.methodCall(m, Arrays.asList(param).stream().map(p -> p.trim()).map(p -> new UniversalValue(p)).toList());
 							value.ifNot = ifNot;
 							val2.add(value);
 							o = m.getReturnType();
@@ -155,52 +131,54 @@ public class ScriptLine {
 					}
 					//.で切った最後のメソッドの戻り値がbooleanでない場合は例外
 					if (o != boolean.class) {
-						throw new EventScriptFormatException("SL : if content is not boolean method : " + or);
+						throw new ScriptSyntaxException("SL : if content is not boolean method : " + or);
 					}
-					o = block.getSao().getClass();
+					o = sao.getClass();
 				}
 				this.ifBlock.add(val1);
 			}
 		}
 		//ファイルモード
 		if (line.trim().startsWith("@")) {
-			data = List.of(new Value(new ScriptCall(line)));
+			data.add(Value.scriptCall(new ScriptFileCall(line)));
+			//size = 1
 			return;
 		}
 		//Methodモード
 		{
-			Class<?> o = block.getSao().getClass();
+			Class<?> o = sao.getClass();
 			for (var v : StringUtil.safeSplit(line, ".")) {
 				if (o == Void.class) {
-					throw new EventScriptNameException("SL : void method : " + line);
+					throw new ScriptSyntaxException("SL : void method : " + line);
 				}
 				if (v.endsWith("()")) {
 					//no param
 					String methodName = v.replaceAll("[()]", "").trim();
 					Method m = getMethod(o, methodName);
-					data.add(new Value(m, List.of()));
+					data.add(Value.methodCall(m, List.of()));
 					o = m.getReturnType();
 				} else {
 					String methodName = v.split("[(]")[0];
-					String[] paramNames = StringUtil.safeSplit(v.substring(v.indexOf("(") + 1, v.lastIndexOf(")")), ",");
-					int paramCount = paramNames.length;
+					//paramはリテラルと実行時変換文字の両方がある
+					String[] param = StringUtil.safeSplitBlock(v.substring(v.indexOf("(") + 1, v.lastIndexOf(")")), ',', '"', true);
+					int paramCount = param.length;
 					Method m = getMethod(o, methodName, Collections.nCopies(paramCount, UniversalValue.class));
-					data.add(new Value(m, Arrays.asList(paramNames)));
+					data.add(Value.methodCall(m, Arrays.asList(param).stream().map(p -> p.trim()).map(p -> new UniversalValue(p)).toList()));
 					o = m.getReturnType();
 				}
 			}
 		}
 	}
 
-	private Method getMethod(Class<?> c, String name) throws EventScriptNameException {
+	private Method getMethod(Class<?> c, String name) throws ScriptNoSuchMethodException {
 		try {
 			return c.getMethod(name);
 		} catch (NoSuchMethodException | SecurityException ex) {
-			throw new EventScriptNameException("SL : missing Method : " + c.getName() + "#" + name);
+			throw new ScriptNoSuchMethodException("SL : missing Method : " + c.getName() + "#" + name);
 		}
 	}
 
-	private Method getMethod(Class<?> s, String name, List<Class<?>> t) throws EventScriptNameException {
+	private Method getMethod(Class<?> s, String name, List<Class<?>> t) throws ScriptNoSuchMethodException {
 		try {
 			if (t.isEmpty()) {
 				return getMethod(s, name);
@@ -212,48 +190,59 @@ public class ScriptLine {
 			}
 			return s.getMethod(name, c);
 		} catch (NoSuchMethodException | SecurityException ex) {
-			throw new EventScriptNameException("SL : missing Method : " + s.getName() + "#" + name + "(" + t + ")");
+			throw new ScriptNoSuchMethodException("SL : missing Method : " + s.getName() + "#" + name + "(" + t + ")");
 		}
 	}
 
-	public class Result {
-
-		public final ScriptResultType result;
-		public final Object resultObject;
-		public final boolean pause;
-
-		public Result(ScriptResultType result, Object resultObject) {
-			this.result = result;
-			this.resultObject = resultObject;
-			this.pause = false;
+	private UniversalValue[] createArgs(Value v, Map<String, UniversalValue> args) {
+		if (v.scriptFileCall != null) {
+			throw new InternalError("SL :  scriptCall, but createARGS");
 		}
-
-		public Result(ScriptResultType result, Object resultObject, boolean pause) {
-			this.result = result;
-			this.resultObject = resultObject;
-			this.pause = pause;
+		if (v.args == null || v.args.isEmpty()) {
+			throw new InternalError("SL :  createARGS, but non param");
 		}
+		UniversalValue[] res = new UniversalValue[v.args.size()];
 
+		for (int i = 0; i < res.length; i++) {
+			var key = v.args.get(i).trim().value();
+			if (key.startsWith("\"")) {
+				//りてらる　
+				key = key.substring(1);
+				key = key.substring(0, key.length() - 1);
+				res[i] = new UniversalValue(key);
+			} else {
+				//引数
+				if (!args.containsKey(key)) {
+					throw new ScriptSyntaxException("SL : param not found : " + key);
+				}
+				String val = args.get(key).value().trim();
+				if (val.startsWith("\"")) {
+					val = val.substring(1);
+					val = val.substring(0, val.length() - 1);
+				}
+				res[i] = new UniversalValue(val);
+			}
+		}
+		return res;
 	}
 
-	//paramMapはdefault適用済み。値は"がついていない。
-	public Result exec(ScriptArgs args) throws EventScriptException {
+	public ScriptResult.Value exec(Map<String, UniversalValue> argsMap) throws ScriptSyntaxException {
 		//IF BLOCK判定
 		if (!ifBlock.isEmpty()) {
-			Object o = block.getSao();
+			Object o = sao;
 			boolean and = true;
 			for (var v : ifBlock) {
 				boolean or = false;
 				for (var vv : v) {
 					for (var vvv : vv) {
-						o = invoke(o, vvv, args);
+						o = invoke(o, vvv, createArgs(vvv, argsMap));
 					}
 					if (o.getClass() != Boolean.class) {
-						throw new EventScriptRuntimeException("SL : IF is not boolean : " + this);
+						throw new ScriptSyntaxException("SL : IF is not boolean : " + this);
 					}
 					boolean res = Boolean.parseBoolean(o.toString());
 					or |= res;
-					o =block.getSao();
+					o = sao;
 					if (or) {
 						break;
 					}
@@ -267,83 +256,93 @@ public class ScriptLine {
 				if (GameSystem.isDebugMode()) {
 					GameLog.print("SL script misfire : " + this);
 				}
-				return new Result(ScriptResultType.MISFIRE, null);
+				return new ScriptResult.Value(ScriptResultType.MISSFIRE, ScriptResultType.MISSFIRE);
 			}
 		}
 
 		//ファイルモード
-		if (data.get(0).scriptCall != null) {
-			ScriptCall call = data.get(0).scriptCall;
-
-			//マージ済みARGSの作成
-			List<UniversalValue> merged = new ArrayList<>();
-
-			//argsのキーに同じ名前があったらそのValueを使う
-			for (var v : call.getParam()) {
-				if (args.getMap().containsKey(v.value())) {
-					merged.add(args.getMap().get(v.value()));
-				} else {
-					merged.add(v);
-				}
-			}
-
-			ScriptArgs newArgs = block.createArgs(merged);
-
-			List<ScriptLine> callCmds = call.getBlock().getCmds();
-			Result r = null;
-			for (var v : callCmds) {
-				r = v.exec(newArgs);
-			}
-			return r;
+		if (data.get(0).scriptFileCall != null) {
+			return data.get(0).scriptFileCall.exec(argsMap).getLast();
 		}
 		//SAOモード
-		Object o = block.getSao();
+		Object o = sao;
 		for (var v : data) {
 			if (o.getClass() == Void.class) {
-				throw new EventScriptRuntimeException("SL : void method : " + v);
+				throw new ScriptSyntaxException("SL : return type is void : " + v);
 			}
-			if (o.getClass() == ScriptResultType.class) {
-				return new Result((ScriptResultType) o, o);
+
+			//no param
+			if (v.args == null || v.args.isEmpty()) {
+				o = invoke(o, v);
+			} else {
+				o = invoke(o, v, createArgs(v, argsMap));
 			}
-			if (v.vName.isEmpty()) {
-				o = invoke(o, v, args);
-				continue;
+			//終了判定
+			if (o instanceof ScriptResultType t) {
+				if (t.is(ScriptResultType.END)) {
+					return new ScriptResult.Value(o, ScriptResultType.END);
+				}
+				if (t.is(ScriptResultType.PAUSE)) {
+					return new ScriptResult.Value(o, ScriptResultType.PAUSE);
+				}
+				//MISSFIREとCONTINUEは継続する
 			}
-			o = invoke(o, v, args);
 		}
-		return new Result(ScriptResultType.CONTINUE, o);
+		return new ScriptResult.Value(o, ScriptResultType.CONTINUE);
 
 	}
 
-	private Object invoke(Object o, Value v, ScriptArgs args) {
-		if (GameSystem.isDebugMode()) {
-			GameLog.print("SL : invoke : " + o.getClass().getName() + "#" + v.m.getName() + "(" + v.vName + ")");
-		}
+	private Object invoke(Object o, Value v) {
 		try {
-			if (v.vName.isEmpty()) {
-				return v.m.invoke(o);
+			if (v.scriptFileCall != null) {
+				throw new InternalError("SL : method invoke, but value is scriptFileCall : " + v);
 			}
-			UniversalValue[] p = new UniversalValue[v.m.getParameterCount()];
-			if (p.length != v.vName.size()) {
-				throw new EventScriptParamException("SL : param missmatch : expect=" + v.m.getParameterCount() + " / actual=" + v.vName);
+			if (GameSystem.isDebugMode()) {
+				GameLog.print("SL : invoke : " + o.getClass().getName() + "#" + v.toString() + ")");
+				GameLog.addIndent();
 			}
-			for (int i = 0; i < p.length; i++) {
-				String val = v.vName.get(i);
-				if (val.startsWith("\"")) {
-					val = val.replaceAll("\"", "").trim();
-					p[i] = new UniversalValue(val);
-				} else {
-					p[i] = new UniversalValue(args.getMap().get(val).trim().value().replaceAll("\"", ""));
-				}
+			if (v.args != null && !v.args.isEmpty()) {
+				throw new InternalError("SL : invoke missmatch : " + v);
 			}
 
-			return v.m.invoke(o, (Object[]) p);
-		} catch (InvocationTargetException ex) {
-			ex.getCause().printStackTrace();
-			throw new EventScriptRuntimeException("SL : RuntimeException : " + this + " / " + ex);
-		} catch (IllegalAccessException | IllegalArgumentException ex) {
-			throw new EventScriptRuntimeException("SL : RuntimeException : " + this + " / " + ex);
+			return v.m.invoke(o);
+
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+			ex.printStackTrace();
+			throw new ScriptRuntimeException(ex);
+		} finally {
+			if (GameSystem.isDebugMode()) {
+				GameLog.removeIndent();
+			}
 		}
+
+	}
+
+	private Object invoke(Object o, Value v, UniversalValue[] args) {
+
+		try {
+			if (v.scriptFileCall != null) {
+				throw new InternalError("SL : method invoke, but value is scriptFileCall : " + v);
+			}
+			if (GameSystem.isDebugMode()) {
+				GameLog.print("SL : invoke : " + o.getClass().getName() + "#" + v.toString() + ")");
+				GameLog.addIndent();
+			}
+
+			Object[] p = new Object[args.length];
+			System.arraycopy(args, 0, p, 0, p.length);
+
+			return v.m.invoke(o, p);
+
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+			ex.printStackTrace();
+			throw new ScriptRuntimeException(ex);
+		} finally {
+			if (GameSystem.isDebugMode()) {
+				GameLog.removeIndent();
+			}
+		}
+
 	}
 
 	public String toStringIF() {
@@ -355,7 +354,7 @@ public class ScriptLine {
 			List<String> val2 = new ArrayList<>();
 			val.add(val2);
 			for (var vv : v) {
-				val2.add(String.join(".", vv.stream().map(p -> (p.ifNot ? "!" : "") + p.m.getName() + "(" + String.join(",", p.vName) + ")").toList()));
+				val2.add(String.join(".", vv.stream().map(p -> (p.ifNot ? "!" : "") + p.m.getName() + "(" + String.join(",", p.args.stream().map(q -> q.value()).toList()) + ")").toList()));
 			}
 		}
 		List<String> s = val.stream().map(p -> String.join(" OR ", p)).map(p -> "(" + p + ")").toList();

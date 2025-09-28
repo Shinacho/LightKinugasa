@@ -16,44 +16,15 @@
  */
 package kinugasa.game.event;
 
-import kinugasa.game.annotation.Nullable;
-import kinugasa.game.system.UniversalValue;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 
 /**
- * ScriptParam.<br>
+ * ScriptAccessObject.<br>
  *
- * @vesion 1.0.0 - 2025/08/09_23:55:21<br>
+ * @vesion 1.0.0 - 2025/09/28_16:28:47<br>
  * @author Shinacho.<br>
  */
-public class ScriptParam {
-
-	private final String name;
-	@Nullable
-	private UniversalValue defaultValue = null;
-
-	public ScriptParam(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String toString() {
-		return "Param{" + "name=" + name + ", defaultValue=" + defaultValue + '}';
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public UniversalValue getDefaultValue() {
-		return defaultValue;
-	}
-
-	public boolean isOptional() {
-		return defaultValue != null && !defaultValue.isEmpty();
-	}
-
-	void setDefaultValue(UniversalValue defaultValue) {
-		this.defaultValue = defaultValue;
-	}
+public interface ScriptAccessObject {
 
 }

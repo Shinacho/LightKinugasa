@@ -17,10 +17,17 @@
 package kinugasa.game.system.actor;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import kinugasa.game.annotation.DataChange;
 import kinugasa.game.event.ScriptFile;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.field4.FieldMap;
+import kinugasa.game.field4.FieldMapStorage;
 import kinugasa.game.field4.FieldMapSystem;
+import kinugasa.game.system.UniversalValue;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
 import kinugasa.resource.text.DataFile;
@@ -72,6 +79,61 @@ public class NPC extends Actor {
 			throw new FileFormatException("NPC moveModel is null : " + getId());
 		}
 		return this;
+	}
+
+	@DataChange
+	public boolean gotoOtherFieldMap(String fieldMapId, D2Idx idx) {
+
+		var next = FieldMapStorage.getInstance().get(fieldMapId);
+
+		//NPCデータ自体の移動
+		String path = next.getDir() + "npc/" + getFile().getName();
+
+		try {
+			Files.move(getFile().toPath(), new File(path).toPath());
+		} catch (IOException ex) {
+			throw new ContentsIOException(ex);
+		}
+		D2Idx i = null;
+
+		//キー探索
+		for (var v : super.getFieldMap().getNPCMap().getMap().entrySet()) {
+			if (v.getValue().equals(this)) {
+				i = v.getKey();
+				break;
+			}
+		}
+		if (i == null) {
+			return false;
+		}
+
+		//削除
+		super.getFieldMap().getNPCMap().getMap().remove(i);
+
+		//追加
+		if (next.isLoaded()) {
+			next.getNPCMap().add(idx, this);
+		}
+		super.setFieldMap(next);
+
+		var npcListFile = next.getNPCList().load();
+		for (var v : npcListFile) {
+			if (v.getKey().getId().equals(idx.getId())) {
+				//位置重複
+				throw new IllegalArgumentException("NPC goto, but next fm idx is duplicated : " + this + " to " + next.getId() + " / " + idx);
+			}
+			//すでにいる場合失敗
+			if (v.getValue().getId().equals(this.getId())) {
+				return false;
+			}
+		}
+
+		//いない場合は追加して保存
+		npcListFile.put(idx.getId(), new UniversalValue(this.getId()));
+		npcListFile.save();
+		npcListFile.free();
+
+		return true;
 	}
 
 }

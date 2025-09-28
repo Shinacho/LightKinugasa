@@ -28,10 +28,11 @@ import kinugasa.game.I18N;
 import kinugasa.game.I18NText;
 import kinugasa.game.UpdateLogicInjector;
 import kinugasa.game.VisibleNameIDInjector;
+import kinugasa.game.annotation.DataChange;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.annotation.Nullable;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 import kinugasa.game.event.ScriptSystem;
 import kinugasa.game.field4.layer.FMAnimationLayerSprite;
 import kinugasa.game.field4.layer.FMBackLayerSprite;
@@ -252,7 +253,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 						continue;
 					}
 					D2Idx idx = v.getKey().asD2IdxCSV();
-					ScriptCall sc = v.getValue().asScriptCall();
+					ScriptFileCall sc = v.getValue().asScriptCall();
 					this.eventScriptMap.add(idx, sc);
 				}
 				//CLONE RIM
@@ -261,7 +262,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 					if (!this.eventScriptMap.has(tgt)) {
 						throw new FileFormatException("FM : cloneToRim, but tgt event not found : " + tgt);
 					}
-					ScriptCall sc = this.eventScriptMap.get(tgt);
+					ScriptFileCall sc = this.eventScriptMap.get(tgt);
 					int w = nomalLayerSprite.get(0).getDataWidth() - 1;
 					int h = nomalLayerSprite.get(0).getDataHeight() - 1;
 					for (int i = 0; i < nomalLayerSprite.get(0).getDataWidth(); i++) {
@@ -297,7 +298,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 					throw new IllegalStateException("FM LOAD_SCRIPT: ScriptSystem is not yet init() : " + this);
 				}
 				f.get("LOAD_SCRIPT").getElements().forEach(v -> {
-					ScriptCall s = v.getKey().asScriptCall();
+					ScriptFileCall s = v.getKey().asScriptCall();
 					if (GameSystem.isDebugMode()) {
 						GameLog.print("--- " + s);
 					}

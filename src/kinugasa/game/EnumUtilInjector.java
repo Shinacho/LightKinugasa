@@ -14,34 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package kinugasa.game.event.exception;
+package kinugasa.game;
+
+import java.util.Arrays;
 
 /**
- * EventScriptNameException.<br>
+ * EnumUtilInjector.<br>
  *
- * @vesion 1.0.0 - 2025/07/31_22:15:37<br>
+ * @vesion 1.0.0 - 2025/09/27_22:58:56<br>
  * @author Shinacho.<br>
  */
-public class EventScriptNameException extends EventScriptException {
+public interface EnumUtilInjector<E extends Enum<E>> {
 
-	/**
-	 * Creates a new instance of <code>EventScriptNameException</code> without
-	 * detail message.
-	 */
-	public EventScriptNameException() {
-	}
-
-	/**
-	 * Constructs an instance of <code>EventScriptNameException</code> with the
-	 * specified detail message.
-	 *
-	 * @param msg the detail message.
-	 */
-	public EventScriptNameException(String msg) {
-		super(msg);
-	}
-
-	public EventScriptNameException(Exception ex) {
-		super(ex);
+	public default boolean is(E e) {
+		return this == e;
 	}
 }

@@ -67,10 +67,10 @@ public final class FieldMapStorage {
 			d.load().free();
 			d.setLoadScriptCall(true);
 			this.storage.add(d);
-			if (GameSystem.isDebugMode()) {
-				GameLog.removeIndent();
-				GameLog.print("FMS : init end");
-			}
+		}
+		if (GameSystem.isDebugMode()) {
+			GameLog.removeIndent();
+			GameLog.print("FMS : init end");
 		}
 	}
 

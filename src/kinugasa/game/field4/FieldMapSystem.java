@@ -22,11 +22,12 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import kinugasa.game.GameLog;
 import kinugasa.game.I18NText;
+import kinugasa.game.annotation.DataChange;
 import kinugasa.game.annotation.LoopCall;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.annotation.Singleton;
 import kinugasa.game.event.ScriptBlockType;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 import kinugasa.game.event.ScriptSystem;
 import kinugasa.game.system.GameSystem;
 import kinugasa.game.system.I18NConst;
@@ -68,7 +69,7 @@ public final class FieldMapSystem implements Drawable {
 
 	//EVENT
 	@Nullable
-	private ScriptCall currentScript;
+	private ScriptFileCall currentScript;
 	//
 	private boolean nodeLock = false;
 	private FieldMapNode currentNode;
@@ -370,6 +371,7 @@ public final class FieldMapSystem implements Drawable {
 		this.changeMap = true;
 	}
 
+	@DataChange
 	private void changeMapExec() {
 		assert currentNode != null : "FMS : node is null";
 		if (GameSystem.isDebugMode()) {

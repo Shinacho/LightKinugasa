@@ -113,7 +113,7 @@ public final class GameLog {
 
 	private static void out(String s) {
 		try {
-			String i = indent == 0 ? "" : StringUtil.repeat("\t", indent);
+			String i = indent == 0 ? "" : StringUtil.repeat("  ", indent);
 			System.out.println(i + s);
 			if (writer == null) {
 				return;

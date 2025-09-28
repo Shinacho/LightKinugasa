@@ -18,10 +18,9 @@ package kinugasa.game.event;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
-import kinugasa.game.event.exception.EventScriptFileException;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import kinugasa.game.GameLog;
@@ -29,7 +28,8 @@ import kinugasa.game.GameManager;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.game.annotation.Singleton;
 import static kinugasa.game.event.ScriptBlockType.MAIN;
-import kinugasa.game.event.exception.EventScriptException;
+import kinugasa.game.event.exception.ScriptFileException;
+import kinugasa.game.event.exception.ScriptSyntaxException;
 import kinugasa.game.field4.D2Idx;
 import kinugasa.game.field4.FieldMapSystem;
 import kinugasa.game.system.GameSystem;
@@ -66,6 +66,7 @@ public final class ScriptSystem {
 		return INSTANCE;
 	}
 
+	//-------------------------------------------------------------------------
 	private ScriptSystem() {
 	}
 
@@ -76,16 +77,16 @@ public final class ScriptSystem {
 	private boolean loaded = false;
 
 	//current
-	public void init(File root) throws EventScriptFileException {
+	public void init(File root) throws ScriptSyntaxException, ScriptFileException {
 		if (GameSystem.isDebugMode()) {
 			GameLog.print("ScriptSystem init start");
 			GameLog.addIndent();
 		}
 		if (!root.isDirectory()) {
-			throw new EventScriptFileException("ScriptSystem" + root.getName() + " is not directory");
+			throw new ScriptFileException("ScriptSystem" + root.getName() + " is not directory");
 		}
 		if (!root.exists()) {
-			throw new EventScriptFileException("ScriptSystem" + root.getName() + " is not exists");
+			throw new ScriptFileException("ScriptSystem" + root.getName() + " is not exists");
 		}
 		this.root = root;
 		this.data = new Storage<>();
@@ -122,87 +123,38 @@ public final class ScriptSystem {
 	public ScriptFile of(String name) throws IDNotFoundException {
 		return data.get(name);
 	}
-
-	public ScriptLine.Result instantCall(String line) throws EventScriptException {
-		//hoge().piyo()
-
-		if (line.startsWith("@")) {
-			throw new EventScriptException("SS : instantCall cant use file call");
-		}
-		//. = ScriptAccessObject
-		ScriptLine sl = new ScriptLine(null, line, List.of());
-		return sl.exec(new ScriptArgs(Map.of(), List.of()));
+	
+	public boolean has(String name){
+		return data.contains(name);
 	}
 
-	public ScriptBlock.Result call(ScriptCall c, ScriptBlockType t) throws EventScriptException {
-		var f = of(c.getScriptName()).load();
-		var r = f.getBlockOf(t).exec(c.getParam());
-		f.free();
-		return r;
+	public ScriptResult.Value instantCall(String line) throws ScriptSyntaxException {
+		ScriptLine sl = new ScriptLine(ScriptAccessObjects.FIELDSCRIPTACCESSOBJECT.getSAO(), line, List.of());
+		return sl.exec(Map.of());
 	}
 
-	public ScriptBlock.Result call(ScriptCall c) throws EventScriptException {
-		var f = of(c.getScriptName()).load();
-		var r = f.getBlockOf(c.getBlockType()).exec(c.getParam());
-		f.free();
-		return r;
+	public ScriptResult execDirect(String name) {
+		return execDirect(name, MAIN, List.of());
 	}
 
-	public ScriptBlock.Result call(ScriptCall c, ScriptArgs args) throws EventScriptException {
-		//マージ済みARGSの作成
-		List<UniversalValue> merged = new ArrayList<>();
-
-		//argsのキーに同じ名前があったらそのValueを使う
-		for (var v : c.getParam()) {
-			if (args.getMap().containsKey(v.value())) {
-				merged.add(args.getMap().get(v.value()));
-			} else {
-				merged.add(v);
-			}
-		}
-
-		var f = of(c.getScriptName()).load();
-		var r = f.getBlockOf(c.getBlockType()).exec(merged);
-		f.free();
-		return r;
-	}
-
-	public ScriptBlock.Result execDirect(String name) {
-		ScriptFile s = of(name).load();
-		var r = s.getBlockOf(MAIN).exec();
-		s.free();
-		return r;
-	}
-
-	public ScriptBlock.Result execDirect(String name, UniversalValue... v) {
+	public ScriptResult execDirect(String name, UniversalValue... v) {
 		return execDirect(name, MAIN, Arrays.asList(v));
 	}
 
-	public ScriptBlock.Result execDirect(String name, List<UniversalValue> param) {
-		ScriptFile s = of(name).load();
-		var r = s.getBlockOf(MAIN).exec(param);
-		s.free();
-		return r;
+	public ScriptResult execDirect(String name, List<UniversalValue> param) {
+		return execDirect(name, MAIN, param);
 	}
 
-	public ScriptBlock.Result execDirect(String name, ScriptBlockType tgt) {
-		ScriptFile s = of(name).load();
-
-		var r = s.getBlockOf(tgt).exec();
-
-		s.free();
-		return r;
+	public ScriptResult execDirect(String name, ScriptBlockType block) {
+		return execDirect(name, block, List.of());
 	}
 
-	public ScriptBlock.Result execDirect(String name, ScriptBlockType tgt, UniversalValue... v) {
-		return execDirect(name, tgt, Arrays.asList(v));
+	public ScriptResult execDirect(String name, ScriptBlockType block, UniversalValue... v) {
+		return execDirect(name, block, Arrays.asList(v));
 	}
 
-	public ScriptBlock.Result execDirect(String name, ScriptBlockType tgt, List<UniversalValue> param) {
-		ScriptFile s = of(name).load();
-		var r = s.getBlockOf(tgt).exec();
-		s.free();
-		return r;
+	public ScriptResult execDirect(String name, ScriptBlockType block, List<UniversalValue> param) {
+		return of(name).load().getBlockOf(block).exec(param).free();
 	}
 
 	//---------------------------------------------------------------------------
@@ -218,7 +170,7 @@ public final class ScriptSystem {
 		}
 		if (currentExecBlock.hasNext()) {
 			currentExecBlock.next();
-			currentExecBlock.exec(currentParam);
+			currentExecBlock.exec(currentArgs);
 		}
 	}
 
@@ -231,8 +183,9 @@ public final class ScriptSystem {
 		currentExecBlock.resetIdx();
 		currentExecFile = null;
 		currentExecBlock = null;
-		currentParam = null;
-		lastResultType = null;
+		currentArgs = null;
+		currentArgsValMap = null;
+		last = null;
 		currentBlockIdx = 0;
 		FieldMapSystem.getInstance().unsetTalk();
 		pauseMode = false;
@@ -241,67 +194,82 @@ public final class ScriptSystem {
 	//---------------------------------------------------------------------------
 	private ScriptFile currentExecFile = null;
 	private ScriptBlock currentExecBlock = null;
-	private ScriptArgs currentParam = null;
-	private ScriptResultType lastResultType = null;
+	private List<UniversalValue> currentArgs = null;
+	private Map<String, UniversalValue> currentArgsValMap = null;
+	private ScriptResult.Value last = null;
 	private int currentBlockIdx = 0;
 	private boolean pauseMode = false;
 	private boolean manualIdxMode = false;
 	//---------------------------------------------------------------------------
 
-	public void setManualIdxMode(boolean manualIdxMode) {
-		this.manualIdxMode = manualIdxMode;
+	void unset(){
+		setCurrentExecFile(null);
+		setCurrentExecBlock(null);
+		setCurrentArgs(null);
+		setCurrentArgsValMap(null);
 	}
-
-	public boolean isManualIdxMode() {
-		return manualIdxMode;
-	}
-
-	public void setPauseMode(boolean pauseMode) {
-		this.pauseMode = pauseMode;
-	}
-
-	boolean isPauseMode() {
-		return pauseMode;
+	public ScriptFile getCurrentExecFile() {
+		return currentExecFile;
 	}
 
 	void setCurrentExecFile(ScriptFile currentExecFile) {
 		this.currentExecFile = currentExecFile;
 	}
 
+	public ScriptBlock getCurrentExecBlock() {
+		return currentExecBlock;
+	}
+
 	void setCurrentExecBlock(ScriptBlock currentExecBlock) {
 		this.currentExecBlock = currentExecBlock;
 	}
 
-	void setCurrentArgs(ScriptArgs currentParam) {
-		this.currentParam = currentParam;
+	public List<UniversalValue> getCurrentArgs() {
+		return currentArgs;
 	}
 
-	void setLastResultType(ScriptResultType lastResultType) {
-		this.lastResultType = lastResultType;
+	void setCurrentArgs(List<UniversalValue> currentArgs) {
+		this.currentArgs = currentArgs;
+	}
+
+	public Map<String, UniversalValue> getCurrentArgsValMap() {
+		return currentArgsValMap;
+	}
+
+	void setCurrentArgsValMap(Map<String, UniversalValue> currentArgsValMap) {
+		this.currentArgsValMap = currentArgsValMap;
+	}
+
+	public ScriptResult.Value getLast() {
+		return last;
+	}
+
+	void setLast(ScriptResult.Value last) {
+		this.last = last;
+	}
+
+	public int getCurrentBlockIdx() {
+		return currentBlockIdx;
 	}
 
 	void setCurrentBlockIdx(int currentBlockIdx) {
 		this.currentBlockIdx = currentBlockIdx;
 	}
 
-	public ScriptFile getCurrentExecFile() {
-		return currentExecFile;
+	public boolean isPauseMode() {
+		return pauseMode;
 	}
 
-	public ScriptBlock getCurrentExecBlock() {
-		return currentExecBlock;
+	void setPauseMode(boolean pauseMode) {
+		this.pauseMode = pauseMode;
 	}
 
-	public ScriptArgs getCurrentArgs() {
-		return currentParam;
+	public boolean isManualIdxMode() {
+		return manualIdxMode;
 	}
 
-	public ScriptResultType getLastResultType() {
-		return lastResultType;
-	}
-
-	public int getCurrentBlockIdx() {
-		return currentBlockIdx;
+	void setManualIdxMode(boolean manualIdxMode) {
+		this.manualIdxMode = manualIdxMode;
 	}
 
 	//---------------------------------------------------------------------------

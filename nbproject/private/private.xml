@@ -3,12 +3,29 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/sample/Test.java</file>
-            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/sample/Test3.java</file>
-            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldMapNode.java</file>
-            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptSystem.java</file>
             <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldMapCamera.java</file>
             <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/TooltipText.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/GameManager.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/util/StringUtil.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/sample/Test.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldMapNode.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/resource/sound/MasterGain.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldMapResourceUtil.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/resource/sound/SoundSystem.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/resource/sound/SoundStorage.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldMap.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/resource/sound/Sound.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/I18N.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/system/actor/FieldMapNPCMoveModelSetter.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/resource/text/IniFile.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptFile.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldNPCMap.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptSystem.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptBlock.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptLine.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptFileCall.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/field4/FieldMapSystem.java</file>
+            <file>file:/D:/Project/LightKinugasa/src/kinugasa/game/event/ScriptBlockType.java</file>
         </group>
     </open-files>
 </project-private>

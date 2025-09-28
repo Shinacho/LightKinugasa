@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Stream;
 import kinugasa.game.annotation.Singleton;
 import kinugasa.object.Updateable;
 
@@ -141,6 +142,10 @@ public class SoundSystem implements Updateable<SoundSystem.Mode>, Iterable<Sound
 	@Override
 	public boolean isRunning() {
 		return true;
+	}
+
+	public Stream<Sound> stream() {
+		return SoundStorage.getInstance().stream();
 	}
 
 }

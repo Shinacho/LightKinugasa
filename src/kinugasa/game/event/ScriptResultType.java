@@ -16,47 +16,31 @@
  */
 package kinugasa.game.event;
 
+import kinugasa.game.EnumUtilInjector;
+
 /**
  * ScriptResultType.<br>
  *
  * @vesion 1.0.0 - 2025/07/30_0:40:31<br>
  * @author Shinacho.<br>
  */
-public enum ScriptResultType {
+public enum ScriptResultType implements EnumUtilInjector<ScriptResultType> {
 
 	/**
-	 * 次のイベントを実行してください。
+	 * スクリプトはIF条件により起動されませんでした。
+	 */
+	MISSFIRE,
+	/**
+	 * 次のスクリプトを実行します。
 	 */
 	CONTINUE,
 	/**
-	 * イベントはIF条件により起動されませんでした。
-	 */
-	MISFIRE,
-	/**
-	 * イベントは終了しました。
-	 */
-	END,
-	/**
-	 * イベントは自動進行されず、次のステータスに進めるにはnextStepを実行する必要があります。
+	 * スクリプトは自動進行されず、次のステータスに進めるにはnextStepを実行する必要があります。
 	 */
 	PAUSE,
 	/**
-	 *
+	 * スクリプトは終了しました。
 	 */
-	FADEOUT_ON,
-	/**
-	 *
-	 */
-	FADEOUT_OFF,
-	/**
-	 *
-	 */
-	CHANGE_MODE,
-	/**
-	 * イベントは自動進行し、次のステータスに変更されるまで待機する必要があります。
-	 */
-	WAIT,
-	RESET_SCRIPT,
-	;
+	END,;
 
 }

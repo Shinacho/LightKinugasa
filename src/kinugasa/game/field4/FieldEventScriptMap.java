@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.NotNewInstance;
-import kinugasa.game.event.ScriptCall;
+import kinugasa.game.event.ScriptFileCall;
 
 /**
  * FieldEventScriptMap.<br>
@@ -31,7 +31,7 @@ import kinugasa.game.event.ScriptCall;
  */
 public class FieldEventScriptMap {
 
-	private Map<D2Idx, ScriptCall> scriptMap;
+	private Map<D2Idx, ScriptFileCall> scriptMap;
 
 	public FieldEventScriptMap() {
 		scriptMap = new HashMap<>();
@@ -41,16 +41,16 @@ public class FieldEventScriptMap {
 		return scriptMap.containsKey(i);
 	}
 
-	public void add(D2Idx i, ScriptCall e) {
+	public void add(D2Idx i, ScriptFileCall e) {
 		scriptMap.put(i, e);
 	}
 
-	public ScriptCall get(D2Idx i) {
+	public ScriptFileCall get(D2Idx i) {
 		return scriptMap.get(i);
 	}
 
 	@NotNewInstance
-	public Collection<ScriptCall> values() {
+	public Collection<ScriptFileCall> values() {
 		return scriptMap.values();
 	}
 
@@ -60,7 +60,7 @@ public class FieldEventScriptMap {
 	}
 
 	@NewInstance
-	public Map<D2Idx, ScriptCall> all() {
+	public Map<D2Idx, ScriptFileCall> all() {
 		return new HashMap<>(scriptMap);
 	}
 

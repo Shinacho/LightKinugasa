@@ -17,11 +17,10 @@
 package kinugasa.game.event;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import kinugasa.game.annotation.NotNewInstance;
-import kinugasa.game.event.exception.EventScriptNameException;
+import kinugasa.game.event.exception.ScriptSyntaxException;
 import kinugasa.game.system.UniversalValue;
 import kinugasa.util.StringUtil;
 
@@ -31,22 +30,22 @@ import kinugasa.util.StringUtil;
  * @vesion 1.0.0 - 2025/08/09_22:02:03<br>
  * @author Shinacho.<br>
  */
-public class ScriptCall {
+public class ScriptFileCall {
 
 	private final String original;
 	private String scriptName;
-	private List<UniversalValue> param;
+	private List<UniversalValue> args;
 	private ScriptBlockType blockType;
 
-	public ScriptCall(String original) {
+	public ScriptFileCall(String original) {
 		this.original = original;
 		parse(original);
 	}
 
-	public ScriptCall(String original, String scriptName, List<UniversalValue> param, ScriptBlockType blockType) {
+	public ScriptFileCall(String original, String scriptName, List<UniversalValue> args, ScriptBlockType blockType) {
 		this.original = original;
 		this.scriptName = scriptName;
-		this.param = param;
+		this.args = args;
 		this.blockType = blockType;
 	}
 
@@ -54,7 +53,7 @@ public class ScriptCall {
 		//@以降を解析して実行する。#はコメントとする
 		line = line.trim();
 		if (!line.startsWith("@")) {
-			throw new EventScriptNameException("SS : [" + line + "] is not file call");
+			throw new ScriptSyntaxException("SFC : [" + line + "] is not file call");
 		}
 		if (line.endsWith(";")) {
 			line = line.substring(0, line.length() - 1);
@@ -63,11 +62,11 @@ public class ScriptCall {
 		this.scriptName = line.substring(1, line.indexOf("("));
 
 		//param切り出し
-		String[] paramNames = StringUtil.safeSplit(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")), ",");
-		this.param = new ArrayList<>();
+		String[] paramNames = StringUtil.safeSplitBlock(line.substring(line.indexOf("(") + 1, line.lastIndexOf(")")), ',', '"', true);
+		this.args = new ArrayList<>();
 		for (var v : paramNames) {
-			v = v.trim();
-			this.param.add(new UniversalValue(v));
+			// "a" , b
+			this.args.add(new UniversalValue(v.trim()));
 		}
 
 		//実行ブロック切り出し
@@ -93,27 +92,42 @@ public class ScriptCall {
 
 	@NotNewInstance
 	public List<UniversalValue> getParam() {
-		return param;
+		return args;
 	}
 
 	public ScriptBlockType getBlockType() {
 		return blockType;
 	}
 
-	public ScriptBlock.Result exec(ScriptArgs args) {
-		return ScriptSystem.getInstance().call(this, args);
+	public ScriptResult exec() {
+		return exec(Map.of());
 	}
 
-	public ScriptBlock.Result exec() {
-		return ScriptSystem.getInstance().call(this);
+	public ScriptResult exec(Map<String, UniversalValue> argsMap) {
+		return exec(this.blockType, argsMap);
+	}
+
+	public ScriptResult exec(ScriptBlockType type) {
+		return exec(type, Map.of());
+	}
+
+	public ScriptResult exec(ScriptBlockType type, Map<String, UniversalValue> argsMap) {
+		//args再計算
+		List<UniversalValue> newArgs = new ArrayList<>();
+		for (var v : this.args) {
+			if (v.startWith("\"")) {
+				newArgs.add(v);
+				continue;
+			}
+			String newValue = argsMap.get(v.value()).value();
+			newArgs.add(new UniversalValue("\"" + newValue + "\""));
+		}
+
+		return getScriptFile().load().getBlockOf(type).exec(newArgs).free();
 	}
 
 	public ScriptFile getScriptFile() {
 		return ScriptSystem.getInstance().of(scriptName);
-	}
-
-	public ScriptBlock.Result exec(ScriptBlockType block) {
-		return ScriptSystem.getInstance().call(this, block);
 	}
 
 	@Override

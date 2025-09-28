@@ -18,28 +18,28 @@
 package kinugasa.game.event.exception;
 
 /**
- * EventScriptException.<br>
- * @vesion 1.0.0 - 2025/07/31_22:08:16<br>
+ * ScriptRuntimeException.<br>
+ * @vesion 1.0.0 - 2025/09/28_14:42:31<br>
  * @author Shinacho.<br>
  */
-public class EventScriptException extends RuntimeException {
+public class ScriptRuntimeException extends ScriptException {
 
     /**
-     * Creates a new instance of <code>EventScriptException</code> without detail message.
+     * Creates a new instance of <code>ScriptRuntimeException</code> without detail message.
      */
-    public EventScriptException() {
+    public ScriptRuntimeException() {
     }
 
 
     /**
-     * Constructs an instance of <code>EventScriptException</code> with the specified detail message.
+     * Constructs an instance of <code>ScriptRuntimeException</code> with the specified detail message.
      * @param msg the detail message.
      */
-    public EventScriptException(String msg) {
+    public ScriptRuntimeException(String msg) {
         super(msg);
     }
 
-    public EventScriptException(Exception ex){
+    public ScriptRuntimeException(Exception ex){
         super(ex);
     }
 }
