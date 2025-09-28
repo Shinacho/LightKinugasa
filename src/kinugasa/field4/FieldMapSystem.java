@@ -151,8 +151,8 @@ public final class FieldMapSystem implements Drawable {
 		if (getCurrent().getNPCMap().has(i)) {
 			if (!getCurrent().getNPCMap().get(i).asScript().load().getBlockOf(ScriptBlockType.TALK).isEmpty()) {
 				//currentNPC設定
-				ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 				talkingNPC = getCurrent().getNPCMap().get(i);
+				ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 
 				talkingNPC.getSprite().getMoveModel().lockLocation();
 				talkingNPC.getSprite().to(dir.reverse());
@@ -172,8 +172,8 @@ public final class FieldMapSystem implements Drawable {
 		}
 		if (!n.asScript().load().getBlockOf(ScriptBlockType.TOUCH).isEmpty()) {
 			//currentNPC設定
-			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 			talkingNPC = n;
+			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 
 			talkingNPC.getSprite().getMoveModel().lockLocation();
 
@@ -189,8 +189,8 @@ public final class FieldMapSystem implements Drawable {
 		}
 		if (!n.asScript().load().getBlockOf(ScriptBlockType.APPROACH).isEmpty()) {
 			//currentNPC設定
-			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 			talkingNPC = n;
+			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 
 			talkingNPC.getSprite().getMoveModel().lockLocation();
 
@@ -206,8 +206,8 @@ public final class FieldMapSystem implements Drawable {
 		}
 		if (!n.asScript().load().getBlockOf(ScriptBlockType.LEAVE).isEmpty()) {
 			//currentNPC設定
-			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 			talkingNPC = n;
+			ScriptSystem.getInstance().setCurrentTalkNpc(talkingNPC);
 
 			talkingNPC.getSprite().getMoveModel().lockLocation();
 

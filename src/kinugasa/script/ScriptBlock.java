@@ -218,7 +218,7 @@ public class ScriptBlock {
 			GameLog.removeIndent();
 			GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is ALL end : result=" + last);
 		}
-		ScriptSystem.getInstance().unset();
+		ScriptSystem.getInstance().unsetScript();
 		return res;
 	}
 

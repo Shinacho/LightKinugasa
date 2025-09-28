@@ -202,7 +202,7 @@ public final class ScriptSystem {
 	private boolean manualIdxMode = false;
 	//---------------------------------------------------------------------------
 
-	void unset(){
+	void unsetScript(){
 		setCurrentExecFile(null);
 		setCurrentExecBlock(null);
 		setCurrentArgs(null);
@@ -297,10 +297,6 @@ public final class ScriptSystem {
 
 	public void setCurrentTalkNpc(NPC currentNpc) {
 		this.currentTalkNpc = currentNpc;
-	}
-
-	public void unsetCurrentTalkNpc() {
-		this.currentTalkNpc = null;
 	}
 
 	void openMessageWindow() {
