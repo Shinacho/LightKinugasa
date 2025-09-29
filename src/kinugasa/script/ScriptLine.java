@@ -93,7 +93,6 @@ public class ScriptLine {
 	}
 
 	private void parse(String line, List<List<String>> ifStack) throws ScriptSyntaxException {
-		//SAOのアノテーションチェック
 		if (sao == null) {
 			throw new ScriptSyntaxException("SL SAO is null");
 		}

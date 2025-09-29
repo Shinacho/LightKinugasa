@@ -22,8 +22,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.annotation.Nullable;
@@ -46,7 +48,7 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 	public static class Element implements Iterable<DataFile.Element> {
 
 		private final String origin;
-		private UniversalValue key;
+		private final UniversalValue key;
 		@Nullable
 		private UniversalValue value;
 		@Nullable
@@ -132,17 +134,13 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 		this.charset = c;
 	}
 
+	public static final String COMMENT_KEY = "#";
+	public static final String REPLACE_KEY = "-DEFINE";
 	private boolean skipEmptyLine = true;
-	private String skipCommentValue = "#";
 	private boolean autoTrim = true;
 
 	public DataFile setAutoTrim(boolean autoTrim) {
 		this.autoTrim = autoTrim;
-		return this;
-	}
-
-	public DataFile setSkipCommentValue(String skipCommentValue) {
-		this.skipCommentValue = skipCommentValue;
 		return this;
 	}
 
@@ -164,6 +162,7 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 		try {
 			var d = Files.readAllLines(getPath(), charset);
 			var data2 = new ArrayList<String>();
+			Map<String, String> replaceMap = new HashMap<String, String>();
 			//整形
 			for (int i = 0; i < d.size(); i++) {
 				String line = d.get(i);
@@ -172,16 +171,27 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 						continue;
 					}
 				}
-				if (skipCommentValue != null) {
-					if (line.trim().startsWith(skipCommentValue)) {
-						continue;
-					}
-					if (line.contains(skipCommentValue)) {
-						line = line.substring(0, line.indexOf(skipCommentValue));
-					}
-				}
 				if (autoTrim) {
 					line = line.trim();
+				}
+				if (line.startsWith(COMMENT_KEY)) {
+					continue;
+				}
+				if (line.contains(COMMENT_KEY)) {
+					line = line.substring(0, line.indexOf(COMMENT_KEY));
+				}
+				if (line.startsWith(REPLACE_KEY)) {
+					line = line.replaceAll(REPLACE_KEY, "").trim();
+					int idx = line.indexOf(" ");
+					String key = line.substring(0, idx).trim();
+					String value = line.substring(idx + 1).trim();
+					replaceMap.put(key, value);
+					continue;
+				}
+				for (var v : replaceMap.entrySet()) {
+					if (line.contains(v.getKey())) {
+						line = line.replaceAll(v.getKey(), v.getValue());
+					}
 				}
 				data2.add(line);
 			}

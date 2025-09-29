@@ -171,6 +171,8 @@ public final class ScriptSystem {
 		if (currentExecBlock.hasNext()) {
 			currentExecBlock.next();
 			currentExecBlock.exec(currentArgs);
+		} else {
+			end();
 		}
 	}
 

@@ -63,6 +63,16 @@ public class FieldScriptAccessObject implements ScriptAccessObject {
 
 	//------------------------------------common-------------------------------
 	@ScriptAccessMethod
+	public boolean returnTrue() {
+		return true;
+	}
+
+	@ScriptAccessMethod
+	public boolean returnFalse() {
+		return false;
+	}
+
+	@ScriptAccessMethod
 	public ScriptResultType end() {
 		ScriptSystem.getInstance().end();
 		return ScriptResultType.END;
@@ -200,9 +210,9 @@ public class FieldScriptAccessObject implements ScriptAccessObject {
 	public void unsetNode() {
 		FieldMapSystem.getInstance().unsetNode();
 	}
-	
+
 	@ScriptAccessMethod
-	public void changeMap(){
+	public void changeMap() {
 		FieldMapSystem.getInstance().changeMapStart();
 	}
 

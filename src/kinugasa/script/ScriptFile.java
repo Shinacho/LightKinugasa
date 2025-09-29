@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.function.Function;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.script.exception.ScriptException;
@@ -30,8 +31,11 @@ import kinugasa.system.actor.CharaSprite;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
+import kinugasa.resource.ID;
+import kinugasa.resource.Storage;
 import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
+import kinugasa.system.UniversalValue;
 import kinugasa.util.StringUtil;
 
 /**

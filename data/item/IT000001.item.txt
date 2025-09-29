@@ -1,0 +1,179 @@
+# ITEM
+# VisibleNameIDInjector Saveable Cloneable
+
+# 普通の鉄の剣
+
+
+# #########################################################  DATA  #########################################################
+
+-DEFINE		DCS_BASE_VALUE 	"20"
+-DEFINE		PRICE 		"19800"
+
+
+
+GENERAL={
+	itemType = WEAPON
+	rarity = COMMON
+	unique = false #ユニークのアイテムが宝箱やPCのアイテムにある場合、もう出ない
+	saleable = true
+
+	basePrice = 19800
+
+	useItem = FIELD, BATTLE
+
+	weight = 2.5f
+
+
+
+}
+
+
+DISASSEMBL={
+	enable = true
+
+	MATERIAL={
+		MT001=3 # 鉄
+		MT002=2 # 木片
+	}
+
+}
+
+UPGRADE={
+	enable = true
+	default = 0
+
+	1={
+		MT001=1 # 鉄
+		MT002=1 # 木片
+	}
+	2={
+		MT001=1 # 鉄
+		MT002=1 # 木片
+	}
+	3={
+		MT001=1 # 鉄
+		MT002=1 # 木片
+	}
+
+
+}
+
+
+
+EQIP_INFO={
+	slot= R_ARM, L_ARM
+
+	weaponType= SWORD
+	weaponTypeActionEnable = true
+
+	twoHand =  POSSIBLE # ALWAYS, POSSIBLE, NO
+
+	enchant = POSSIBLE
+	style = POSSIBLE
+
+	atkAttr = CUT
+	dcsBaseValue = 20
+
+	eqipItemSet = IceFurnace.eis.txt
+
+	
+}
+
+ENCHANT={
+	enable = true
+	default = nomal.enc.txt
+
+}
+
+STYLE={
+	enable = true
+	default = nonStyle.stl.txt
+
+}
+
+
+
+# #########################################################  SCRIPT  #########################################################
+
+
+# ----------------------------TEXT----------------------------
+}
+TEXT( TextGenerator )={
+	i18nOf("THIS_IS_IRON_SWORD");
+	i18nOf("ATT_ATK_X"); # eqipEffect
+	i18nOf("ITEM_BAG_ADD"); # "アイテムを持てる数が${getItemBagSize()}個増加するが、もともと持てる数以下のアイテムを持っているときしか外せない"
+
+	
+}
+	
+
+# ----------------------------EQIP----------------------------
+
+EQIP_REQUIRE( EqipRequireEvent )={
+	set("STR").isOver("40");
+	set("EQIP_ATTR").any();
+
+}
+
+EQIP_EFFECT( EqipEffectEvent )={
+	base("ATK", "20").add("STR", "0.5f");
+	base("DEF", "8");
+	addItemBagMax("4");
+	addPassive("PassiveID");
+}
+
+ADDITIONAL_ACTION( ActionReloadEvent )={
+
+}
+
+
+# ----------------------------GET/DROP----------------------------
+GET( ItemGetEvent )={
+}
+
+DROP( ItemDropEvent )={
+}
+
+
+
+
+# ----------------------------DCS----------------------------
+ATK_SETTING={
+	attr = CUT
+	baseValue = 20
+	
+}
+
+DCS_START( DamageCalcEvent )={
+
+}
+
+DCS_END( DamageCalcEvent )={
+
+	IF( isAtkSuccessed() )
+		IF( chance("0.2f") )
+			tgt().setCondition("POISON", "6");
+		ENDIF
+	ENDIF
+
+}
+
+
+
+
+
+# ----------------------------USE----------------------------
+
+MANUAL_FIELD(FieldScriptAccessObkect )={
+	# setActionTarget("SELF", "ONE", 
+	openmessageWindow("効果がなかった").byItemUser();
+	closeMessageWindow();
+}
+
+MANIAL_BATTLE( BattleScriptAccessObject )={
+	openmessageWindow("効果がなかった").byItemUser();
+	closeMessageWindow();
+}
+
+
+
