@@ -164,9 +164,8 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 					continue;
 				}
 				if (line.contains(COMMENT_KEY)) {
-					line = line.substring(0, line.indexOf(COMMENT_KEY));
+					line = line.substring(0, line.indexOf(COMMENT_KEY)).trim();
 				}
-				line = line.trim();
 				if (line.startsWith(REPLACE_KEY)) {
 					line = line.replaceAll(REPLACE_KEY, "").trim();
 					int idx = line.indexOf(" ");
