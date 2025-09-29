@@ -3,7 +3,7 @@
 
 debugMode = true
 
-
+-DEFINE HOGE PIYO
 
 LOAD_SCRIPT={
 	@std_BgmChange("005_空想の世界")
@@ -13,7 +13,7 @@ LOAD_SCRIPT={
 
 
 EVENT={
-	32, 30 = @std_ChangeMapNoSound("M002", "6", "17", "NORTH", "M002")
+	32, 30= @std_ChangeMapNoSound("M002", "6", "17", "NORTH", "M002")
 	
 }
 

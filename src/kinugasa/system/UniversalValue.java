@@ -74,7 +74,7 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 		if (value == null || "null".equals(value)) {
 			this.value = null;
 		} else {
-			this.value = value;
+			this.value = value.trim();
 		}
 	}
 
@@ -294,8 +294,8 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 	}
 
 	public D2Idx asD2IdxCSV() {
-		int x = safeSplitUV(",")[0].asInt();
-		int y = safeSplitUV(",")[1].asInt();
+		int x = safeSplitUV(",")[0].trim().asInt();
+		int y = safeSplitUV(",")[1].trim().asInt();
 		return new D2Idx(x, y);
 	}
 

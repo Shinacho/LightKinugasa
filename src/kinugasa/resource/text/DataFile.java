@@ -80,12 +80,15 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 		}
 
 		public Element get(String id) throws IDNotFoundException {
+			if (elements == null) {
+				throw new IDNotFoundException(id + " not found / " + elements);
+			}
 			for (var v : elements) {
 				if (v.key.value().equals(id)) {
 					return v;
 				}
 			}
-			throw new IDNotFoundException(id + " not found");
+			throw new IDNotFoundException(id + " not found / " + elements);
 		}
 
 		public boolean has(String id) {
@@ -136,18 +139,6 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 
 	public static final String COMMENT_KEY = "#";
 	public static final String REPLACE_KEY = "-DEFINE";
-	private boolean skipEmptyLine = true;
-	private boolean autoTrim = true;
-
-	public DataFile setAutoTrim(boolean autoTrim) {
-		this.autoTrim = autoTrim;
-		return this;
-	}
-
-	public DataFile setSkipEmptyLine(boolean skipEmptyLine) {
-		this.skipEmptyLine = skipEmptyLine;
-		return this;
-	}
 
 	@NotNewInstance
 	public List<Element> getData() {
@@ -160,19 +151,14 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 			throw new FileNotFoundException(getFile());
 		}
 		try {
-			var d = Files.readAllLines(getPath(), charset);
+			var data1 = Files.readAllLines(getPath(), charset);
 			var data2 = new ArrayList<String>();
-			Map<String, String> replaceMap = new HashMap<String, String>();
-			//整形
-			for (int i = 0; i < d.size(); i++) {
-				String line = d.get(i);
-				if (skipEmptyLine) {
-					if (line.trim().isEmpty()) {
-						continue;
-					}
-				}
-				if (autoTrim) {
-					line = line.trim();
+			Map<String, String> replaceMap = new HashMap<>();
+			//REPLACE前
+			for (int i = 0; i < data1.size(); i++) {
+				String line = data1.get(i).trim();
+				if (line.isEmpty()) {
+					continue;
 				}
 				if (line.startsWith(COMMENT_KEY)) {
 					continue;
@@ -180,6 +166,7 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 				if (line.contains(COMMENT_KEY)) {
 					line = line.substring(0, line.indexOf(COMMENT_KEY));
 				}
+				line = line.trim();
 				if (line.startsWith(REPLACE_KEY)) {
 					line = line.replaceAll(REPLACE_KEY, "").trim();
 					int idx = line.indexOf(" ");
@@ -188,14 +175,23 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 					replaceMap.put(key, value);
 					continue;
 				}
+				data2.add(line);
+			}
+
+			//REPLACE後の作成
+			var data3 = new ArrayList<String>();
+			for (int i = 0; i < data2.size(); i++) {
+				String line = data2.get(i);
 				for (var v : replaceMap.entrySet()) {
 					if (line.contains(v.getKey())) {
 						line = line.replaceAll(v.getKey(), v.getValue());
 					}
 				}
-				data2.add(line);
+				data3.add(line);
 			}
-			parse(null, data2, 0);
+
+			//整形
+			parse(null, data3, 0);
 
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
