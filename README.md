@@ -4,7 +4,6 @@
 これは私のゲームエンジン、通称「軽衣笠」の使い方をカンタンに書いたものです。
 
 
-https://github.com/user-attachments/assets/c5a59b38-aded-4faf-abbd-67f7256520a0
 
 
 まずは軽衣笠の由来について少し説明しましょう。
