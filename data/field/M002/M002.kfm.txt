@@ -5,14 +5,14 @@ debugMode = true
 
 
 
-LOAD_SCRIPT={
+LOAD_SCRIPT{
 	@std_BgmChange("054_かろうじて人類が住んでいる地")
 }
 
 
 
 
-EVENT={
+EVENT{
 	# cloneToRim = 6,17
 
 	6,17 = @std_ChangeMapNoSound("M001", "32", "30", "SOUTH", "M001")
@@ -20,16 +20,9 @@ EVENT={
 }
 
 
-MINIMAP_LABEL={
-
-}
 
 
-BACK_LAYER={
-}
-
-
-NOMAL_LAYER={ #0
+NOMAL_LAYER{ #0
 	chipSet= data/field/chipset/Outer16.txt
 	drawSize=1f
 	
@@ -54,7 +47,7 @@ NOMAL_LAYER={ #0
 010000,010000,010000,010000,010000,023004,023005,023001,010000,010000,010000,010000,010000,010000,010000,010000,010000,010000
 	==
 }
-NOMAL_LAYER={ #1
+NOMAL_LAYER{ #1
 	chipSet= data/field/chipset/Outer16.txt
 	drawSize=1f
 
@@ -82,7 +75,7 @@ NOMAL_LAYER={ #1
 	==
 }
 
-#ANIMATION_LAYER={ #0
+#ANIMATION_LAYER{ #0
 #	idx = 26,23
 #	image = resource/hoge.png
 #	cutW = 16
@@ -91,7 +84,7 @@ NOMAL_LAYER={ #1
 #	drawSize=1f
 #}
 
-#ANIMATION_LAYER={ #1
+#ANIMATION_LAYER{ #1
 #	idx = 26,23
 #	image = resource/hoge.png
 #	cutW = 16
@@ -101,7 +94,7 @@ NOMAL_LAYER={ #1
 #}
 
 
-FRONT_LAYER={
+FRONT_LAYER{
 	image = data/field/chipset/cloudeffect.png
 	drawSize = 2f
 	angle = 135f

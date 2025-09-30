@@ -140,7 +140,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		DataFile f = asDataFile();
 		f.load();
 
-		this.debugMode = f.has("debugMode") ? f.get("debugMode").getValue().asBoolean() : false;
+		this.debugMode = f.has("debugMode") ? f.get("debugMode").value.asBoolean() : false;
 		if (debugMode) {
 			if (!GameManager.getInstance().getUpdateLogicInjectors().contains(debugMenuOnOff)) {
 				GameManager.getInstance().getUpdateLogicInjectors().add(debugMenuOnOff);
@@ -150,8 +150,8 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		//MINIMAP_LABEL
 		if (f.has("MINIMAP_LABEL") && f.get("MINIMAP_LABEL").getElements() != null) {
 			for (var v : f.get("MINIMAP_LABEL")) {
-				D2Idx i = v.getKey().asD2IdxCSV();
-				I18NText t = v.getValue().asI18N();
+				D2Idx i = v.key.asD2IdxCSV();
+				I18NText t = v.value.asI18N();
 				miniMapLabelStorage.add(new MiniMapLabel(i, t));
 			}
 		}
@@ -160,38 +160,38 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		if (f.has("BACK_LAYER") && f.get("BACK_LAYER").getElements() != null) {
 			List<KImage> image;
 			if (f.get("BACK_LAYER").has("cutW")) {
-				int w = f.get("BACK_LAYER").get("cutW").getValue().asInt();
-				int h = f.get("BACK_LAYER").get("cutH").getValue().asInt();
-				image = f.get("BACK_LAYER").get("image").getValue().asKImageFile().splitX(0, w, h);
+				int w = f.get("BACK_LAYER").get("cutW").value.asInt();
+				int h = f.get("BACK_LAYER").get("cutH").value.asInt();
+				image = f.get("BACK_LAYER").get("image").value.asKImageFile().splitX(0, w, h);
 			} else {
-				image = List.of(f.get("BACK_LAYER").get("image").getValue().asKImageFile());
+				image = List.of(f.get("BACK_LAYER").get("image").value.asKImageFile());
 			}
 
-			float drawSize = f.get("BACK_LAYER").has("drawSize") ? f.get("BACK_LAYER").get("drawSize").getValue().asFloat() : 1f;
-			FrameTimeCounter tc = f.get("BACK_LAYER").get("frame").getValue().asFrameTimeCounterCSV();
+			float drawSize = f.get("BACK_LAYER").has("drawSize") ? f.get("BACK_LAYER").get("drawSize").value.asFloat() : 1f;
+			FrameTimeCounter tc = f.get("BACK_LAYER").get("frame").value.asFrameTimeCounterCSV();
 			int windowW = GameManager.getInstance().getOption().getWindowSize().width;
 			int windowH = GameManager.getInstance().getOption().getWindowSize().height;
 
-			MapChipAttribute attr = f.get("BACK_LAYER").get("attr").getValue().of(MapChipAttribute.class);
+			MapChipAttribute attr = f.get("BACK_LAYER").get("attr").value.of(MapChipAttribute.class);
 
 			this.backLayerSprite = new FMBackLayerSprite(windowW, windowH, attr, drawSize, tc, image);
 			if (f.get("BACK_LAYER").has("traceMove")) {
-				this.backLayerSprite.setTraceMove(f.get("BACK_LAYER").get("traceMove").getValue().asBoolean());
+				this.backLayerSprite.setTraceMove(f.get("BACK_LAYER").get("traceMove").value.asBoolean());
 			}
 		}
 
 		//NOMAL_LAYER
 		{
-			for (var v : f.getData().stream().filter(p -> p.getKey().value().equals("NOMAL_LAYER")).toList()) {
-				MapChipSet chipSet = v.get("chipSet").getValue().asMapChipSetFile();
+			for (var v : f.getData().stream().filter(p -> p.key.value().equals("NOMAL_LAYER")).toList()) {
+				MapChipSet chipSet = v.get("chipSet").value.asMapChipSetFile();
 				chipSet.load();
-				boolean above = v.has("above") ? v.get("above").getValue().asBoolean() : false;
-				float drawSize = v.has("drawSize") ? v.get("drawSize").getValue().asFloat() : 1f;
+				boolean above = v.has("above") ? v.get("above").value.asBoolean() : false;
+				float drawSize = v.has("drawSize") ? v.get("drawSize").value.asFloat() : 1f;
 				MapChip[][] data = new MapChip[v.get("DATA").getElements().size()][];
 				for (int y = 0; y < data.length; y++) {
 					data[y] = new MapChip[v.get("DATA").getElements().get(y).getElements().size()];
 					for (int x = 0; x < data[y].length; x++) {
-						data[y][x] = chipSet.get(v.get("DATA").getElements().get(y).getElements().get(x).getValue().asId());
+						data[y][x] = chipSet.get(v.get("DATA").getElements().get(y).getElements().get(x).value.asId());
 					}
 				}
 				var l = new FMNomalLayerSprite(chipSet, drawSize, above, data);
@@ -204,19 +204,19 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 
 		//ANIMATION_LAYER
 		{
-			for (var v : f.getData().stream().filter(p -> p.getKey().value().equals("ANIMATION_LAYER")).toList()) {
-				D2Idx idx = v.get("idx").getValue().asD2IdxCSV();
+			for (var v : f.getData().stream().filter(p -> p.key.value().equals("ANIMATION_LAYER")).toList()) {
+				D2Idx idx = v.get("idx").value.asD2IdxCSV();
 				List<KImage> image;
 				if (f.get("ANIMATION_LAYER").has("cutW")) {
-					int w = f.get("ANIMATION_LAYER").get("cutW").getValue().asInt();
-					int h = f.get("ANIMATION_LAYER").get("cutH").getValue().asInt();
-					image = f.get("ANIMATION_LAYER").get("image").getValue().asKImageFile().splitX(0, w, h);
+					int w = f.get("ANIMATION_LAYER").get("cutW").value.asInt();
+					int h = f.get("ANIMATION_LAYER").get("cutH").value.asInt();
+					image = f.get("ANIMATION_LAYER").get("image").value.asKImageFile().splitX(0, w, h);
 				} else {
-					image = List.of(f.get("ANIMATION_LAYER").get("image").getValue().asKImageFile());
+					image = List.of(f.get("ANIMATION_LAYER").get("image").value.asKImageFile());
 				}
-				FrameTimeCounter tc = v.get("frame").getValue().asFrameTimeCounterCSV();
+				FrameTimeCounter tc = v.get("frame").value.asFrameTimeCounterCSV();
 				if (v.has("drawSize")) {
-					image = image.stream().map(p -> p.resize(v.get("drawSize").getValue().asFloat())).toList();
+					image = image.stream().map(p -> p.resize(v.get("drawSize").value.asFloat())).toList();
 				}
 				Animation a = new Animation(tc, image);
 				animationLayerSprite.add(new FMAnimationLayerSprite(nomalLayerSprite.get(0).getChipDrawSize(), idx, a));
@@ -227,19 +227,19 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		{
 			List<KImage> image;
 			if (f.get("FRONT_LAYER").has("cutW")) {
-				int w = f.get("FRONT_LAYER").get("cutW").getValue().asInt();
-				int h = f.get("FRONT_LAYER").get("cutH").getValue().asInt();
-				image = f.get("FRONT_LAYER").get("image").getValue().asKImageFile().splitX(0, w, h);
+				int w = f.get("FRONT_LAYER").get("cutW").value.asInt();
+				int h = f.get("FRONT_LAYER").get("cutH").value.asInt();
+				image = f.get("FRONT_LAYER").get("image").value.asKImageFile().splitX(0, w, h);
 			} else {
-				image = List.of(f.get("FRONT_LAYER").get("image").getValue().asKImageFile());
+				image = List.of(f.get("FRONT_LAYER").get("image").value.asKImageFile());
 			}
 
-			float drawSize = f.get("FRONT_LAYER").has("drawSize") ? f.get("FRONT_LAYER").get("drawSize").getValue().asFloat() : 1f;
-			float angle = f.get("FRONT_LAYER").get("angle").getValue().asFloat();
-			float speed = f.get("FRONT_LAYER").get("speed").getValue().asFloat();
-			float tp = f.get("FRONT_LAYER").get("tp").getValue().asFloat();
+			float drawSize = f.get("FRONT_LAYER").has("drawSize") ? f.get("FRONT_LAYER").get("drawSize").value.asFloat() : 1f;
+			float angle = f.get("FRONT_LAYER").get("angle").value.asFloat();
+			float speed = f.get("FRONT_LAYER").get("speed").value.asFloat();
+			float tp = f.get("FRONT_LAYER").get("tp").value.asFloat();
 			TimeCounter tc = f.get("FRONT_LAYER").has("frame")
-					? f.get("FRONT_LAYER").get("frame").getValue().asFrameTimeCounterCSV()
+					? f.get("FRONT_LAYER").get("frame").value.asFrameTimeCounterCSV()
 					: TimeCounter.always(TimeCounterState.INACTIVE);
 
 			this.frontLayerSprite = new FMFrontLayerSprite(tp, drawSize, new KVector(angle, speed), tc, image);
@@ -250,16 +250,16 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		{
 			if (f.has("EVENT") && f.get("EVENT").getElements() != null) {
 				for (var v : f.get("EVENT").getElements()) {
-					if (v.getKey().is("cloneToRim")) {
+					if (v.key.is("cloneToRim")) {
 						continue;
 					}
-					D2Idx idx = v.getKey().asD2IdxCSV();
-					ScriptFileCall sc = v.getValue().asScriptCall();
+					D2Idx idx = v.key.asD2IdxCSV();
+					ScriptFileCall sc = v.value.asScriptCall();
 					this.eventScriptMap.add(idx, sc);
 				}
 				//CLONE RIM
 				if (f.get("EVENT").has("cloneToRim")) {
-					D2Idx tgt = f.get("EVENT").get("cloneToRim").getValue().asD2IdxCSV();
+					D2Idx tgt = f.get("EVENT").get("cloneToRim").value.asD2IdxCSV();
 					if (!this.eventScriptMap.has(tgt)) {
 						throw new FileFormatException("FM : cloneToRim, but tgt event not found : " + tgt);
 					}
@@ -299,7 +299,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 					throw new IllegalStateException("FM LOAD_SCRIPT: ScriptSystem is not yet init() : " + this);
 				}
 				f.get("LOAD_SCRIPT").getElements().forEach(v -> {
-					ScriptFileCall s = v.getKey().asScriptCall();
+					ScriptFileCall s = v.key.asScriptCall();
 					if (GameSystem.isDebugMode()) {
 						GameLog.print("--- " + s);
 					}

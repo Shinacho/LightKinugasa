@@ -1,7 +1,7 @@
 # NPC
 # VisibleNameIDInjector
 
-PI={
+PI{
 	speakerImage=data/image/faceImage.png
 	named=false
 
@@ -11,13 +11,13 @@ PI={
 	moveModel = TRIP, 0.5f, 1f, 17, 17
 }
 
-TOUCH (FieldScriptAccessObject) ={
+TOUCH (FieldScriptAccessObject) {
 
 	openMessageWindow("T007").byMe();
 	closeMessageWindow();
 }
 
-TALK (FieldScriptAccessObject) ={
+TALK (FieldScriptAccessObject) {
 
 	openMessageWindow("T001").byMe();
 

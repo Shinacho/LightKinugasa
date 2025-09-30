@@ -1,14 +1,14 @@
 # std_PrintLog
 # ログファイルに値を書き込みます。
 
-PARAM={
+PARAM{
 	value
 }
 
 
 #------------------------------------------------
 
-MAIN( FieldScriptAccessObject )={
+MAIN( FieldScriptAccessObject ){
 	printLogDirect(value);
 }
 

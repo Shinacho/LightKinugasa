@@ -1,7 +1,7 @@
 # PC
 # VisibleNameIDInjector
 
-PI={
+PI{
 	#faceImage=data/image/face/npc001.png
 
 	waTime = 8

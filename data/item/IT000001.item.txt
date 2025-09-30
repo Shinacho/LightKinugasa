@@ -6,51 +6,56 @@
 
 # #########################################################  DATA  #########################################################
 
--DEFINE		DCS_BASE_VALUE 	"20"
--DEFINE		PRICE 		"19800"
+-DEFINE	DCS_BASE_VALUE 20
 
 
 
-GENERAL={
+
+GENERAL{
 	itemType = WEAPON
 	rarity = COMMON
-	unique = false #ユニークのアイテムが宝箱やPCのアイテムにある場合、もう出ない
-	saleable = true
+	unique = YES #ユニークのアイテムが宝箱やPCのアイテムにある場合、もう出ない
+
+	baseItem = YES # アップグレードするとfalseになる。これを基準にアップグレードやエンチャントクローンを作れる。
+
+	saleable = YES
 
 	basePrice = 19800
 
-	useItem = FIELD, BATTLE
+	dropable = YES
+
+	usable = FIELD, BATTLE
 
 	weight = 2.5f
-
-
 
 }
 
 
-DISASSEMBL={
-	enable = true
+DISASSEMBL{
+	enable = YES
 
-	MATERIAL={
+
+	MATERIAL{
 		MT001=3 # 鉄
 		MT002=2 # 木片
 	}
 
 }
 
-UPGRADE={
-	enable = true
+UPGRADE{
+	enable = YES
 	default = 0
+	current = 0
 
-	1={
+	1{
 		MT001=1 # 鉄
 		MT002=1 # 木片
 	}
-	2={
+	2{
 		MT001=1 # 鉄
 		MT002=1 # 木片
 	}
-	3={
+	3{
 		MT001=1 # 鉄
 		MT002=1 # 木片
 	}
@@ -60,34 +65,34 @@ UPGRADE={
 
 
 
-EQIP_INFO={
+EQIP_INFO{
 	slot= R_ARM, L_ARM
 
 	weaponType= SWORD
-	weaponTypeActionEnable = true
+	weaponTypeDefaultActionEnable = YES
 
-	twoHand =  POSSIBLE # ALWAYS, POSSIBLE, NO
-
-	enchant = POSSIBLE
-	style = POSSIBLE
+	twoHand =  POSSIBLE # ALWAYS, POSSIBLE, NOT
 
 	atkAttr = CUT
 	dcsBaseValue = 20
 
-	eqipItemSet = IceFurnace.eis.txt
+	eqipItemSet = IceFurnace
 
 	
 }
 
-ENCHANT={
-	enable = true
-	default = nomal.enc.txt
+ENCHANT{
+	# エンチャントごとに設定された確率でドロップする
+	enable = YES
+	default = nomal
+	current = nomal
 
 }
 
-STYLE={
-	enable = true
-	default = nonStyle.stl.txt
+STYLE{
+	enable = YES
+	default = nonStyle
+	current = nonStyle
 
 }
 
@@ -97,58 +102,69 @@ STYLE={
 
 
 # ----------------------------TEXT----------------------------
-}
-TEXT( TextGenerator )={
+
+TEXT( DescGenerator ){
 	i18nOf("THIS_IS_IRON_SWORD");
-	i18nOf("ATT_ATK_X"); # eqipEffect
+	i18nOf("ATT_ATK_X", DCS_BASE_VALUE); # eqipEffect
 	i18nOf("ITEM_BAG_ADD"); # "アイテムを持てる数が${getItemBagSize()}個増加するが、もともと持てる数以下のアイテムを持っているときしか外せない"
 
-	
 }
-	
+
 
 # ----------------------------EQIP----------------------------
 
-EQIP_REQUIRE( EqipRequireEvent )={
+EQIP_REQUIRE( EqipRequireEvent ){
 	set("STR").isOver("40");
 	set("EQIP_ATTR").any();
+	set("MAGIC").is("USABLE");
 
 }
 
-EQIP_EFFECT( EqipEffectEvent )={
-	base("ATK", "20").add("STR", "0.5f");
-	base("DEF", "8");
+EQIP_EFFECT( EqipEffectEvent ){
+	base("ATK").is("DCS_BASE_VALUE").add("STR").is("0.5f");
+	base("DEF").is("8");
 	addItemBagMax("4");
 	addPassive("PassiveID");
 }
 
-ADDITIONAL_ACTION( ActionReloadEvent )={
+ADDITIONAL_ACTION( ActionReloadEvent ){
+	IF( getStatus("STR").isOver("40") )
+		addAction("A000001");
+	ENDIF
 
 }
 
 
 # ----------------------------GET/DROP----------------------------
-GET( ItemGetEvent )={
+GET( ItemGetEvent ){
+	standardItemMaxCheck("1");
+
+
 }
 
-DROP( ItemDropEvent )={
+DROP( ItemDropEvent ){
+
 }
 
 
 
 
 # ----------------------------DCS----------------------------
-ATK_SETTING={
+ATK_SETTING{
 	attr = CUT
-	baseValue = 20
+	baseValue = DCS_BASE_VALUE
+	atkCount = 1
+
+	range = 48
+	
 	
 }
 
-DCS_START( DamageCalcEvent )={
+DCS_START( DamageCalcEvent ){
 
 }
 
-DCS_END( DamageCalcEvent )={
+DCS_END( DamageCalcEvent ){
 
 	IF( isAtkSuccessed() )
 		IF( chance("0.2f") )
@@ -164,13 +180,13 @@ DCS_END( DamageCalcEvent )={
 
 # ----------------------------USE----------------------------
 
-MANUAL_FIELD(FieldScriptAccessObkect )={
+MANUAL_FIELD(FieldScriptAccessObject ){
 	# setActionTarget("SELF", "ONE", 
 	openmessageWindow("効果がなかった").byItemUser();
 	closeMessageWindow();
 }
 
-MANIAL_BATTLE( BattleScriptAccessObject )={
+MANIAL_BATTLE( BattleScriptAccessObject ){
 	openmessageWindow("効果がなかった").byItemUser();
 	closeMessageWindow();
 }

@@ -26,8 +26,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import kinugasa.field4.D2Idx;
 import kinugasa.game.GameLog;
+import kinugasa.game.annotation.Immutable;
+import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.NotNewInstance;
+import kinugasa.game.annotation.NotNull;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.system.UniversalValue;
 import kinugasa.object.FileObject;
@@ -45,53 +50,105 @@ import kinugasa.util.StringUtil;
  */
 public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 
+	@Immutable
 	public static class Element implements Iterable<DataFile.Element> {
 
-		private final String origin;
-		private final UniversalValue key;
+		@NotNull
+		public final UniversalValue key;
 		@Nullable
-		private UniversalValue value;
+		public final String saoName;
 		@Nullable
-		private List<Element> elements;
+		public final UniversalValue value;
+		@Nullable
+		private final List<Element> elements;
 
-		public Element(String origin, UniversalValue key) {
-			this.origin = origin;
+		private Element(UniversalValue key, String saoName, UniversalValue value, List<Element> elements) {
 			this.key = key;
-		}
-
-		public Element(String origin, UniversalValue key, UniversalValue value) {
-			this.origin = origin;
-			this.key = key;
+			this.saoName = saoName;
 			this.value = value;
+			this.elements = elements;
 		}
 
-		public UniversalValue getKey() {
-			return key;
+		public static Element head(String key) {
+			return new Element(new UniversalValue(key), null, null, new ArrayList<>());
 		}
 
-		@Nullable
-		public UniversalValue getValue() {
-			return value;
+		public static Element scriptBlock(String key, String saoName) {
+			return new Element(new UniversalValue(key), saoName, null, new ArrayList<>());
 		}
 
-		@Nullable
-		public List<Element> getElements() {
-			return elements;
+		public static Element keyValue(String key, String value) {
+			return new Element(new UniversalValue(key), null, new UniversalValue(value), null);
+		}
+
+		public static Element key(String key) {
+			return new Element(new UniversalValue(key), null, null, null);
+		}
+
+		public Element createKeyChild(String key) {
+			Element e = key(key);
+			if (this.elements == null) {
+				throw new IllegalArgumentException("DataFile : createChild, but element is null");
+			}
+			this.elements.add(e);
+			return e;
+		}
+
+		public Element createKeyValueChild(String key, String value) {
+			Element e = keyValue(key, value);
+			if (this.elements == null) {
+				throw new IllegalArgumentException("DataFile : createChild, but element is null");
+			}
+			this.elements.add(e);
+			return e;
+		}
+
+		public Element createHeadChild(String key) {
+			Element e = head(key);
+			if (this.elements == null) {
+				throw new IllegalArgumentException("DataFile : createChild, but element is null");
+			}
+			this.elements.add(e);
+			return e;
+		}
+
+		public Element createScriptBlockChild(String key, String saoName) {
+			Element e = scriptBlock(key, saoName);
+			if (this.elements == null) {
+				throw new IllegalArgumentException("DataFile : createChild, but element is null");
+			}
+			this.elements.add(e);
+			return e;
+		}
+
+		private void add(Element e) {
+			this.elements.add(e);
+		}
+
+		public Element get(Enum<?> e) throws IDNotFoundException {
+			return get(e.toString());
 		}
 
 		public Element get(String id) throws IDNotFoundException {
 			if (elements == null) {
-				throw new IDNotFoundException(id + " not found / " + elements);
+				throw new IDNotFoundException("DataFile : element is null : " + key + "." + id);
 			}
 			for (var v : elements) {
 				if (v.key.value().equals(id)) {
 					return v;
 				}
 			}
-			throw new IDNotFoundException(id + " not found / " + elements);
+			throw new IDNotFoundException(id + " not found");
+		}
+
+		public boolean has(Enum<?> e) {
+			return has(e.toString());
 		}
 
 		public boolean has(String id) {
+			if (elements == null) {
+				throw new IDNotFoundException("DataFile : element is null : " + key + "." + id);
+			}
 			for (var v : elements) {
 				if (v.key.value().equals(id)) {
 					return true;
@@ -100,24 +157,67 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 			return false;
 		}
 
-		@Override
-		public String toString() {
-			return "Element{" + "key=" + key + ", value=" + value + ", size=" + (elements == null ? "null" : elements.size()) + '}';
+		@NewInstance
+		public List<Element> getElements() {
+			return new ArrayList<>(elements);
 		}
 
-		public String original() {
-			return origin;
+		@Override
+		public int hashCode() {
+			int hash = 7;
+			hash = 83 * hash + Objects.hashCode(this.key);
+			hash = 83 * hash + Objects.hashCode(this.saoName);
+			return hash;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final Element other = (Element) obj;
+			if (!Objects.equals(this.saoName, other.saoName)) {
+				return false;
+			}
+			return Objects.equals(this.key, other.key);
 		}
 
 		@Override
 		public Iterator<Element> iterator() {
-			return elements == null ? List.<Element>of().iterator() : elements.iterator();
+			if (elements == null) {
+				return List.<Element>of().iterator();
+			}
+			return elements.iterator();
+		}
+
+		@Override
+		public String toString() {
+			String r = key.toString();
+			if (saoName != null) {
+				return r + "(" + saoName + ")" + "{";
+			}
+			if (value != null) {
+				return r + "=" + value.toString();
+			}
+			if (elements != null) {
+				r += "{";
+			}
+			return r;
 		}
 
 	}
+	public static final String COMMENT_KEY = "#";
+	public static final String REPLACE_KEY = "-DEFINE";
 	private Charset charset;
-	private List<Element> data = new ArrayList<>();
 	private boolean loaded;
+	//
+	private Element root;
 
 	public DataFile(File f) {
 		this(f, StandardCharsets.UTF_8);
@@ -137,12 +237,8 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 		this.charset = c;
 	}
 
-	public static final String COMMENT_KEY = "#";
-	public static final String REPLACE_KEY = "-DEFINE";
-
-	@NotNewInstance
 	public List<Element> getData() {
-		return data;
+		return root.elements;
 	}
 
 	@Override
@@ -189,8 +285,16 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 				data3.add(line);
 			}
 
+			//"{"と"}"のチェック
+			int open = (int) data3.stream().filter(p -> p.contains("{")).count();
+			int close = (int) data3.stream().filter(p -> p.contains("}")).count();
+			if (open != close) {
+				throw new FileFormatException("DataFile [" + getId() + "] : open-close missmatch");
+			}
+
 			//整形
-			parse(null, data3, 0);
+			root = Element.head("ROOT");
+			parse(root, data3, 0);
 
 		} catch (IOException ex) {
 			throw new FileIOException(ex);
@@ -200,82 +304,84 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 		return this;
 	}
 
-	private int parse(Element root, List<String> d, int j) throws FileFormatException {
-		for (int i = j; i < d.size(); i++) {
-			String v = d.get(i);
-			if (root != null && v.equals("}")) {
+	private int parse(Element parent, List<String> d, int j) throws FileFormatException {
+		int i = j;
+		for (; i < d.size(); i++) {
+			String line = d.get(i);
+
+			if (line.startsWith("-")) {
+				throw new InternalError("DataFile [" + getId() + "] : data contains PreProcesser : " + line);
+			}
+
+			if (line.equals("}")) {
 				return i;
 			}
-			if (v.endsWith("{")) {
-				if (!v.contains("=")) {
-					throw new FileFormatException("{ has not =" + this);
-				}
-				Element e = new Element(v, new UniversalValue(StringUtil.safeSplit(v, "=")[0].trim()));
-				if (root == null) {
-					this.data.add(e);
-				} else {
-					if (root.elements == null) {
-						root.elements = new ArrayList<>();
-					}
-					root.elements.add(e);
-				}
-				i = parse(e, d, ++i);
-			} else if (v.endsWith("==")) {
-				i++;
-				String key = v.replaceAll("==", "").trim();
-				Element e0 = new Element(v, new UniversalValue(key));
-				e0.elements = new ArrayList<>();
-				if (root == null) {
-					this.data.add(e0);
-				} else {
-					if (root.elements == null) {
-						root.elements = new ArrayList<>();
-					}
-					root.elements.add(e0);
-				}
-				for (int n = 0; i < d.size() && !d.get(i).equals("=="); i++, n++) {
-					String nk = "" + n;
-					Element e1 = new Element(v, new UniversalValue(nk));
-					e0.elements.add(e1);
-					e1.elements = new ArrayList<>();
-					UniversalValue[] val = new UniversalValue(d.get(i)).safeSplitUV(",");
-					for (int x = 0; x < val.length; x++) {
-						Element e2 = new Element(v, new UniversalValue(n + "," + x), val[x]);
-						e1.elements.add(e2);
-					}
 
-				}
-
-			} else if (v.contains("=")) {
-				UniversalValue key = new UniversalValue(StringUtil.safeSplit(v, "=")[0].trim());
-				UniversalValue value = new UniversalValue(StringUtil.safeSplit(v, "=")[1].trim());
-				Element e = new Element(v, key, value);
-				if (root == null) {
-					this.data.add(e);
-				} else {
-					if (root.elements == null) {
-						root.elements = new ArrayList<>();
+			//switch Mode
+			//CSV
+			if (line.endsWith("==")) {
+				line = line.replaceAll(" ", "").replaceAll("\t", "");
+				line = line.substring(0, line.length() - 2); // "=="
+				Element data = Element.head(line);
+				for (int y = i = i + 1; y < d.size() && !d.get(y).equals("=="); y++, i++) {
+					Element e = data.createHeadChild(y + "");
+					String[] csv = StringUtil.safeSplit(d.get(y), ",");
+					for (int x = 0; x < csv.length; x++) {
+						D2Idx key = new D2Idx(x, y);
+						String value = csv[x];
+						e.createKeyValueChild(key.toString(), value);
 					}
-					root.elements.add(e);
+					parent.add(data);
 				}
-			} else {
-				if (root == null) {
-					this.data.add(new Element(v, new UniversalValue(v)));
-				} else {
-					if (root.elements == null) {
-						root.elements = new ArrayList<>();
-					}
-					root.elements.add(new Element(v, new UniversalValue(v)));
-				}
+				continue;
 			}
+
+			if (line.endsWith("{")) {
+				//Block
+				line = line.replaceAll(" ", "").replaceAll("\t", "");
+
+				if (line.endsWith("){")) {
+					//ScriptBlock
+					String key = StringUtil.safeSplit(line, "(")[0];
+					String saoName = StringUtil.safeSplit(line, "(")[1];
+					saoName = saoName.substring(0, saoName.length() - 2); // "){"
+					Element e = parent.createScriptBlockChild(key, saoName);
+					i = parse(e, d, i + 1);
+					continue;
+				}
+				//head
+				String key = line.substring(0, line.length() - 1); // "{"
+				Element e = parent.createHeadChild(key);
+				i = parse(e, d, i + 1);
+				continue;
+			}
+
+			//KeyuValue or Key
+			if (line.contains("=")) {
+				//Key=Value
+				int idx = line.indexOf('=');
+				String key = line.substring(0, idx).trim();
+				String value = line.substring(idx + 1).trim();
+				parent.createKeyValueChild(key, value);
+				continue;
+			}
+			//Key
+			parent.createKeyChild(line);
 		}
 		return d.size();
 	}
 
 	@Override
 	public void free() {
-		data.clear();
+		clear(root);
 		loaded = false;
+	}
+
+	private void clear(Element e) {
+		if (e.elements != null) {
+			e.elements.stream().forEach(p -> clear(p));
+			e.elements.clear();
+		}
 	}
 
 	@Override
@@ -285,52 +391,36 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 
 	@Override
 	public Iterator<Element> iterator() {
-		return data.iterator();
+		return root.iterator();
 	}
 
 	public Element get(Enum<?> e) throws IDNotFoundException {
-		return get(e.toString());
+		return root.get(e);
 	}
 
 	public Element get(String id) throws IDNotFoundException {
-		for (var v : data) {
-			if (v.key.value().equals(id)) {
-				return v;
-			}
-		}
-		throw new IDNotFoundException(id + " not found");
+		return root.get(id);
 	}
 
 	public boolean has(Enum<?> e) {
-		return has(e.toString());
+		return root.has(e);
 	}
 
 	public boolean has(String id) {
-		for (var v : data) {
-			if (v.key.value().equals(id)) {
-				return true;
-			}
-		}
-		return false;
+		return root.has(id);
 	}
 
 	public void print() {
 		System.out.println("-->print [" + getId() + "]");
-		printAll(data, "");
+		printAll(root, "");
 		System.out.println("<--print [" + getId() + "]");
 	}
 
-	private void printAll(List<Element> e, String tab) {
-		for (var v : e) {
-			if (v.getValue() != null) {
-				System.out.println(tab + v.getKey() + "=" + v.getValue());
-				continue;
-			}
-			if (v.getElements() != null && !v.getElements().isEmpty()) {
-				System.out.println(tab + v.getKey() + "={");
-				printAll(v.getElements(), StringUtil.repeat(" ", tab.length() + 1));
-				System.out.println(tab + "}");
-			}
+	private void printAll(Element e, String tab) {
+		System.out.println(tab + e.toString());
+		if (e.elements != null) {
+			e.elements.stream().forEach(p -> printAll(p, StringUtil.repeat(" ", tab.length() + 1)));
+			System.out.println(tab + "}");
 		}
 	}
 

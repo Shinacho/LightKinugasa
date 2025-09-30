@@ -129,7 +129,7 @@ public final class ScriptSystem {
 	}
 
 	public ScriptResult.Value instantCall(String line) throws ScriptSyntaxException {
-		ScriptLine sl = new ScriptLine(ScriptAccessObjects.FIELDSCRIPTACCESSOBJECT.getSAO(), line, List.of());
+		ScriptLine sl = new ScriptLine(ScriptAccessObjects.getSAO("FieldScriptAccessObject"), line, List.of());
 		return sl.exec(Map.of());
 	}
 

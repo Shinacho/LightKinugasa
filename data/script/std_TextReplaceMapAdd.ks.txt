@@ -1,7 +1,7 @@
 # std_TextReplaceMapAdd
 # Textの変換マップに値を追加します
 
-PARAM={
+PARAM{
 	key # String
 	value # I18NText
 }
@@ -9,7 +9,7 @@ PARAM={
 
 #------------------------------------------------
 
-MAIN( FieldScriptAccessObject )={
+MAIN( FieldScriptAccessObject ){
 	addTextReplaceMapI18N(key, value)
 }
 

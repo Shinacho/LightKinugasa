@@ -1,14 +1,14 @@
 # std_SetDebugMode
 # デバッグモードのON/OFFを切り替えます
 
-PARAM={
+PARAM{
 	value # boolean
 }
 
 
 #------------------------------------------------
 
-MAIN( FieldScriptAccessObject )={
+MAIN( FieldScriptAccessObject ){
 	setDebugMode(value);
 }
 

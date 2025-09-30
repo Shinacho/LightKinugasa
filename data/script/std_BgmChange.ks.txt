@@ -1,14 +1,14 @@
 # std_BgmChange
 # 現在のBGMを停止し、次のBGMを再生します。
 
-PARAM={
+PARAM{
 	soundID
 }
 
 
 #------------------------------------------------
 
-MAIN (FieldScriptAccessObject) ={
+MAIN (FieldScriptAccessObject) {
 	changeBGM(soundID);
 }
 

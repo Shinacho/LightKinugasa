@@ -16,6 +16,8 @@
  */
 package kinugasa.game.sample;
 
+import kinugasa.resource.text.DataFile;
+
 /**
  * ItemTest.<br>
  *
@@ -25,6 +27,7 @@ package kinugasa.game.sample;
 public class ItemTest {
 
 	public static void main(String[] args) {
-
+		DataFile d = new DataFile("data/item/IT000001.item.txt").load();
+		d.print();
 	}
 }

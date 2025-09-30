@@ -134,16 +134,16 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 		//speaker
 		{
 			if (pi.has("speakerImage")) {
-				this.speakerImage = pi.get("speakerImage").getValue().asKImageFile();
+				this.speakerImage = pi.get("speakerImage").value.asKImageFile();
 			}
 			if (pi.has("named")) {
-				this.named = pi.get("named").getValue().asBoolean();
+				this.named = pi.get("named").value.asBoolean();
 			}
 		}
 		//NPC MoveModel
 		{
 			if (pi.has("moveModel")) {
-				UniversalValue moveModel = pi.get("moveModel").getValue();
+				UniversalValue moveModel = pi.get("moveModel").value;
 				switch (moveModel.trim().safeSplit(",")[0].toUpperCase()) {
 					case "LOCKED" -> {
 						new FieldMapNPCMoveModelSetter(this).locked();
@@ -195,8 +195,8 @@ public class Actor extends FileObject implements MWSpeaker, VisibleNameSupport {
 
 	@Virtual
 	protected CharaSprite loadSprite(DataFile.Element pi) {
-		int waTime = pi.get("waTime").getValue().asInt();
-		KImage image = pi.get("sprite").getValue().asKImageFile();
+		int waTime = pi.get("waTime").value.asInt();
+		KImage image = pi.get("sprite").value.asKImageFile();
 		Animation south = new Animation(new FrameTimeCounter(waTime), image.splitX(0, 16, 16));
 		Animation north = new Animation(new FrameTimeCounter(waTime), image.splitX(16, 16, 16));
 		Animation east = new Animation(new FrameTimeCounter(waTime), image.splitX(32, 16, 16));

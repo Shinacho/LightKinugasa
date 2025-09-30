@@ -62,14 +62,14 @@ public class ScriptBlock {
 		//IF - ENDIFのチェック
 		{
 			for (var v : e) {
-				if (v.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF")) {
-					if (!v.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")) {
+				if (v.key.value().trim().toUpperCase().replaceAll(" ", "").startsWith("IF")) {
+					if (!v.key.value().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")) {
 						throw new ScriptSyntaxException("SB : IF '(' not found : " + this);
 					}
 				}
 			}
-			int ifCount = e.stream().filter(p -> p.original().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")).toList().size();
-			int endIfCount = e.stream().filter(p -> p.original().trim().toUpperCase().replaceAll(" ", "").endsWith("ENDIF")).toList().size();
+			int ifCount = e.stream().filter(p -> p.key.value().trim().toUpperCase().replaceAll(" ", "").startsWith("IF(")).toList().size();
+			int endIfCount = e.stream().filter(p -> p.key.value().trim().toUpperCase().replaceAll(" ", "").endsWith("ENDIF")).toList().size();
 			if (ifCount != endIfCount) {
 				throw new ScriptSyntaxException("SB : IF-ENDIF missmatch : " + this);
 			}
@@ -78,7 +78,7 @@ public class ScriptBlock {
 		//IF-STACKの生成とブロック内値の追加
 		LinkedList<List<String>> ifStack = new LinkedList<>();//and/or [hoge().piyo()]
 		for (var v : e) {
-			String line = v.original().trim();
+			String line = v.key.value().trim();
 			if (line.endsWith(";")) {
 				line = line.substring(0, line.length() - 1);
 			}
@@ -96,7 +96,7 @@ public class ScriptBlock {
 				ifStack.removeLast();
 				continue;
 			}
-			line = v.original().trim();
+			line = v.key.value().trim();
 			lines.add(new ScriptLine(this.sao, line, ifStack));
 		}
 

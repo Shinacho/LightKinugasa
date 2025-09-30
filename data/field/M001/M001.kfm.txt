@@ -5,26 +5,26 @@ debugMode = true
 
 -DEFINE HOGE PIYO
 
-LOAD_SCRIPT={
+LOAD_SCRIPT{
 	@std_BgmChange("005_空想の世界")
 }
 
 
 
 
-EVENT={
+EVENT{
 	32, 30= @std_ChangeMapNoSound("M002", "6", "17", "NORTH", "M002")
 	
 }
 
 
-MINIMAP_LABEL={
+MINIMAP_LABEL{
 	47,6=町A
 	35,33=町B
 }
 
 
-BACK_LAYER={
+BACK_LAYER{
 	image = data/field/chipset/seaChip16.png
 	cutW=16
 	cutH=16
@@ -35,7 +35,7 @@ BACK_LAYER={
 }
 
 
-NOMAL_LAYER={ #0
+NOMAL_LAYER{ #0
 	chipSet= data/field/chipset/Outer16.txt
 	drawSize=1f
 	
@@ -172,7 +172,7 @@ NOMAL_LAYER={ #0
 	==
 }
 
-#ANIMATION_LAYER={ #0
+#ANIMATION_LAYER{ #0
 #	idx = 26,23
 #	image = resource/hoge.png
 #	cutW = 16
@@ -181,7 +181,7 @@ NOMAL_LAYER={ #0
 #	drawSize=1f
 #}
 
-#ANIMATION_LAYER={ #1
+#ANIMATION_LAYER{ #1
 #	idx = 26,23
 #	image = resource/hoge.png
 #	cutW = 16
@@ -191,7 +191,7 @@ NOMAL_LAYER={ #0
 #}
 
 
-FRONT_LAYER={
+FRONT_LAYER{
 	image = data/field/chipset/cloudeffect.png
 	drawSize = 2f
 	angle = 135f

@@ -16,7 +16,7 @@
  */
 package kinugasa.script;
 
-import kinugasa.game.EnumUtilInjector;
+import kinugasa.script.exception.ScriptSyntaxException;
 
 /**
  * ScriptAccessObjects.<br>
@@ -24,23 +24,19 @@ import kinugasa.game.EnumUtilInjector;
  * @vesion 1.0.0 - 2025/09/28_0:30:38<br>
  * @author Shinacho.<br>
  */
-public enum ScriptAccessObjects implements EnumUtilInjector<ScriptAccessObjects> {
-	FIELDSCRIPTACCESSOBJECT {
-		@Override
-		public ScriptAccessObject getSAO() {
-			return FieldScriptAccessObject.getInstance();
-		}
+public class ScriptAccessObjects {
 
-	},;
-
-	public abstract ScriptAccessObject getSAO();
-
-	public static boolean has(String name) {
-		for (var v : values()) {
-			if (v.toString().equals(name)) {
-				return true;
-			}
-		}
-		return false;
+	private ScriptAccessObjects() {
 	}
+
+	public static ScriptAccessObject getSAO(String name) {
+		return switch (name) {
+			case "FieldScriptAccessObject" ->
+				FieldScriptAccessObject.getInstance();
+			default -> {
+				throw new ScriptSyntaxException("SAO not found : " + name);
+			}
+		};
+	}
+
 }

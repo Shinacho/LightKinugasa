@@ -21,7 +21,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.function.Function;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.script.exception.ScriptException;
@@ -31,11 +30,8 @@ import kinugasa.system.actor.CharaSprite;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.resource.ID;
-import kinugasa.resource.Storage;
 import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
-import kinugasa.system.UniversalValue;
 import kinugasa.util.StringUtil;
 
 /**
@@ -89,7 +85,7 @@ public class ScriptFile extends FileObject {
 		this.paramNames = new ArrayList<>();
 		if (f.has("PARAM")) {
 			for (var v : f.get("PARAM")) {
-				paramNames.add(v.getKey().value());
+				paramNames.add(v.key.value());
 			}
 		}
 
@@ -99,28 +95,22 @@ public class ScriptFile extends FileObject {
 			blocks.put(v, new ScriptBlock(v, null, this, List.of()));
 		}
 		for (var v : f.getData()) { //block
-			String k = v.getKey().value();
-			var ele = v.getElements();
-			if (ele == null || ele.isEmpty()) {
+			String k = v.key.value();
+			if (!ScriptBlockType.has(k)) {
+				//SBじゃない。
 				continue;
 			}
-			k = k.replaceAll(" ", "").replaceAll("\t", "").trim();
-			String[] kk = StringUtil.safeSplit(k, "(");
-			if (!ScriptBlockType.has(kk[0])) {
+			String saoName = v.saoName;
+			if (saoName == null) {
+				//SBじゃない。
 				continue;
 			}
-			if (kk.length != 2) {
-				throw new ScriptSyntaxException("SF : block SAO not found : " + v);
-			}
-			ScriptBlockType type = ScriptBlockType.valueOf(kk[0].trim());
 
-			String saoName = kk[1].replaceAll("[)]", "").trim().toUpperCase();
-			if (!ScriptAccessObjects.has(saoName)) {
-				throw new ScriptSyntaxException("SF : block SAO not found : " + v);
-			}
-			ScriptAccessObject sao = ScriptAccessObjects.valueOf(saoName).getSAO();
+			//
+			ScriptBlockType blockType = ScriptBlockType.valueOf(k);
+			ScriptAccessObject sao = ScriptAccessObjects.getSAO(saoName);
 
-			blocks.put(type, new ScriptBlock(type, sao, this, ele));
+			blocks.put(blockType, new ScriptBlock(blockType, sao, this, v.getElements()));
 
 		}
 		if (GameSystem.isDebugMode()) {

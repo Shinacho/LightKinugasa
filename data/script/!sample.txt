@@ -1,14 +1,14 @@
 # std_sample
 # これはひな形として使うものです。
 
-PARAM={
+PARAM{
 	# name{=defaultValue}
 }
 
 
 #------------------------------------------------
 
-MAIN={
+MAIN{
 	# IF( booleanResultMethd(name, param2) )
 		# IF( booleanResultMethd1() || booleanResultMethd2() )
 			# @ScriptCall(param1, param2){.BLOCK}
@@ -18,18 +18,18 @@ MAIN={
 }
 
 
-STEP_ON={
+STEP_ON{
 }
 
-STEP_DOWN={
+STEP_DOWN{
 }
 
-TOUCH={
+TOUCH{
 }
 
-TALK={
+TALK{
 }
 
-MANUAL={
+MANUAL{
 }
 

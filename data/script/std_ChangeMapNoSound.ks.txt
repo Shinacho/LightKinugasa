@@ -1,7 +1,7 @@
 # std_ChangeMapNoSound.ks
 # 指定されたパラメータに基づいて、フィールドマップ間の移動を行います。
 
-PARAM={
+PARAM{
 	nextID # fieldMap.id
 	x # int
 	y #int 
@@ -15,16 +15,16 @@ PARAM={
 
 
 
-STEP_ON( FieldScriptAccessObject )={
+STEP_ON( FieldScriptAccessObject ){
 	setNode(nextID, x, y, dir, tooltip);
 	
 }
 
-STEP_DOWN( FieldScriptAccessObject )={
+STEP_DOWN( FieldScriptAccessObject ){
 	unsetNode();
 
 }
 
-MANUAL( FieldScriptAccessObject )={
+MANUAL( FieldScriptAccessObject ){
 	changeMap();
 }
