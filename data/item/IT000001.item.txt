@@ -4,25 +4,21 @@
 # 普通の鉄の剣
 
 
-# #########################################################  DATA  #########################################################
-
 -DEFINE	DCS_BASE_VALUE 20
-
-
 
 
 GENERAL{
 	itemType = WEAPON
 	rarity = COMMON
-	unique = YES #ユニークのアイテムが宝箱やPCのアイテムにある場合、もう出ない
+	unique = true #ユニークのアイテムが宝箱やPCのアイテムにある場合、もう出ない
 
-	baseItem = YES # アップグレードするとfalseになる。これを基準にアップグレードやエンチャントクローンを作れる。
+	baseItem = true # アップグレードするとfalseになる。これを基準にアップグレードやエンチャントクローンを作れる。
 
-	saleable = YES
+	saleable = true
 
 	basePrice = 19800
 
-	dropable = YES
+	dropable = true
 
 	usable = FIELD, BATTLE
 
@@ -32,7 +28,7 @@ GENERAL{
 
 
 DISASSEMBL{
-	enable = YES
+	enable = true
 
 
 	MATERIAL{
@@ -43,21 +39,31 @@ DISASSEMBL{
 }
 
 UPGRADE{
-	enable = YES
+	enable = true
 	default = 0
 	current = 0
 
-	1{
+	VALUE{	
+		priace = 10000
 		MT001=1 # 鉄
 		MT002=1 # 木片
+		ADD_EFFECT( EqipEffectEvent )={
+
+		}
 	}
-	2{
+	VALUE{
+		priace = 10000
 		MT001=1 # 鉄
 		MT002=1 # 木片
+		ADD_EFFECT( EqipEffectEvent )={
+		}
 	}
-	3{
+	VALUE{
+		priace = 10000
 		MT001=1 # 鉄
 		MT002=1 # 木片
+		ADD_EFFECT( EqipEffectEvent )={
+		}
 	}
 
 
@@ -65,11 +71,12 @@ UPGRADE{
 
 
 
+
 EQIP_INFO{
 	slot= R_ARM, L_ARM
 
 	weaponType= SWORD
-	weaponTypeDefaultActionEnable = YES
+	weaponTypeDefaultActionEnable = true
 
 	twoHand =  POSSIBLE # ALWAYS, POSSIBLE, NOT
 
@@ -83,14 +90,14 @@ EQIP_INFO{
 
 ENCHANT{
 	# エンチャントごとに設定された確率でドロップする
-	enable = YES
+	enable = true
 	default = nomal
 	current = nomal
 
 }
 
 STYLE{
-	enable = YES
+	enable = true
 	default = nonStyle
 	current = nonStyle
 
@@ -180,13 +187,13 @@ DCS_END( DamageCalcEvent ){
 
 # ----------------------------USE----------------------------
 
-MANUAL_FIELD(FieldScriptAccessObject ){
+USE_FIELD(FieldScriptAccessObject ){
 	# setActionTarget("SELF", "ONE", 
 	openmessageWindow("効果がなかった").byItemUser();
 	closeMessageWindow();
 }
 
-MANIAL_BATTLE( BattleScriptAccessObject ){
+USE_BATTLE( BattleScriptAccessObject ){
 	openmessageWindow("効果がなかった").byItemUser();
 	closeMessageWindow();
 }

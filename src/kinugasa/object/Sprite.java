@@ -266,7 +266,7 @@ public abstract class Sprite extends CloneableObject
 	 * @param bounds スプライトの領域.<br>
 	 */
 	public void setBounds(Rectangle2D.Float bounds) {
-		this.bounds = bounds;
+		this.bounds = (Rectangle2D.Float) bounds.clone();
 		updatePersonalCenter();
 		updateCenter();
 	}

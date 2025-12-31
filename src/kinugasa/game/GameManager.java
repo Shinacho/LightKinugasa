@@ -24,7 +24,6 @@
 package kinugasa.game;
 
 import kinugasa.game.annotation.LoopCall;
-import kinugasa.game.annotation.OneceTime;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -60,6 +59,7 @@ import kinugasa.graphics.RenderingQuality;
 import kinugasa.resource.TempFileStorage;
 import kinugasa.resource.sound.SoundSystem;
 import kinugasa.util.MathUtil;
+import kinugasa.game.annotation.OneTime;
 
 /**
  * ゲームのスーパークラスです.
@@ -115,7 +115,7 @@ public abstract class GameManager {
 		updateOption();
 	}
 
-	@OneceTime
+	@OneTime
 	protected final void updateOption() {
 		MathUtil.init();
 		if (option.isUseLog()) {
@@ -267,7 +267,7 @@ public abstract class GameManager {
 
 	private boolean started = false;
 
-	@OneceTime
+	@OneTime
 	public final void gameStart() throws IllegalStateException {
 		GameLog.print("GAME START");
 		if (option == null) {
@@ -291,7 +291,7 @@ public abstract class GameManager {
 		GameLog.print(getWindow().getTitle() + " is start");
 	}
 
-	@OneceTime
+	@OneTime
 	public final void gameExit() throws IllegalStateException {
 		if (!started) {
 			throw new IllegalStateException("game is not started");
@@ -326,13 +326,13 @@ public abstract class GameManager {
 	/**
 	 * ゲームを開始する手順を記述します.
 	 */
-	@OneceTime
+	@OneTime
 	protected abstract void startUp();
 
 	/**
 	 * ゲームを破棄する手順を記述します.
 	 */
-	@OneceTime
+	@OneTime
 	protected abstract void dispose();
 
 	/**

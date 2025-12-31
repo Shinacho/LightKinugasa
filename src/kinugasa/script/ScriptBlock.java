@@ -41,7 +41,7 @@ public class ScriptBlock {
 	private final ScriptBlockType type;
 	private final ScriptFile script;
 	private final List<ScriptLine> lines;
-	private ScriptAccessObject sao;
+	private final ScriptAccessObject sao;
 	private int currentIdx = 0;
 
 	ScriptBlock(ScriptBlockType type, ScriptAccessObject sao, ScriptFile script, List<DataFile.Element> e) throws ScriptSyntaxException {
@@ -127,10 +127,10 @@ public class ScriptBlock {
 	public ScriptResult exec(List<UniversalValue> args) {
 		ScriptResult res = new ScriptResult(this);
 		if (lines == null || lines.isEmpty()) {
-			if (GameSystem.isDebugMode()) {
-				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is start : param=" + args);
-				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is end [empty] : param=" + args);
-			}
+//			if (GameSystem.isDebugMode()) {
+//				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is start : param=" + args);
+//				GameLog.print("SB : EventScript [" + script.getName() + "].[" + type + "] is end [empty] : param=" + args);
+//			}
 			return res.add(ScriptResultType.END);
 		}
 		if (currentIdx >= lines.size()) {
@@ -248,6 +248,10 @@ public class ScriptBlock {
 
 	public ScriptFile getScriptFile() {
 		return script;
+	}
+
+	public ScriptAccessObject getSao() {
+		return sao;
 	}
 
 	@Override

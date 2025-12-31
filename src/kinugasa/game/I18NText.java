@@ -23,6 +23,7 @@
  */
 package kinugasa.game;
 
+import java.util.Arrays;
 import java.util.List;
 import kinugasa.game.annotation.Immutable;
 import kinugasa.game.annotation.Virtual;
@@ -31,6 +32,7 @@ import java.util.Objects;
 import kinugasa.ui.Choice;
 import kinugasa.ui.Text;
 import kinugasa.resource.ID;
+import kinugasa.util.StringUtil;
 
 /**
  *
@@ -41,6 +43,7 @@ import kinugasa.resource.ID;
 public class I18NText implements ID {
 
 	public static final I18NText EMPTY = of("");
+	public static final I18NText BR = of(Text.getLineSep());
 
 	private final String key;
 	private String value;
@@ -54,10 +57,27 @@ public class I18NText implements ID {
 
 			@Override
 			public I18NText set(Object... o) {
-				throw new UnsupportedOperationException("set has already been executed.");
+				return this;
 			}
 
 		};
+	}
+
+	public static I18NText of(List<I18NText> t) {
+		StringBuilder sb = new StringBuilder();
+		for (var v : t) {
+			sb.append(v.toString());
+		}
+		return of(sb.toString());
+
+	}
+
+	public static I18NText of(I18NText... t) {
+		return of(Arrays.asList(t));
+	}
+
+	public static I18NText indent(int n) {
+		return of(StringUtil.repeat(" ", n));
 	}
 
 	public I18NText(String key) {

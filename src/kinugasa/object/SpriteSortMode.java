@@ -24,7 +24,7 @@
 package kinugasa.object;
 
 import java.util.Comparator;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 
 /**
  * CompositeSpriteのソート方向を指定するコンパレータです.
@@ -62,7 +62,7 @@ public enum SpriteSortMode implements Comparator<Sprite> {
 	RANDOM {
 		@Override
 		public int compare(Sprite s1, Sprite s2) {
-			return Random.randomAbsInt() % 3 - 1;
+			return KRandom.randomAbsInt() % 3 - 1;
 		}
 	};
 

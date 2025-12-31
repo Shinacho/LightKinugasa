@@ -137,7 +137,7 @@ public class FieldMap extends FileObject implements VisibleNameIDInjector<FieldM
 		nomalLayerSprite = new ArrayList<>();
 		animationLayerSprite = new ArrayList<>();
 
-		DataFile f = asDataFile();
+		DataFile f = new DataFile(getFile());
 		f.load();
 
 		this.debugMode = f.has("debugMode") ? f.get("debugMode").value.asBoolean() : false;

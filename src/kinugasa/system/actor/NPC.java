@@ -53,13 +53,14 @@ public class NPC extends Actor {
 		this.fm = fm;
 		this.idx = idx;
 	}
-	private ScriptFile scriptFile;
+
+	private ScriptFile script;
 
 	public ScriptFile asScript() {
-		if (scriptFile == null) {
-			scriptFile = new ScriptFile(super.getFile()).load();
+		if (script == null) {
+			script = new ScriptFile(getFile());
 		}
-		return scriptFile;
+		return script;
 	}
 
 	@Override

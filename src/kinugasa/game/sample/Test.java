@@ -35,12 +35,11 @@ import kinugasa.game.input.Keys;
 import kinugasa.system.GameSystem;
 import kinugasa.system.actor.Actor;
 import kinugasa.system.actor.Follower;
-import kinugasa.system.actor.FieldMapNPCMoveModelSetter;
 import kinugasa.ui.Dialog;
 import kinugasa.ui.MessageWindow;
 import kinugasa.game.GraphicsContext;
-import kinugasa.resource.sound.SoundStorage;
 import kinugasa.resource.sound.SoundSystem;
+import kinugasa.system.actor.RaceSystem;
 import kinugasa.util.MathUtil;
 
 /**
@@ -76,6 +75,7 @@ public class Test extends GameManager {
 
 		SoundSystem.getInstance().init(new File("data/sound/"));
 		ScriptSystem.getInstance().init(new File("data/"));
+		RaceSystem.getInstance().init(new File("data/race.rce.txt"));
 
 		ss = ScriptSystem.getInstance();
 
@@ -171,6 +171,9 @@ public class Test extends GameManager {
 		}
 		if (is.isPressed(Keys.D, InputType.SINGLE)) {
 			fms.getCurrent().setDebugMode(!fms.getCurrent().isDebugMode());
+		}
+		if(is.isPressed(Keys.AT, InputType.SINGLE)){
+			ScriptSystem.getInstance().debugConsoleWindow();
 		}
 
 		Point2D.Float p = new Point2D.Float();

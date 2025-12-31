@@ -16,8 +16,14 @@
  */
 package kinugasa.script;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
+import java.util.HashMap;
+import java.util.Map;
+import kinugasa.game.GameLog;
+import kinugasa.resource.sound.Sound;
+import kinugasa.resource.sound.SoundSystem;
+import kinugasa.system.FlagSystem;
+import kinugasa.system.GameSystem;
+import kinugasa.system.UniversalValue;
 
 /**
  * ScriptAccessObject.<br>
@@ -25,6 +31,128 @@ import java.lang.annotation.Target;
  * @vesion 1.0.0 - 2025/09/28_16:28:47<br>
  * @author Shinacho.<br>
  */
-public interface ScriptAccessObject {
+public class ScriptAccessObject {
+
+	private ScriptFile file;
+	private ScriptBlock block;
+
+	public ScriptAccessObject() {
+	}
+
+	public ScriptAccessObject set(ScriptFile file, ScriptBlock block) {
+		this.file = file;
+		this.block = block;
+		return this;
+	}
+
+	@ScriptAccessMethod
+	public ScriptFile getFile() {
+		return file;
+	}
+
+	@ScriptAccessMethod
+	public ScriptBlock getBlock() {
+		return block;
+	}
+
+	//------------------------------------common-------------------------------
+	@ScriptAccessMethod
+	public boolean returnTrue() {
+		return true;
+	}
+
+	@ScriptAccessMethod
+	public boolean returnFalse() {
+		return false;
+	}
+
+	@ScriptAccessMethod
+	public ScriptResultType end() {
+		ScriptSystem.getInstance().end();
+		return ScriptResultType.END;
+	}
+
+	@ScriptAccessMethod
+	public void setDebugMode(UniversalValue f) {
+		GameSystem.setDebugMode(f.asBoolean());
+	}
+
+	@ScriptAccessMethod
+	public boolean isDebugMode() {
+		return GameSystem.isDebugMode();
+	}
+
+	@ScriptAccessMethod
+	public boolean paramIs(UniversalValue name, UniversalValue v) {
+		return ScriptSystem.getInstance().getCurrentArgsValMap().get(name.value()).equals(v);
+	}
+
+	@ScriptAccessMethod
+	public void d(UniversalValue val) {
+		System.out.println(val.toString());
+	}
+
+	@ScriptAccessMethod
+	public void printLogDirect(UniversalValue val) {
+		GameLog.print(val.value());
+	}
+
+	@ScriptAccessMethod
+	public void printLogI18N(UniversalValue val) {
+		GameLog.print(val.asI18N());
+	}
+
+	@ScriptAccessMethod
+	public void setPauseMode(UniversalValue v) {
+		ScriptSystem.getInstance().setPauseMode(v.asBoolean());
+	}
+
+	@ScriptAccessMethod
+	public void setManualIdxMode(UniversalValue v) {
+		ScriptSystem.getInstance().setManualIdxMode(v.asBoolean());
+	}
+
+	@ScriptAccessMethod
+	public void nextStep() {
+		ScriptSystem.getInstance().nextStep();
+	}
+
+	//------------------------------------game system--------------------------
+	@ScriptAccessMethod
+	public GameSystem gameSystem() {
+		return GameSystem.getInstance();
+	}
+
+	@ScriptAccessMethod
+	public boolean gameModeIs(UniversalValue v) {
+		return GameSystem.getInstance().getMode() == v.of(GameSystem.Mode.class);
+	}
+
+	//------------------------------------flag--------------------------------
+	@ScriptAccessMethod
+	public FlagSystem flagSystem() {
+		return FlagSystem.getInstance();
+	}
+
+	//------------------------------------sound--------------------------------
+	@ScriptAccessMethod
+	public SoundSystem soundSystem() {
+		return SoundSystem.getInstance();
+	}
+
+	@ScriptAccessMethod
+	public void changeBGM(UniversalValue id) {
+		SoundSystem.getInstance().toNext(id.asSoundID());
+	}
+
+	@ScriptAccessMethod
+	public Sound soundOf(UniversalValue id) {
+		return SoundSystem.getInstance().of(id.asId());
+	}
+
+	@ScriptAccessMethod
+	public boolean currentBGMIs(UniversalValue id) {
+		return SoundSystem.getInstance().getCurrent().getId().equals(id.value());
+	}
 
 }

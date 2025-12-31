@@ -26,13 +26,11 @@ import kinugasa.game.annotation.Nullable;
 import kinugasa.script.exception.ScriptException;
 import kinugasa.field4.D2Idx;
 import kinugasa.system.GameSystem;
-import kinugasa.system.actor.CharaSprite;
 import kinugasa.object.FileObject;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
 import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
-import kinugasa.util.StringUtil;
 
 /**
  * ScriptFile.<br>
@@ -44,8 +42,6 @@ public class ScriptFile extends FileObject {
 
 	@Nullable
 	private D2Idx location;
-	@Nullable
-	private CharaSprite charaSprite;
 
 	// PARAM
 	private List<String> paramNames;
@@ -53,6 +49,10 @@ public class ScriptFile extends FileObject {
 	// EVENT
 	private EnumMap<ScriptBlockType, ScriptBlock> blocks;
 	private boolean isLoaded = false;
+
+	public ScriptFile(FileObject f) {
+		super(f.getFile());
+	}
 
 	public ScriptFile(File f) {
 		super(f);
@@ -79,7 +79,7 @@ public class ScriptFile extends FileObject {
 			GameLog.print("SF [" + getName() + "] load start");
 			GameLog.addIndent();
 		}
-		DataFile f = asDataFile().load();
+		DataFile f = new DataFile(super.getFile()).load();
 
 		//PARAM
 		this.paramNames = new ArrayList<>();
@@ -91,27 +91,33 @@ public class ScriptFile extends FileObject {
 
 		//block - sl
 		this.blocks = new EnumMap<>(ScriptBlockType.class);
-		for (var v : ScriptBlockType.values()) {
-			blocks.put(v, new ScriptBlock(v, null, this, List.of()));
-		}
 		for (var v : f.getData()) { //block
 			String k = v.key.value();
 			if (!ScriptBlockType.has(k)) {
 				//SBじゃない。
 				continue;
 			}
-			String saoName = v.saoName;
-			if (saoName == null) {
+			String actualSaoName = v.saoName;
+			if (actualSaoName == null) {
 				//SBじゃない。
+				continue;
+			}
+			if (v.getElements() == null || v.getElements().isEmpty()) {
+				//空
 				continue;
 			}
 
 			//
-			ScriptBlockType blockType = ScriptBlockType.valueOf(k);
-			ScriptAccessObject sao = ScriptAccessObjects.getSAO(saoName);
+			try {
+				ScriptBlockType blockType = ScriptBlockType.valueOf(k);
+				ScriptAccessObject expectSao = blockType.getSAO(actualSaoName);
+				ScriptBlock blk = new ScriptBlock(blockType, expectSao, this, v.getElements());
+				expectSao.set(this, blk);
 
-			blocks.put(blockType, new ScriptBlock(blockType, sao, this, v.getElements()));
-
+				blocks.put(blockType, blk);
+			} catch (ScriptSyntaxException e) {
+				throw new ScriptSyntaxException("SF : ScriptSyntaxException : " + v + "\r\n" + e);
+			}
 		}
 		if (GameSystem.isDebugMode()) {
 			GameLog.removeIndent();
@@ -120,6 +126,7 @@ public class ScriptFile extends FileObject {
 
 		f.free();
 		isLoaded = true;
+
 		return this;
 	}
 
@@ -151,15 +158,24 @@ public class ScriptFile extends FileObject {
 		return location;
 	}
 
-	public CharaSprite getSprite() {
-		return charaSprite;
-	}
-
 	public List<String> getParam() {
 		return paramNames;
 	}
 
+	public boolean has(ScriptBlockType t) {
+		return blocks.containsKey(t);
+	}
+
+	private static ScriptBlock DUMMY;
+
 	public ScriptBlock getBlockOf(ScriptBlockType tgt) {
+		if (!has(tgt)) {
+			//DUMMY
+			if (DUMMY == null) {
+				DUMMY = new ScriptBlock(ScriptBlockType.DUMMY, null, this, List.of());
+			}
+			return DUMMY;
+		}
 		return blocks.get(tgt);
 	}
 
@@ -168,10 +184,11 @@ public class ScriptFile extends FileObject {
 		StringBuilder sb = new StringBuilder();
 		sb.append("ScriptFile{");
 		sb.append("location=").append(location);
-		sb.append(", charaSprite=").append(charaSprite);
 		sb.append(", param=").append(paramNames);
-		for (var v : ScriptBlockType.values()) {
-			sb.append(", ").append(v).append("=").append(v);
+		for (var v : blocks.values()) {
+			if (!v.isEmpty()) {
+				sb.append(v.getType()).append("=").append(v.getCmds().size());
+			}
 		}
 		sb.append(", isLoaded=").append(isLoaded);
 		sb.append('}');

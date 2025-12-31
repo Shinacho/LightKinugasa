@@ -18,18 +18,17 @@ package kinugasa.object;
 
 import kinugasa.resource.ID;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import kinugasa.game.annotation.RequiresReturnTypeChange;
 import kinugasa.game.annotation.Virtual;
 import kinugasa.resource.ContentsIOException;
 import kinugasa.resource.FileNotFoundException;
-import kinugasa.resource.text.CSVFile;
-import kinugasa.resource.text.DataFile;
 import kinugasa.resource.text.FileFormatException;
-import kinugasa.resource.text.IniFile;
-import kinugasa.resource.text.TextFile;
-import kinugasa.resource.text.XMLFile;
 
 /**
  * FilesObjectはファイルの1:1に対応するクラスです.<br>
@@ -40,7 +39,7 @@ import kinugasa.resource.text.XMLFile;
  */
 public abstract class FileObject implements ID {
 
-	private File file;
+	private final File file;
 
 	public FileObject(String fileName) {
 		this(new File(fileName));
@@ -52,32 +51,6 @@ public abstract class FileObject implements ID {
 
 	public File getFile() {
 		return file;
-	}
-
-	@Virtual
-	protected FileObject setFile(File file) {
-		this.file = file;
-		return this;
-	}
-
-	public TextFile asTextFile() {
-		return new TextFile(file);
-	}
-
-	public IniFile asIniFile() {
-		return new IniFile(file);
-	}
-
-	public CSVFile asCSVFile() {
-		return new CSVFile(file);
-	}
-
-	public DataFile asDataFile() {
-		return new DataFile(file);
-	}
-
-	public XMLFile asXMLFile() {
-		return new XMLFile(file);
 	}
 
 	public boolean exists() {
@@ -114,6 +87,15 @@ public abstract class FileObject implements ID {
 		int hash = 7;
 		hash = 83 * hash + Objects.hashCode(this.file);
 		return hash;
+	}
+
+	public File copyTo(File f) throws ContentsIOException {
+		try {
+			Files.copy(getFile().toPath(), f.toPath());
+			return f;
+		} catch (IOException ex) {
+			throw new ContentsIOException(ex);
+		}
 	}
 
 	@Override

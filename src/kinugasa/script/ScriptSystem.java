@@ -128,8 +128,8 @@ public final class ScriptSystem {
 		return data.contains(name);
 	}
 
-	public ScriptResult.Value instantCall(String line) throws ScriptSyntaxException {
-		ScriptLine sl = new ScriptLine(ScriptAccessObjects.getSAO("FieldScriptAccessObject"), line, List.of());
+	public ScriptResult.Value instantCall(String line, ScriptAccessObject sao) throws ScriptSyntaxException {
+		ScriptLine sl = new ScriptLine(sao, line, List.of());
 		return sl.exec(Map.of());
 	}
 
@@ -394,6 +394,15 @@ public final class ScriptSystem {
 		if (this.messageWindow != null && this.messageWindow.isVisible()) {
 			this.messageWindow.draw(g);
 		}
+	}
+
+	private DebugConsole cns;
+
+	public void debugConsoleWindow() {
+		if (cns == null) {
+			cns = new DebugConsole();
+		}
+		cns.setVisible(!cns.isVisible());
 	}
 
 }

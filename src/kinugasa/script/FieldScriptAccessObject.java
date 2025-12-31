@@ -38,7 +38,7 @@ import kinugasa.ui.Text;
 import kinugasa.graphics.KImage;
 import kinugasa.resource.sound.SoundSystem;
 import kinugasa.resource.sound.Sound;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 import kinugasa.util.StringUtil;
 import kinugasa.ui.MWSpeaker;
 import kinugasa.object.FourDirection;
@@ -49,111 +49,9 @@ import kinugasa.object.FourDirection;
  * @vesion 1.0.0 - 2025/07/31_12:15:42<br>
  * @author Shinacho.<br>
  */
-@Singleton
-public class FieldScriptAccessObject implements ScriptAccessObject {
+public class FieldScriptAccessObject extends ScriptAccessObject {
 
-	private static final FieldScriptAccessObject INSTANCE = new FieldScriptAccessObject();
-
-	public static FieldScriptAccessObject getInstance() {
-		return INSTANCE;
-	}
-
-	private FieldScriptAccessObject() {
-	}
-
-	//------------------------------------common-------------------------------
-	@ScriptAccessMethod
-	public boolean returnTrue() {
-		return true;
-	}
-
-	@ScriptAccessMethod
-	public boolean returnFalse() {
-		return false;
-	}
-
-	@ScriptAccessMethod
-	public ScriptResultType end() {
-		ScriptSystem.getInstance().end();
-		return ScriptResultType.END;
-	}
-
-	@ScriptAccessMethod
-	public void setDebugMode(UniversalValue f) {
-		GameSystem.setDebugMode(f.asBoolean());
-	}
-
-	@ScriptAccessMethod
-	public boolean isDebugMode() {
-		return GameSystem.isDebugMode();
-	}
-
-	@ScriptAccessMethod
-	public boolean paramIs(UniversalValue name, UniversalValue v) {
-		return ScriptSystem.getInstance().getCurrentArgsValMap().get(name.value()).equals(v);
-	}
-
-	@ScriptAccessMethod
-	public void printLogDirect(UniversalValue val) {
-		GameLog.print(val.value());
-	}
-
-	@ScriptAccessMethod
-	public void printLogI18N(UniversalValue val) {
-		GameLog.print(val.asI18N());
-	}
-
-	@ScriptAccessMethod
-	public void setPauseMode(UniversalValue v) {
-		ScriptSystem.getInstance().setPauseMode(v.asBoolean());
-	}
-
-	@ScriptAccessMethod
-	public void setManualIdxMode(UniversalValue v) {
-		ScriptSystem.getInstance().setManualIdxMode(v.asBoolean());
-	}
-
-	@ScriptAccessMethod
-	public void nextStep() {
-		ScriptSystem.getInstance().nextStep();
-	}
-
-	//------------------------------------game system--------------------------
-	@ScriptAccessMethod
-	public GameSystem gameSystem() {
-		return GameSystem.getInstance();
-	}
-
-	@ScriptAccessMethod
-	public boolean gameModeIs(UniversalValue v) {
-		return GameSystem.getInstance().getMode() == v.of(GameSystem.Mode.class);
-	}
-
-	//------------------------------------flag--------------------------------
-	@ScriptAccessMethod
-	public FlagSystem flagSystem() {
-		return FlagSystem.getInstance();
-	}
-
-	//------------------------------------sound--------------------------------
-	@ScriptAccessMethod
-	public SoundSystem soundSystem() {
-		return SoundSystem.getInstance();
-	}
-
-	@ScriptAccessMethod
-	public void changeBGM(UniversalValue id) {
-		SoundSystem.getInstance().toNext(id.asSoundID());
-	}
-
-	@ScriptAccessMethod
-	public Sound soundOf(UniversalValue id) {
-		return SoundSystem.getInstance().of(id.asId());
-	}
-
-	@ScriptAccessMethod
-	public boolean currentBGMIs(UniversalValue id) {
-		return SoundSystem.getInstance().getCurrent().getId().equals(id.value());
+	public FieldScriptAccessObject() {
 	}
 
 	//------------------------------------field4--------------------------------
@@ -394,7 +292,7 @@ public class FieldScriptAccessObject implements ScriptAccessObject {
 	@ScriptAccessMethod
 	@VariableResult
 	public boolean random(UniversalValue chance) {
-		return Random.percent(chance.asFloat());
+		return KRandom.percent(chance.asFloat());
 	}
 	//------------------------------------PC/NPC-------------------------------------
 

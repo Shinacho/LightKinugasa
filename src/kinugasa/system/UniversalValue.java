@@ -24,7 +24,9 @@
 package kinugasa.system;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import kinugasa.game.I18NText;
@@ -34,7 +36,6 @@ import kinugasa.game.annotation.NotNull;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.script.ScriptFileCall;
 import kinugasa.field4.D2Idx;
-import kinugasa.field4.FieldMapSystem;
 import kinugasa.field4.MapChipSet;
 import kinugasa.system.actor.Actor;
 import kinugasa.system.actor.Follower;
@@ -49,6 +50,15 @@ import kinugasa.resource.sound.MasterGain;
 import kinugasa.resource.sound.Sound;
 import kinugasa.resource.sound.SoundSystem;
 import kinugasa.resource.text.XMLAttribute;
+import kinugasa.system.actor.EqipAttr;
+import kinugasa.system.actor.MagicAptitude;
+import kinugasa.system.actor.status.cnd.Condition;
+import kinugasa.system.actor.status.cnd.ConditionSystem;
+import kinugasa.system.actor.status.Status;
+import kinugasa.system.actor.status.StatusKey;
+import kinugasa.system.actor.status.attr.AttributeKey;
+import kinugasa.system.item.Item;
+import kinugasa.system.item.ItemSystem;
 import kinugasa.util.FrameTimeCounter;
 import kinugasa.util.ManualTimeCounter;
 import kinugasa.util.StringUtil;
@@ -65,6 +75,18 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 
 	public static final UniversalValue EMPTY = new UniversalValue("");
 	private final String value;
+
+	public UniversalValue(ID i) {
+		this.value = i.getId();
+	}
+
+	public UniversalValue(int i) {
+		this.value = Integer.toString(i);
+	}
+
+	public UniversalValue(float f) {
+		this.value = Float.toString(f);
+	}
 
 	public <T extends Enum<T>> UniversalValue(T value) {
 		this.value = value.toString();
@@ -250,7 +272,11 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 	}
 
 	public String[] asCsv() {
-		return StringUtil.safeSplit(value, ",");
+		return safeSplit(",");
+	}
+
+	public List<UniversalValue> asCSVList() {
+		return Arrays.asList(this.safeSplitUV(","));
 	}
 
 	public I18NText asI18Nd() {
@@ -331,10 +357,38 @@ public sealed class UniversalValue implements ID permits XMLAttribute {
 		return new Follower(asFile());
 	}
 
+	public Condition asCondition() {
+		return ConditionSystem.getInstance().of(value);
+	}
+
 	public NPC asNPCCSV() {
 		UniversalValue[] v = safeSplitUV(",");
 		return new NPC(v[0].asFile(), new D2Idx(v[1].asInt(), v[2].asInt()));
 	}
+
+	public StatusKey asStatusKey() {
+		return of(StatusKey.class);
+	}
+
+	public AttributeKey asAttributeKey() {
+		return of(AttributeKey.class);
+	}
+
+	public EqipAttr asEqipAttr() {
+		return of(EqipAttr.class);
+	}
+
+	public MagicAptitude asMagicAptitude() {
+		return of(MagicAptitude.class);
+	}
+
+	public Status.Type asStatusType() {
+		return of(Status.Type.class);
+	}
+
+//	public Item asItem() {
+//		return ItemSystem.getInstance().get(value);
+//	}
 
 	@Override
 	public String toString() {

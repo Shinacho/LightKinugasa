@@ -27,5 +27,6 @@ public interface VisibleNameEnumInjector<T extends Enum<T> & VisibleNameEnumInje
     public default I18NText getVisibleName() {
         return new I18NText(((Enum<T>) this).name());
     }
+	
 
 }

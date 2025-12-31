@@ -28,7 +28,7 @@ import kinugasa.system.actor.FieldMapNPCMoveModel;
 import kinugasa.system.actor.NPC;
 import kinugasa.object.KVector;
 import kinugasa.util.FrameTimeCounter;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 import kinugasa.util.TimeCounterState;
 
 /**
@@ -62,7 +62,7 @@ public class GotoAndStopNPCMove extends FieldMapNPCMoveModel {
 
 	@Override
 	public void setNext() {
-		waitTimeOfMove = new FrameTimeCounter(Random.spread(waitTimeBaseOfMove, WAIT_TIME_SPREAD));
+		waitTimeOfMove = new FrameTimeCounter(KRandom.spread(waitTimeBaseOfMove, WAIT_TIME_SPREAD));
 		stage = 0;
 		idx = 0;
 		route = RoutingUtil.getRoute(fm, sprite, initial, tgt);
@@ -167,7 +167,7 @@ public class GotoAndStopNPCMove extends FieldMapNPCMoveModel {
 				stage = 3;
 				return;
 			}
-			waitTimeOfMove = new FrameTimeCounter(Random.spread(waitTimeBaseOfMove, WAIT_TIME_SPREAD));
+			waitTimeOfMove = new FrameTimeCounter(KRandom.spread(waitTimeBaseOfMove, WAIT_TIME_SPREAD));
 			stage = 0;
 			return;
 		}

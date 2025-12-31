@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import kinugasa.game.GameLog;
+import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.system.UniversalValue;
 import kinugasa.object.FileObject;
 import kinugasa.object.Saveable;
@@ -69,6 +70,7 @@ public class TextFile extends FileObject implements Saveable<TextFile>, Iterable
 		data = new ArrayList<>();
 	}
 
+	@NotNewInstance
 	public List<UniversalValue> getData() {
 		return data;
 	}

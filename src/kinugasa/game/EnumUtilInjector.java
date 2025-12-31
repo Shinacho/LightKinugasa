@@ -16,7 +16,8 @@
  */
 package kinugasa.game;
 
-import java.util.Arrays;
+import java.util.EnumSet;
+import kinugasa.system.UniversalValue;
 
 /**
  * EnumUtilInjector.<br>
@@ -24,9 +25,14 @@ import java.util.Arrays;
  * @vesion 1.0.0 - 2025/09/27_22:58:56<br>
  * @author Shinacho.<br>
  */
-public interface EnumUtilInjector<E extends Enum<E>> {
+public interface EnumUtilInjector<E extends Enum<E> & EnumUtilInjector<E>> {
 
 	public default boolean is(E e) {
 		return this == e;
 	}
+
+	public default UniversalValue asUniversalValue() {
+		return new UniversalValue(toString());
+	}
+
 }

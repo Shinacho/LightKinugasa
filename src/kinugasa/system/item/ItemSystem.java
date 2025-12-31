@@ -16,8 +16,22 @@
  */
 package kinugasa.system.item;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import kinugasa.game.GameLog;
 import kinugasa.game.annotation.Singleton;
-import kinugasa.resource.Storage;
+import kinugasa.resource.FileNotFoundException;
+import kinugasa.resource.text.TextFile;
+import kinugasa.system.GameSystem;
+import kinugasa.system.UniversalValue;
 
 /**
  * ItemSystem.<br>
@@ -36,6 +50,144 @@ public class ItemSystem {
 	public static ItemSystem getInstance() {
 		return INSTNACE;
 	}
-	private Storage<Item> data;
+
+	public static final String SUFFIX = ".item.txt";
+	private File root;
+	private final EnumMap<ItemTags, TextFile> indexFiles = new EnumMap<>(ItemTags.class);
+
+	public void init(File root) {
+		if (GameSystem.isDebugMode()) {
+			GameLog.print("ScriptSystem init start");
+			GameLog.addIndent();
+		}
+		if (!root.isDirectory()) {
+			throw new IllegalArgumentException("ItemSystem" + root.getName() + " is not directory");
+		}
+		if (!root.exists()) {
+			throw new IllegalArgumentException("ItemSystem" + root.getName() + " is not exists");
+		}
+		this.root = root;
+		//タグファイルの作成
+		for (var v : ItemTags.values()) {
+			String p = root.getPath();
+			if (!p.endsWith(File.separator)) {
+				p += "/";
+			}
+			indexFiles.put(v, new TextFile(p + v.toString() + ".itemIndex.txt"));
+		}
+		setIndex(root);
+	}
+
+	private String getPath(String id) {
+		return root.getPath() + "/" + id + SUFFIX;
+	}
+
+	private void setIndex(File root) {
+		for (var v : root.listFiles()) {
+			//アイテムは1つのフォルダに入ってる必要がある。IDでPK指定するため。
+//			if (v.isDirectory()) {
+//				setIndex(v);
+//				continue;
+//			}
+			if (!v.getName().endsWith(SUFFIX)) {
+				continue;
+			}
+//			Item i = new Item(v);
+//			i.load();
+//			for (var t : i.getItemTags()) {
+//				TextFile tf = indexFiles.get(t);
+//				tf.getData().add(new UniversalValue(i.getFile().getPath()));
+//				tf.save();
+//			}
+//			i.free();
+		}
+	}
+
+//	public Item get(String id) {
+//		File f = new File(getPath(id));
+//		if (!f.exists()) {
+//			throw new FileNotFoundException("ItemSystem : not found : " + f.getPath());
+//		}
+//		return new Item(f);
+//	}
+//
+//	public Item getOrNull(String id) {
+//		File f = new File(getPath(id));
+//		if (!f.exists()) {
+//			throw null;
+//		}
+//		return new Item(f);
+//	}
+//
+//	public List<Item> getNCopies(String id, int n) {
+//		Item i = getOrNull(id);
+//		if (i == null) {
+//			return List.of();
+//		}
+//		return i.nCopies(n);
+//	}
+
+	public boolean exists(ItemTags... tags) {
+		return exists(Arrays.asList(tags));
+	}
+
+	public boolean exists(Collection<ItemTags> tags) {
+		if (tags.isEmpty()) {
+			return false;
+		}
+		EnumMap<ItemTags, Set<File>> list = new EnumMap<>(ItemTags.class);
+
+		for (var t : tags) {
+			TextFile f = indexFiles.get(t);
+			f.load();
+			for (var v : f) {
+				list.get(t).add(v.asFile());
+			}
+			f.free();
+		}
+
+		List<ItemTags> t = new ArrayList<>(tags);
+		Set<File> r = new HashSet<>(list.getOrDefault(t.get(0), Set.of()));
+
+		for (int i = 1; i < t.size(); i++) {
+			r.retainAll(list.getOrDefault(t.get(i), Set.of()));
+		}
+
+		return !r.isEmpty();
+
+	}
+
+//	public Set<Item> get(ItemTags... tags) {
+//		return get(Arrays.asList(tags));
+//	}
+
+//	public Set<Item> get(Collection<ItemTags> tags) {
+//		if (tags.isEmpty()) {
+//			return Set.of();
+//		}
+//		EnumMap<ItemTags, Set<File>> list = new EnumMap<>(ItemTags.class);
+//
+//		for (var t : tags) {
+//			TextFile f = indexFiles.get(t);
+//			f.load();
+//			for (var v : f) {
+//				list.get(t).add(v.asFile());
+//			}
+//			f.free();
+//		}
+//
+//		List<ItemTags> t = new ArrayList<>(tags);
+//		Set<File> r = new HashSet<>(list.getOrDefault(t.get(0), Set.of()));
+//
+//		for (int i = 1; i < t.size(); i++) {
+//			r.retainAll(list.getOrDefault(t.get(i), Set.of()));
+//		}
+//
+//		return r.stream().map(p -> new Item(p)).collect(Collectors.toSet());
+//	}
+
+	public boolean exists(String id) {
+		return new File(getPath(id)).exists();
+	}
 
 }

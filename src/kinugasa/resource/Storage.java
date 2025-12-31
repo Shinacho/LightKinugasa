@@ -46,7 +46,7 @@ import kinugasa.game.annotation.NewInstance;
 import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.system.GameSystem;
 import kinugasa.object.CloneableObject;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 
 /**
  * アルゴリズムなどの命名可能なオブジェクトを格納するマップです.
@@ -113,6 +113,15 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 		return map.get(id);
 	}
 
+	public T get(T t) throws IDNotFoundException {
+		for (var v : map.values()) {
+			if (v.equals(t)) {
+				return v;
+			}
+		}
+		throw new IDNotFoundException("! > Storage(" + getClass() + ") : get : not found : key=[" + t + "] / " + map.keySet());
+	}
+
 	public List<T> filter(Predicate<? super T> p) {
 		return stream().filter(p).collect(Collectors.toList());
 	}
@@ -141,6 +150,11 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 		return get(key.getId());
 	}
 
+	@NewInstance
+	public List<T> removeList() {
+		return new ArrayList<>();
+	}
+
 	/**
 	 * 指定したキーの要素が含まれている場合に、それを取得します.<br>
 	 *
@@ -150,6 +164,15 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 	 */
 	public T getOrNull(String key) {
 		return map.get(key);
+	}
+
+	public T getOrNull(T t) {
+		for (var v : map.values()) {
+			if (v.equals(t)) {
+				return v;
+			}
+		}
+		throw new IDNotFoundException("! > Storage(" + getClass() + ") : get : not found : key=[" + t + "] / " + map.keySet());
 	}
 
 	public T getOr(String key, T value) {
@@ -164,6 +187,7 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 	 *
 	 * @return 保管されているすべてのオブジェクトのリストを返します。リストに格納される順番は ストレージに追加された順番と一致しません。<br>
 	 */
+	@NewInstance
 	public List<T> asList() {
 		return new ArrayList<>(map.values());
 	}
@@ -188,7 +212,7 @@ public class Storage<T extends ID> extends CloneableObject implements Iterable<T
 		if (isEmpty()) {
 			return null;
 		}
-		return Random.randomChoice(map);
+		return KRandom.randomChoice(map);
 	}
 
 	/**

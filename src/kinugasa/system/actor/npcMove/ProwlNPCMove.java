@@ -29,7 +29,7 @@ import kinugasa.system.actor.FieldMapNPCMoveModel;
 import kinugasa.system.actor.NPC;
 import kinugasa.object.KVector;
 import kinugasa.util.FrameTimeCounter;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 import kinugasa.util.TimeCounterState;
 
 /**
@@ -60,7 +60,7 @@ public class ProwlNPCMove extends FieldMapNPCMoveModel {
 
 	@Override
 	public void setNext() {
-		waitTime = new FrameTimeCounter(Random.spread(waitTimeBase, ProwlNPCMove.WAIT_TIME_SPREAD));
+		waitTime = new FrameTimeCounter(KRandom.spread(waitTimeBase, ProwlNPCMove.WAIT_TIME_SPREAD));
 		stage = 0;
 	}
 
@@ -77,7 +77,8 @@ public class ProwlNPCMove extends FieldMapNPCMoveModel {
 			D2Idx current = sprite.getCurrentLocationOnMap().clone();
 			int x = current.x;
 			int y = current.y;
-			switch (Random.d6(1)) {
+			switch (KRandom.d6(1)) {
+
 				case 1, 2 ->
 					x -= 1;
 				case 3, 4 ->
@@ -85,7 +86,8 @@ public class ProwlNPCMove extends FieldMapNPCMoveModel {
 				default -> {
 				}
 			}
-			switch (Random.d6(1)) {
+			switch (KRandom.d6(1)) {
+
 				case 1, 2 ->
 					y -= 1;
 				case 3, 4 ->

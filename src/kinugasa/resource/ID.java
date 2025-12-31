@@ -23,7 +23,6 @@
  */
 package kinugasa.resource;
 
-import java.util.Comparator;
 import kinugasa.system.UniversalValue;
 
 /**
@@ -34,8 +33,6 @@ import kinugasa.system.UniversalValue;
 public interface ID {
 
 	public String getId();
-
-	public static final Comparator<ID> ID_COMPARATOR = (ID o1, ID o2) -> o1.getId().compareTo(o2.getId());
 
 	public default UniversalValue asUniversalValue() {
 		return new UniversalValue(getId());

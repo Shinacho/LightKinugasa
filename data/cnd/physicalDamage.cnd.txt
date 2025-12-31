@@ -1,0 +1,14 @@
+# CND - phtsicalDamage
+# HPが0になると発生する。行動できない。
+# 受けたダメージや攻撃に応じて、死亡状態が設定されるが、それはDCSで行われる。
+# CNDはすでに追加された状態でスクリプトが起動する。それ除去するにはONE_TIMEでremoveConditionする。
+
+
+ONE_TIME( ActorUpdateScriptAccessObject ){
+
+}
+
+ADD_CONDITION( ActorUpdateScriptAccessObject ){
+	
+	
+}

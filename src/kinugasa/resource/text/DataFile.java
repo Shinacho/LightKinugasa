@@ -31,7 +31,6 @@ import kinugasa.field4.D2Idx;
 import kinugasa.game.GameLog;
 import kinugasa.game.annotation.Immutable;
 import kinugasa.game.annotation.NewInstance;
-import kinugasa.game.annotation.NotNewInstance;
 import kinugasa.game.annotation.NotNull;
 import kinugasa.game.annotation.Nullable;
 import kinugasa.system.UniversalValue;
@@ -310,19 +309,19 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 			String line = d.get(i);
 
 			if (line.startsWith("-")) {
-				throw new InternalError("DataFile [" + getId() + "] : data contains PreProcesser : " + line);
+				throw new FileFormatException("DataFile [" + getId() + "] :  PreProcesser found : " + line);
 			}
 
+			//end
 			if (line.equals("}")) {
 				return i;
 			}
 
-			//switch Mode
 			//CSV
 			if (line.endsWith("==")) {
 				line = line.replaceAll(" ", "").replaceAll("\t", "");
 				line = line.substring(0, line.length() - 2); // "=="
-				Element data = Element.head(line);
+				Element data = parent.createHeadChild(line);
 				for (int y = i = i + 1; y < d.size() && !d.get(y).equals("=="); y++, i++) {
 					Element e = data.createHeadChild(y + "");
 					String[] csv = StringUtil.safeSplit(d.get(y), ",");
@@ -331,19 +330,19 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 						String value = csv[x];
 						e.createKeyValueChild(key.toString(), value);
 					}
-					parent.add(data);
 				}
 				continue;
 			}
 
+			//Block
 			if (line.endsWith("{")) {
-				//Block
 				line = line.replaceAll(" ", "").replaceAll("\t", "");
 
+				//ScriptBlock
 				if (line.endsWith("){")) {
-					//ScriptBlock
-					String key = StringUtil.safeSplit(line, "(")[0];
-					String saoName = StringUtil.safeSplit(line, "(")[1];
+					int idx = line.indexOf("(");
+					String key = line.substring(0, idx);
+					String saoName = line.substring(idx + 1);
 					saoName = saoName.substring(0, saoName.length() - 2); // "){"
 					Element e = parent.createScriptBlockChild(key, saoName);
 					i = parse(e, d, i + 1);
@@ -356,7 +355,7 @@ public class DataFile extends FileObject implements Iterable<DataFile.Element> {
 				continue;
 			}
 
-			//KeyuValue or Key
+			//KeyValue
 			if (line.contains("=")) {
 				//Key=Value
 				int idx = line.indexOf('=');

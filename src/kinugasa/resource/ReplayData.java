@@ -27,7 +27,7 @@ package kinugasa.resource;
 
 import java.io.Serializable;
 import kinugasa.game.input.InputState;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 
 /**
  * このクラスを使用して、ランダムシードと入力状態を発行／復元することが出来ます.
@@ -61,7 +61,7 @@ public final class ReplayData extends Storage<ReplayInputState> implements Seria
 	 * @return thisインスタンスを返します。<br>
 	 */
 	public ReplayData recStart(long seed) {
-		Random.initSeed(this.seed = seed);
+		KRandom.initSeed(this.seed = seed);
 		return this;
 	}
 
@@ -78,7 +78,7 @@ public final class ReplayData extends Storage<ReplayInputState> implements Seria
 	 * 保存されたシードを使用して、ランダムクラスを初期化し、リプレイの再生を開始します.
 	 */
 	public void playStart() {
-		Random.initSeed(seed);
+		KRandom.initSeed(seed);
 	}
 
 	/**

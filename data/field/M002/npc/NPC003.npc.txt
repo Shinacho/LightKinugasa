@@ -4,6 +4,7 @@
 PI{
 	speakerImage=data/image/faceImage.png
 	named=false
+	race = HUMAN
 
 	waTime = 6
 	sprite=data/image/npc001.png

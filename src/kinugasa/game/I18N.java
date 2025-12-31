@@ -24,12 +24,13 @@
 package kinugasa.game;
 
 import java.io.File;
-import kinugasa.game.annotation.OneceTime;
 import kinugasa.game.annotation.NoLoopCall;
 import java.util.HashSet;
 import java.util.Set;
 import kinugasa.script.ScriptFileCall;
 import kinugasa.script.ScriptSystem;
+import kinugasa.game.annotation.OneTime;
+import kinugasa.script.ScriptAccessObject;
 
 /**
  *
@@ -42,7 +43,7 @@ public class I18N {
 	private static Set<String> notFoundKeySet = new HashSet<>();
 	private static Set<String> nullValueKeySet = new HashSet<>();
 
-	@OneceTime
+	@OneTime
 	public static void init(I18NReader reader) {
 		I18N.reader = reader;
 	}
@@ -124,7 +125,7 @@ public class I18N {
 					i = end;
 				} else {
 					//callモード
-					var r = ScriptSystem.getInstance().instantCall(inner);
+					var r = ScriptSystem.getInstance().instantCall(inner, new ScriptAccessObject());
 					sb.append(r.lastResultObject().toString());
 					i = end;
 				}

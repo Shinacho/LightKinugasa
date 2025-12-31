@@ -79,7 +79,7 @@ public class ScriptLine {
 
 	}
 
-	private final Object sao;
+	private final ScriptAccessObject sao;
 	private final String origin;
 	private final List<Value> data;//getFieldMapSystem(), get("001"), load();
 	private final List<List<List<Value>>> ifBlock;// and / or / hoge().piyo()=data

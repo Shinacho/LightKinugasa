@@ -100,8 +100,7 @@ public class MapChipSet extends FileObject {
 	}
 		 */
 
-		TextFile file = super.asTextFile();
-		file.load();
+		TextFile file = new TextFile(getFile()).load();
 
 		KImage image = null;
 		int w, h;

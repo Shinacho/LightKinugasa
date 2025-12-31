@@ -34,7 +34,7 @@ import kinugasa.system.actor.FieldMapNPCMoveModel;
 import kinugasa.system.actor.NPC;
 import kinugasa.object.KVector;
 import kinugasa.util.FrameTimeCounter;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 import kinugasa.util.TimeCounterState;
 
 /**
@@ -83,8 +83,8 @@ public class TripNPCMove extends FieldMapNPCMoveModel {
 
 	@Override
 	public void setNext() {
-		waitTimeOfMove = new FrameTimeCounter(Random.spread(waitTimeBaseOfMove, TripNPCMove.WAIT_TIME_SPREAD));
-		waitRimeOnTgt = new FrameTimeCounter(Random.spread(waitTimeBaseOnTgt, TripNPCMove.WAIT_TIME_SPREAD));
+		waitTimeOfMove = new FrameTimeCounter(KRandom.spread(waitTimeBaseOfMove, TripNPCMove.WAIT_TIME_SPREAD));
+		waitRimeOnTgt = new FrameTimeCounter(KRandom.spread(waitTimeBaseOnTgt, TripNPCMove.WAIT_TIME_SPREAD));
 		stage = 0;
 		//tgtB or initial
 		idx = 0;
@@ -114,7 +114,7 @@ public class TripNPCMove extends FieldMapNPCMoveModel {
 		//移動ごとの待機
 		if (stage == 0) {
 			if (waitTimeOfMove.update() == TimeCounterState.ACTIVE) {
-				waitTimeOfMove = new FrameTimeCounter(Random.spread(waitTimeBaseOfMove, TripNPCMove.WAIT_TIME_SPREAD));
+				waitTimeOfMove = new FrameTimeCounter(KRandom.spread(waitTimeBaseOfMove, TripNPCMove.WAIT_TIME_SPREAD));
 				stage = 1;
 			}
 		}

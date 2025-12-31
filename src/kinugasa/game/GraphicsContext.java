@@ -111,6 +111,14 @@ public class GraphicsContext {
 		g.fillRect(i, i0, i1, i2);
 	}
 
+	public void fillRect(Sprite s) {
+		int x = (int) s.getX();
+		int y = (int) s.getY();
+		int w = (int) s.getWidth();
+		int h = (int) s.getHeight();
+		g.fillRect(x, y, w, h);
+	}
+
 	public void drawRect(int i, int i0, int i1, int i2) {
 		g.drawRect(i, i0, i1, i2);
 	}

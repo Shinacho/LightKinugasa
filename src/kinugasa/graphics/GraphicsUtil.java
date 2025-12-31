@@ -33,7 +33,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.List;
 import kinugasa.game.annotation.NewInstance;
-import kinugasa.util.Random;
+import kinugasa.util.KRandom;
 
 /**
  *
@@ -59,9 +59,9 @@ public class GraphicsUtil {
 	}
 
 	public static Color randomColor() {
-		int r = Random.randomAbsInt(256);
-		int g = Random.randomAbsInt(256);
-		int b = Random.randomAbsInt(256);
+		int r = KRandom.randomAbsInt(256);
+		int g = KRandom.randomAbsInt(256);
+		int b = KRandom.randomAbsInt(256);
 		int a = 255;
 		return new Color(r, g, b, a);
 	}

@@ -32,7 +32,7 @@ public class ScriptResult {
 
 	}
 	@Nullable
-	private ScriptBlock block;
+	private final ScriptBlock block;
 	private final List<Value> results = new ArrayList<>();
 
 	public ScriptResult(ScriptBlock block) {
